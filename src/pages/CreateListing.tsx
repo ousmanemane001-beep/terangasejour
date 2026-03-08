@@ -14,6 +14,7 @@ import {
   ChevronLeft, ChevronRight, Wifi, Car, Waves, Wind,
   UtensilsCrossed, Tv, Lock, Flower2, CheckCircle, Upload, X
 } from "lucide-react";
+import PhotoUploader from "@/components/PhotoUploader";
 
 const propertyTypes = [
   { value: "villa", label: "Villa", icon: "🏡" },
