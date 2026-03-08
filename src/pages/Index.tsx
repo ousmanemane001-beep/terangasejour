@@ -81,26 +81,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Trust points — like Booking.com "Pourquoi choisir" */}
-      <section className="py-8 md:py-10 border-b border-border">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {trustPoints.map((tp, i) => (
-              <div key={i} className="flex gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center shrink-0">
-                  <tp.icon className="w-5 h-5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-display font-semibold text-foreground text-sm leading-tight mb-1">{tp.title}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{tp.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Published Listings from DB */}
+      {/* Published Listings from DB — right after search */}
       {isLoading ? (
         <section className="py-12">
           <div className="container mx-auto px-4 flex justify-center">
@@ -123,6 +104,25 @@ const Index = () => {
           </div>
         </section>
       ) : null}
+
+      {/* Trust points */}
+      <section className="py-8 md:py-10 border-b border-border">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {trustPoints.map((tp, i) => (
+              <div key={i} className="flex gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center shrink-0">
+                  <tp.icon className="w-5 h-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-display font-semibold text-foreground text-sm leading-tight mb-1">{tp.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{tp.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Destinations populaires */}
       <section className="py-10 md:py-14 bg-secondary">
