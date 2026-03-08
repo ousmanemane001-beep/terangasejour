@@ -49,6 +49,7 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/become-host" element={<BecomeHost />} />
             <Route path="/favorites" element={<Favorites />} />
+            <Route path="/admin/verification" element={<AdminVerification />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
