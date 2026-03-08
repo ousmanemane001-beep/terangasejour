@@ -6,6 +6,7 @@ import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import PropertyMap from "@/components/PropertyMap";
 import { motion } from "framer-motion";
+import { useListingRating } from "@/hooks/useReviews";
 import { useParams, Link } from "react-router-dom";
 import { properties } from "@/data/properties";
 import { useListing } from "@/hooks/useListings";
