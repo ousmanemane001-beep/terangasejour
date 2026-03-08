@@ -111,7 +111,7 @@ const SearchBar = () => {
                           onClick={() => selectDestination(d)}
                           className="w-full text-left px-4 py-2.5 hover:bg-muted transition-colors flex items-center gap-3"
                         >
-                          <MapPin className="w-3.5 h-3.5 text-accent shrink-0" />
+                          <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-foreground">{d.name}</p>
                             <p className="text-xs text-muted-foreground">{d.region}</p>
