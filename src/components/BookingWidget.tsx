@@ -2,30 +2,36 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Users, Loader2, CheckCircle } from "lucide-react";
+import { Calendar, Users, Loader2, CheckCircle, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateBooking } from "@/hooks/useBookings";
 import { useBookedDates, getDisabledDates } from "@/hooks/useAvailability";
+import { useCreateNotification } from "@/hooks/useAdmin";
 import PaymentMethodSelector, { type PaymentMethod } from "@/components/PaymentMethodSelector";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface BookingWidgetProps {
   listingId: string;
   pricePerNight: number;
   maxGuests: number;
+  bookingMode?: string;
+  hostId?: string;
 }
 
 const SERVICE_FEE_RATE = 0.15;
 
-const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetProps) => {
+const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "instant", hostId }: BookingWidgetProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const createBooking = useCreateBooking();
+  const createNotification = useCreateNotification();
   const { data: bookedRanges } = useBookedDates(listingId);
   const disabledDates = bookedRanges ? getDisabledDates(bookedRanges) : [];
 
@@ -39,6 +45,10 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
   const [showConfirmForm, setShowConfirmForm] = useState(false);
+  const [requestMessage, setRequestMessage] = useState("");
+  const [requestSent, setRequestSent] = useState(false);
+
+  const isRequestMode = bookingMode === "request";
 
   const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
   const subtotal = nights * pricePerNight;
@@ -52,16 +62,38 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
     return disabledDates.some((d) => d.toDateString() === date.toDateString());
   };
 
+  const handleRequestAvailability = async () => {
+    if (!user) { toast.error("Connectez-vous pour faire une demande."); navigate("/login"); return; }
+    if (!checkIn || !checkOut || nights < 1) { toast.error("Sélectionnez vos dates."); return; }
+    try {
+      await supabase.from("booking_requests").insert({
+        listing_id: listingId,
+        guest_id: user.id,
+        check_in: format(checkIn, "yyyy-MM-dd"),
+        check_out: format(checkOut, "yyyy-MM-dd"),
+        guests,
+        message: requestMessage.trim() || null,
+      } as any);
+      // Notify host
+      if (hostId) {
+        await createNotification.mutateAsync({
+          user_id: hostId,
+          type: "booking_request",
+          title: "Nouvelle demande de réservation",
+          message: `Un voyageur souhaite réserver du ${format(checkIn, "d MMM", { locale: fr })} au ${format(checkOut, "d MMM", { locale: fr })}.`,
+          data: { listing_id: listingId },
+        });
+      }
+      setRequestSent(true);
+      toast.success("Demande envoyée à l'hôte !");
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de l'envoi.");
+    }
+  };
+
   const handleBook = async () => {
-    if (!user) {
-      toast.error("Veuillez vous connecter pour réserver.");
-      navigate("/login");
-      return;
-    }
-    if (!checkIn || !checkOut || nights < 1) {
-      toast.error("Veuillez sélectionner vos dates de séjour.");
-      return;
-    }
+    if (!user) { toast.error("Veuillez vous connecter pour réserver."); navigate("/login"); return; }
+    if (!checkIn || !checkOut || nights < 1) { toast.error("Veuillez sélectionner vos dates de séjour."); return; }
 
     if (!showConfirmForm) {
       setShowConfirmForm(true);
@@ -71,10 +103,7 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
       return;
     }
 
-    if (!guestName.trim() || !guestEmail.trim()) {
-      toast.error("Veuillez remplir votre nom et email.");
-      return;
-    }
+    if (!guestName.trim() || !guestEmail.trim()) { toast.error("Veuillez remplir votre nom et email."); return; }
 
     try {
       await createBooking.mutateAsync({
@@ -89,12 +118,37 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
         total_price: total,
         payment_method: paymentMethod,
       });
+      // Notify host
+      if (hostId) {
+        await createNotification.mutateAsync({
+          user_id: hostId,
+          type: "new_booking",
+          title: "Nouvelle réservation",
+          message: `Réservation confirmée du ${format(checkIn, "d MMM", { locale: fr })} au ${format(checkOut, "d MMM", { locale: fr })} · ${total.toLocaleString("fr-FR")} F`,
+          data: { listing_id: listingId },
+        });
+      }
       setBooked(true);
       toast.success("Réservation confirmée !");
     } catch (err: any) {
       toast.error(err.message || "Erreur lors de la réservation.");
     }
   };
+
+  if (requestSent) {
+    return (
+      <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6 text-center">
+        <MessageCircle className="w-12 h-12 text-primary mx-auto mb-3" />
+        <h3 className="font-display text-lg font-bold text-foreground mb-1">Demande envoyée !</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          L'hôte va examiner votre demande pour le {format(checkIn!, "d MMMM", { locale: fr })} au {format(checkOut!, "d MMMM yyyy", { locale: fr })}.
+        </p>
+        <Button className="rounded-full bg-primary text-primary-foreground" onClick={() => navigate("/dashboard/my-bookings")}>
+          Voir mes demandes
+        </Button>
+      </div>
+    );
+  }
 
   if (booked) {
     return (
@@ -198,8 +252,21 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
         </div>
       )}
 
-      {/* Payment method + Confirmation form */}
-      {showConfirmForm && nights > 0 && (
+      {/* Request mode: message to host */}
+      {isRequestMode && nights > 0 && (
+        <div className="space-y-3 mb-6">
+          <Textarea
+            placeholder="Message à l'hôte (optionnel)..."
+            className="rounded-xl"
+            rows={3}
+            value={requestMessage}
+            onChange={(e) => setRequestMessage(e.target.value)}
+          />
+        </div>
+      )}
+
+      {/* Payment method + Confirmation form (instant mode only) */}
+      {!isRequestMode && showConfirmForm && nights > 0 && (
         <div className="space-y-4 mb-6">
           <PaymentMethodSelector selected={paymentMethod} onSelect={setPaymentMethod} />
           
@@ -217,21 +284,38 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
         </div>
       )}
 
-      <Button
-        onClick={handleBook}
-        disabled={!nights || createBooking.isPending}
-        className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
-      >
-        {createBooking.isPending ? (
-          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Réservation en cours...</>
-        ) : showConfirmForm ? (
-          `Confirmer la réservation`
-        ) : nights > 0 ? (
-          `Réserver · ${total.toLocaleString("fr-FR")} F`
-        ) : (
-          "Sélectionnez vos dates"
-        )}
-      </Button>
+      {isRequestMode ? (
+        <Button
+          onClick={handleRequestAvailability}
+          disabled={!nights}
+          className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
+        >
+          <MessageCircle className="w-4 h-4 mr-2" />
+          {nights > 0 ? "Demander la disponibilité" : "Sélectionnez vos dates"}
+        </Button>
+      ) : (
+        <Button
+          onClick={handleBook}
+          disabled={!nights || createBooking.isPending}
+          className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
+        >
+          {createBooking.isPending ? (
+            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Réservation en cours...</>
+          ) : showConfirmForm ? (
+            `Confirmer la réservation`
+          ) : nights > 0 ? (
+            `Réserver · ${total.toLocaleString("fr-FR")} F`
+          ) : (
+            "Sélectionnez vos dates"
+          )}
+        </Button>
+      )}
+
+      {isRequestMode && (
+        <p className="text-xs text-center text-muted-foreground mt-3">
+          📩 L'hôte doit approuver votre demande avant la réservation.
+        </p>
+      )}
     </div>
   );
 };

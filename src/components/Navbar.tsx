@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, User, LogOut, Heart, Home, CalendarDays, MessageCircle } from "lucide-react";
+import { Menu, X, User, LogOut, Heart, Home, CalendarDays, MessageCircle, Bell, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -9,11 +9,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsAdmin, useUnreadCount } from "@/hooks/useAdmin";
+import { Badge } from "@/components/ui/badge";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const { user, isHost, profile, signOut } = useAuth();
+  const { data: isAdmin } = useIsAdmin();
+  const unreadCount = useUnreadCount();
 
   const initials = profile
     ? `${(profile.first_name || "")[0] || ""}${(profile.last_name || "")[0] || ""}`.toUpperCase() || "U"
@@ -52,6 +56,15 @@ const Navbar = () => {
             <Button variant="outline" size="sm" className="rounded-full text-sm">Publier un logement</Button>
           </Link>
           {user ? (
+            <>
+              {unreadCount > 0 && (
+                <Link to="/dashboard" className="relative">
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Bell className="w-5 h-5" />
+                    <Badge className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] h-5 w-5 flex items-center justify-center p-0 rounded-full">{unreadCount}</Badge>
+                  </Button>
+                </Link>
+              )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
@@ -85,6 +98,16 @@ const Navbar = () => {
                 <DropdownMenuItem asChild>
                   <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center gap-2 text-primary font-medium">
+                        <Shield className="w-4 h-4" /> Administration
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 {!isHost && (
                   <>
                     <DropdownMenuSeparator />
@@ -101,6 +124,7 @@ const Navbar = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </>
           ) : (
             <Link to="/login">
               <Button size="sm" className="rounded-full bg-primary text-primary-foreground text-sm">Connexion</Button>

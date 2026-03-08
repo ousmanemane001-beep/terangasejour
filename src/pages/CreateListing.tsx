@@ -47,7 +47,18 @@ const rulesList = [
   "Arrivée autonome (serrure connectée)",
 ];
 
-const TOTAL_STEPS = 4;
+const bookingModes = [
+  { value: "instant", label: "Réservation instantanée", icon: "⚡", desc: "Les voyageurs réservent et paient directement." },
+  { value: "request", label: "Demande de disponibilité", icon: "📩", desc: "Les voyageurs demandent d'abord, vous approuvez." },
+];
+
+const availabilityModes = [
+  { value: "always", label: "Toujours disponible", icon: "🟢", desc: "Disponible toute l'année sauf dates réservées." },
+  { value: "calendar", label: "Calendrier personnalisé", icon: "📅", desc: "Vous définissez les dates disponibles manuellement." },
+  { value: "request_only", label: "Sur demande uniquement", icon: "📞", desc: "Les voyageurs doivent demander la disponibilité." },
+];
+
+const TOTAL_STEPS = 5;
 
 const CreateListing = () => {
   const { user, isHost } = useAuth();
@@ -79,6 +90,10 @@ const CreateListing = () => {
   const [monthDiscount, setMonthDiscount] = useState("");
   const [selectedRules, setSelectedRules] = useState<string[]>([]);
 
+  // Step 5 - Booking settings
+  const [bookingMode, setBookingMode] = useState("instant");
+  const [availabilityMode, setAvailabilityMode] = useState("always");
+
   // UI state
   const [step, setStep] = useState(1);
 
@@ -103,8 +118,9 @@ const CreateListing = () => {
   const canGoNext = useCallback(() => {
     if (step === 1) return !!title.trim() && !!description.trim() && !!location.trim();
     if (step === 3) return photos.length >= 5;
+    if (step === 4) return !!price && parseInt(price) > 0;
     return true;
-  }, [step, title, description, location, photos.length]);
+  }, [step, title, description, location, photos.length, price]);
 
   // Redirect non-hosts to become-host page
   if (!isHost && user) {
@@ -149,7 +165,7 @@ const CreateListing = () => {
         photoUrls.push(urlData.publicUrl);
       }
 
-      // Insert listing
+      // Insert listing with pending_approval status
       const { data, error: insertError } = await supabase
         .from("listings")
         .insert({
@@ -167,7 +183,9 @@ const CreateListing = () => {
           capacity,
           price_per_night: parseInt(price),
           photos: photoUrls,
-          status: "published",
+          status: "pending_approval",
+          booking_mode: bookingMode,
+          availability_mode: availabilityMode,
         } as any)
         .select("id")
         .single();
@@ -175,10 +193,29 @@ const CreateListing = () => {
       if (insertError) throw insertError;
 
       setPublishedId(data.id);
-      // Invalidate listings cache so homepage and explore show the new listing immediately
       queryClient.invalidateQueries({ queryKey: ["listings"] });
       queryClient.invalidateQueries({ queryKey: ["owner-listings"] });
-      toast.success("Votre logement a été publié avec succès !");
+
+      // Create notification for admins (best effort)
+      try {
+        const { data: admins } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+        if (admins) {
+          for (const admin of admins) {
+            await supabase.from("notifications").insert({
+              user_id: admin.user_id,
+              type: "new_listing",
+              title: "Nouveau logement soumis",
+              message: `${title.trim()} à ${location.trim()} est en attente d'approbation.`,
+              data: { listing_id: data.id },
+            } as any);
+          }
+        }
+      } catch {}
+
+      toast.success("Votre logement a été soumis pour approbation !");
     } catch (err: any) {
       toast.error(err.message || "Erreur lors de la création de l'annonce.");
     } finally {
@@ -201,10 +238,10 @@ const CreateListing = () => {
               <CheckCircle className="w-10 h-10 text-accent" />
             </div>
             <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">
-              Votre logement a été publié avec succès !
+              Votre logement a été soumis !
             </h1>
             <p className="text-muted-foreground mb-8">
-              Votre annonce est maintenant visible par les voyageurs sur la plateforme.
+              Votre annonce est en cours de vérification par notre équipe. Vous recevrez une notification une fois approuvée.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button
@@ -443,6 +480,62 @@ const CreateListing = () => {
                 </Card>
               </motion.div>
             )}
+
+            {/* Step 5: Booking Settings */}
+            {step === 5 && (
+              <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
+                  Paramètres de réservation
+                </h1>
+                <p className="text-muted-foreground mb-8">Choisissez comment les voyageurs peuvent réserver votre logement.</p>
+
+                <Card className="border-none shadow-[var(--shadow-card)] mb-8">
+                  <CardContent className="p-6">
+                    <h3 className="font-display font-semibold text-foreground mb-4">Mode de réservation</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {bookingModes.map((mode) => (
+                        <div
+                          key={mode.value}
+                          onClick={() => setBookingMode(mode.value)}
+                          className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                            bookingMode === mode.value ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"
+                          }`}
+                        >
+                          <div className="text-2xl mb-2">{mode.icon}</div>
+                          <p className="font-medium text-foreground text-sm">{mode.label}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{mode.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-[var(--shadow-card)]">
+                  <CardContent className="p-6">
+                    <h3 className="font-display font-semibold text-foreground mb-4">Disponibilité</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      {availabilityModes.map((mode) => (
+                        <div
+                          key={mode.value}
+                          onClick={() => setAvailabilityMode(mode.value)}
+                          className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                            availabilityMode === mode.value ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{mode.icon}</span>
+                            <div>
+                              <p className="font-medium text-foreground text-sm">{mode.label}</p>
+                              <p className="text-xs text-muted-foreground">{mode.desc}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
           </AnimatePresence>
 
           {/* Navigation */}
@@ -474,12 +567,12 @@ const CreateListing = () => {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Publication en cours...
+                    Soumission en cours...
                   </>
                 ) : (
                   <>
                     <CheckCircle className="w-4 h-4" />
-                    Publier mon logement
+                    Soumettre pour approbation
                   </>
                 )}
               </Button>

@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOwnerListings, useOwnerBookings, useGuestBookings } from "@/hooks/useOwnerData";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useListingsRatings } from "@/hooks/useReviews";
+import { useBookingRequests, useRespondToRequest, useNotifications, useMarkAsRead } from "@/hooks/useAdmin";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,9 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
   pending: { label: "En attente", variant: "secondary" },
   cancelled: { label: "Annulée", variant: "destructive" },
   published: { label: "Actif", variant: "default" },
+  pending_approval: { label: "En attente d'approbation", variant: "secondary" },
+  rejected: { label: "Rejeté", variant: "destructive" },
+  suspended: { label: "Suspendu", variant: "destructive" },
   draft: { label: "Brouillon", variant: "outline" },
 };
 
@@ -40,6 +44,9 @@ const Dashboard = () => {
   const { data: ownerBookings, isLoading: bookingsLoading } = useOwnerBookings();
   const { data: guestBookings } = useGuestBookings();
   const { data: favorites } = useFavorites();
+  const { data: bookingRequests } = useBookingRequests();
+  const respondToRequest = useRespondToRequest();
+  const { data: notifications } = useNotifications();
 
   const activeTab = tab || (isHost ? "overview" : "my-bookings");
 
@@ -102,6 +109,7 @@ const Dashboard = () => {
     { id: "overview", label: "Dashboard", icon: TrendingUp },
     { id: "properties", label: "Mes logements", icon: Home },
     { id: "reservations", label: "Réservations reçues", icon: CalendarDays },
+    { id: "requests", label: "Demandes", icon: CalendarDays },
     { id: "revenue", label: "Revenus", icon: CreditCard },
     { id: "calendar", label: "Calendrier", icon: CalendarDays },
   ];
@@ -311,6 +319,55 @@ const Dashboard = () => {
                     ))}
                   </div>
                 ) : <p className="text-center text-muted-foreground py-8">Aucune réservation reçue.</p>}
+              </CardContent>
+            </Card>
+          )}
+
+          {isHost && activeTab === "requests" && (
+            <Card className="border-none shadow-[var(--shadow-card)]">
+              <CardHeader><CardTitle className="font-display text-lg">Demandes de réservation</CardTitle></CardHeader>
+              <CardContent>
+                {bookingRequests && bookingRequests.length > 0 ? (
+                  <div className="space-y-4">
+                    {bookingRequests.map((req) => (
+                      <div key={req.id} className="p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <p className="font-medium text-foreground text-sm">
+                              {format(new Date(req.check_in), "d MMM", { locale: fr })} → {format(new Date(req.check_out), "d MMM yyyy", { locale: fr })}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{req.guests} voyageur{req.guests > 1 ? "s" : ""}</p>
+                            {req.message && <p className="text-xs text-foreground mt-1 italic">"{req.message}"</p>}
+                          </div>
+                          <Badge variant={req.status === "approved" ? "default" : req.status === "rejected" ? "destructive" : "secondary"} className="text-xs">
+                            {req.status === "approved" ? "Approuvée" : req.status === "rejected" ? "Rejetée" : "En attente"}
+                          </Badge>
+                        </div>
+                        {req.status === "pending" && (
+                          <div className="flex gap-2 mt-3">
+                            <Button
+                              size="sm"
+                              className="rounded-full bg-primary text-primary-foreground text-xs gap-1"
+                              disabled={respondToRequest.isPending}
+                              onClick={() => respondToRequest.mutate({ requestId: req.id, status: "approved" })}
+                            >
+                              Approuver
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="rounded-full text-xs text-destructive gap-1"
+                              disabled={respondToRequest.isPending}
+                              onClick={() => respondToRequest.mutate({ requestId: req.id, status: "rejected" })}
+                            >
+                              Rejeter
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : <p className="text-center text-muted-foreground py-8">Aucune demande de réservation.</p>}
               </CardContent>
             </Card>
           )}
