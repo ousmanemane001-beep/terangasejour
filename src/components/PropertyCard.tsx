@@ -23,9 +23,9 @@ const PropertyCard = ({ id, image, title, location, price, rating, reviewCount, 
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
-      className="group rounded-2xl overflow-hidden bg-card shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow"
+      className="group rounded-2xl overflow-hidden bg-card shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow flex flex-col h-full"
     >
-      <Link to={`/property/${id}`}>
+      <Link to={`/property/${id}`} className="block">
         <div className="relative aspect-[4/3] overflow-hidden">
           <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
           <button
@@ -44,30 +44,30 @@ const PropertyCard = ({ id, image, title, location, price, rating, reviewCount, 
           </div>
         </div>
       </Link>
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-display font-semibold text-foreground text-base leading-tight line-clamp-1">{title}</h3>
+          <h3 className="font-display font-semibold text-foreground text-sm leading-tight line-clamp-1 flex-1 min-w-0">{title}</h3>
           <div className="flex items-center gap-1 shrink-0">
             <Star className="w-3.5 h-3.5 fill-primary text-primary" />
             <span className="text-sm font-medium text-foreground">{rating}</span>
           </div>
         </div>
-        <div className="flex items-center gap-1 text-muted-foreground mb-2">
-          <MapPin className="w-3.5 h-3.5" />
-          <span className="text-sm">{location}</span>
+        <div className="flex items-center gap-1 text-muted-foreground mb-2 min-w-0">
+          <MapPin className="w-3.5 h-3.5 shrink-0" />
+          <span className="text-sm truncate">{location}</span>
         </div>
-        <div className="flex items-center gap-3 text-muted-foreground mb-3 text-xs">
-          <span className="flex items-center gap-1"><Users className="w-3 h-3" />{guests} voyag.</span>
+        <div className="flex items-center gap-3 text-muted-foreground mb-3 text-xs flex-wrap">
+          <span className="flex items-center gap-1"><Users className="w-3 h-3" />{guests}</span>
           <span className="flex items-center gap-1"><Bed className="w-3 h-3" />{bedrooms} ch.</span>
           {bathrooms && <span className="flex items-center gap-1"><Bath className="w-3 h-3" />{bathrooms} sdb</span>}
         </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-lg font-bold text-foreground">{price.toLocaleString("fr-FR")} F</span>
-            <span className="text-sm text-muted-foreground"> / nuit</span>
+        <div className="flex items-center justify-between mt-auto gap-2">
+          <div className="min-w-0">
+            <span className="text-base font-bold text-foreground whitespace-nowrap">{price.toLocaleString("fr-FR")} F</span>
+            <span className="text-xs text-muted-foreground"> / nuit</span>
           </div>
           <Link to={`/property/${id}`}>
-            <Button size="sm" className="rounded-full text-xs bg-primary text-primary-foreground">Voir le logement</Button>
+            <Button size="sm" className="rounded-full text-xs bg-primary text-primary-foreground whitespace-nowrap px-3">Voir</Button>
           </Link>
         </div>
       </div>

@@ -17,7 +17,7 @@ const DestinationCard = ({ name, image, count, index }: DestinationCardProps) =>
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.07, duration: 0.4 }}
-      className="min-w-[220px] md:min-w-0"
+      className="min-w-[200px] snap-start md:min-w-0 flex-shrink-0 md:flex-shrink"
     >
       <Link
         to={`/explore?destination=${encodeURIComponent(name)}`}
@@ -30,10 +30,10 @@ const DestinationCard = ({ name, image, count, index }: DestinationCardProps) =>
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/20 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-2">
+        <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-1.5">
           <div className="flex items-center gap-1.5">
-            <MapPin className="w-4 h-4 text-primary" />
-            <h3 className="font-display font-bold text-background text-lg leading-tight">
+            <MapPin className="w-4 h-4 text-primary shrink-0" />
+            <h3 className="font-display font-bold text-background text-base md:text-lg leading-tight truncate">
               {name}
             </h3>
           </div>

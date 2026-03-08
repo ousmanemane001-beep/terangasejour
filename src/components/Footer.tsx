@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="bg-foreground text-background">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
@@ -40,9 +40,9 @@ const Footer = () => {
             </div>
           </div>
         </div>
-        <div className="border-t border-background/10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="border-t border-background/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-background/50">© 2026 TerangaSéjour. Tous droits réservés.</p>
-          <div className="flex items-center gap-4 text-xs text-background/50">
+          <div className="flex items-center gap-2 sm:gap-4 text-xs text-background/50 flex-wrap justify-center">
             <span>Paiement sécurisé</span>
             <span>•</span>
             <span>Wave · Orange Money · Carte bancaire</span>

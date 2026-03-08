@@ -39,7 +39,6 @@ const SearchBar = () => {
       ).slice(0, 12)
     : destinations.slice(0, 8);
 
-  // Group by category
   const grouped = filteredDestinations.reduce<Record<string, Destination[]>>((acc, d) => {
     if (!acc[d.category]) acc[d.category] = [];
     acc[d.category].push(d);
@@ -72,12 +71,12 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-3xl">
       <div className="bg-background rounded-2xl shadow-[var(--shadow-card)] border border-border p-2 flex flex-col md:flex-row items-stretch gap-2">
         {/* Destination */}
-        <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors relative">
+        <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors relative min-w-0">
           <MapPin className="w-4 h-4 text-primary shrink-0" />
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <p className="text-xs text-muted-foreground font-medium">Destination</p>
             <Input
               ref={inputRef}
@@ -85,11 +84,10 @@ const SearchBar = () => {
               value={destination}
               onChange={(e) => { setDestination(e.target.value); setShowSuggestions(true); }}
               onFocus={() => setShowSuggestions(true)}
-              className="border-0 bg-transparent h-auto p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground"
+              className="border-0 bg-transparent h-auto p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground truncate"
             />
           </div>
 
-          {/* Suggestions dropdown */}
           {showSuggestions && (
             <div
               ref={suggestionsRef}
@@ -112,9 +110,9 @@ const SearchBar = () => {
                           className="w-full text-left px-4 py-2.5 hover:bg-muted transition-colors flex items-center gap-3"
                         >
                           <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{d.name}</p>
-                            <p className="text-xs text-muted-foreground">{d.region}</p>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{d.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{d.region}</p>
                           </div>
                         </button>
                       ))}
@@ -131,21 +129,21 @@ const SearchBar = () => {
         {/* Date */}
         <Popover>
           <PopoverTrigger asChild>
-            <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors cursor-pointer">
+            <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors cursor-pointer min-w-0">
               <Calendar className="w-4 h-4 text-primary shrink-0" />
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs text-muted-foreground font-medium">Durée du séjour</p>
-                <p className="text-sm text-foreground">
+                <p className="text-sm text-foreground truncate">
                   {checkIn && checkOut
-                    ? `${format(checkIn, "dd/MM/yyyy", { locale: fr })} – ${format(checkOut, "dd/MM/yyyy", { locale: fr })}`
+                    ? `${format(checkIn, "dd/MM", { locale: fr })} – ${format(checkOut, "dd/MM", { locale: fr })}`
                     : checkIn
-                    ? `${format(checkIn, "dd/MM/yyyy", { locale: fr })} – ...`
+                    ? `${format(checkIn, "dd/MM", { locale: fr })} – ...`
                     : "Sélectionner"}
                 </p>
               </div>
             </div>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto p-0" align="center" side="bottom">
             <div className="flex flex-col sm:flex-row gap-2 p-3">
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-1 px-1">Arrivée</p>
@@ -196,8 +194,8 @@ const SearchBar = () => {
 
         {/* Search button */}
         <Button onClick={handleSearch} className="bg-primary text-primary-foreground rounded-xl px-6 h-12 font-semibold shrink-0">
-          <Search className="w-4 h-4 mr-2" />
-          RECHERCHER
+          <Search className="w-4 h-4 md:mr-2" />
+          <span className="hidden md:inline">RECHERCHER</span>
         </Button>
       </div>
     </div>
