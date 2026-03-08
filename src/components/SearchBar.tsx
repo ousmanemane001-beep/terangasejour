@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, MapPin, Calendar, Users } from "lucide-react";
 import { format } from "date-fns";
@@ -8,6 +8,19 @@ import { Input } from "@/components/ui/input";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { destinations, destinationCategories, Destination } from "@/data/destinations";
+
+const categoryIcons: Record<Destination["category"], string> = {
+  ville: "🏙️",
+  region: "🗺️",
+  plage: "🏖️",
+  lac: "🌊",
+  site_historique: "🏛️",
+  musee: "🎨",
+  hotel: "🏨",
+  commerce: "🛍️",
+  lieu_public: "🌳",
+};
 
 const SearchBar = () => {
   const navigate = useNavigate();
@@ -15,6 +28,39 @@ const SearchBar = () => {
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [guestCount, setGuestCount] = useState(2);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  const filteredDestinations = destination.length > 0
+    ? destinations.filter((d) =>
+        d.name.toLowerCase().includes(destination.toLowerCase()) ||
+        d.region.toLowerCase().includes(destination.toLowerCase())
+      ).slice(0, 12)
+    : destinations.slice(0, 8);
+
+  // Group by category
+  const grouped = filteredDestinations.reduce<Record<string, Destination[]>>((acc, d) => {
+    if (!acc[d.category]) acc[d.category] = [];
+    acc[d.category].push(d);
+    return acc;
+  }, {});
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node) &&
+          inputRef.current && !inputRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selectDestination = (d: Destination) => {
+    setDestination(d.name);
+    setShowSuggestions(false);
+  };
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -29,17 +75,55 @@ const SearchBar = () => {
     <div className="w-full max-w-3xl mx-auto">
       <div className="bg-background rounded-2xl shadow-[var(--shadow-card)] border border-border p-2 flex flex-col md:flex-row items-stretch gap-2">
         {/* Destination */}
-        <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors">
+        <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors relative">
           <MapPin className="w-4 h-4 text-accent shrink-0" />
           <div className="flex-1">
             <p className="text-xs text-muted-foreground font-medium">Destination</p>
             <Input
+              ref={inputRef}
               placeholder="Pays ou zone"
               value={destination}
-              onChange={(e) => setDestination(e.target.value)}
+              onChange={(e) => { setDestination(e.target.value); setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
               className="border-0 bg-transparent h-auto p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground"
             />
           </div>
+
+          {/* Suggestions dropdown */}
+          {showSuggestions && (
+            <div
+              ref={suggestionsRef}
+              className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-xl shadow-lg z-50 max-h-80 overflow-y-auto"
+            >
+              {Object.entries(grouped).length === 0 ? (
+                <p className="p-4 text-sm text-muted-foreground text-center">Aucun résultat</p>
+              ) : (
+                Object.entries(grouped).map(([cat, items]) => {
+                  const catLabel = destinationCategories.find((c) => c.value === cat)?.label || cat;
+                  return (
+                    <div key={cat}>
+                      <p className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        {categoryIcons[cat as Destination["category"]]} {catLabel}
+                      </p>
+                      {items.map((d) => (
+                        <button
+                          key={`${d.category}-${d.name}`}
+                          onClick={() => selectDestination(d)}
+                          className="w-full text-left px-4 py-2.5 hover:bg-muted transition-colors flex items-center gap-3"
+                        >
+                          <MapPin className="w-3.5 h-3.5 text-accent shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{d.name}</p>
+                            <p className="text-xs text-muted-foreground">{d.region}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
         </div>
 
         <div className="hidden md:block w-px bg-border self-stretch my-2" />
