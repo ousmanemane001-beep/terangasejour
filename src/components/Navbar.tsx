@@ -1,8 +1,17 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navLinks = [
   { label: "Accueil", path: "/" },
@@ -15,21 +24,24 @@ const navLinks = [
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
+
+  const initials = user?.user_metadata
+    ? `${(user.user_metadata.first_name || "")[0] || ""}${(user.user_metadata.last_name || "")[0] || ""}`.toUpperCase() || "U"
+    : "U";
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md shadow-[var(--shadow-nav)]">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-amber flex items-center justify-center">
-            <span className="font-display font-bold text-primary-foreground text-xs">VS</span>
+          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+            <span className="font-display font-bold text-accent-foreground text-xs">TS</span>
           </div>
           <span className="font-display text-xl font-bold text-foreground">
-            VotreSéjour
+            TerangaSéjour
           </span>
         </Link>
 
-        {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
             <Link
@@ -46,32 +58,54 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* Actions */}
         <div className="hidden md:flex items-center gap-3">
-          <span className="text-xs font-medium text-muted-foreground">FR</span>
-          <span className="text-xs font-medium text-muted-foreground">XOF</span>
-          <Link to="/publish">
+          <Link to="/create-listing">
             <Button variant="outline" size="sm" className="rounded-full text-sm">
               Publier mon logement
             </Button>
           </Link>
-          <Link to="/dashboard">
-            <Button size="sm" className="rounded-full bg-primary text-primary-foreground text-sm">
-              Mon espace
-            </Button>
-          </Link>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-accent text-accent-foreground text-xs font-bold">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard" className="flex items-center gap-2">
+                    <User className="w-4 h-4" /> Mon espace
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="flex items-center gap-2">
+                    <User className="w-4 h-4" /> Profil
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut} className="flex items-center gap-2 text-destructive">
+                  <LogOut className="w-4 h-4" /> Déconnexion
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link to="/login">
+              <Button size="sm" className="rounded-full bg-primary text-primary-foreground text-sm">
+                Connexion
+              </Button>
+            </Link>
+          )}
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden p-2"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
+        <button className="md:hidden p-2" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -96,12 +130,34 @@ const Navbar = () => {
                 </Link>
               ))}
               <div className="pt-3 flex flex-col gap-2">
-                <Button variant="outline" size="sm" className="rounded-full">
-                  Publier mon logement
-                </Button>
-                <Button size="sm" className="rounded-full bg-primary text-primary-foreground">
-                  Connexion
-                </Button>
+                <Link to="/create-listing" onClick={() => setMobileOpen(false)}>
+                  <Button variant="outline" size="sm" className="rounded-full w-full">
+                    Publier mon logement
+                  </Button>
+                </Link>
+                {user ? (
+                  <>
+                    <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
+                      <Button size="sm" className="rounded-full bg-primary text-primary-foreground w-full">
+                        Mon espace
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full text-destructive"
+                      onClick={() => { signOut(); setMobileOpen(false); }}
+                    >
+                      Déconnexion
+                    </Button>
+                  </>
+                ) : (
+                  <Link to="/login" onClick={() => setMobileOpen(false)}>
+                    <Button size="sm" className="rounded-full bg-primary text-primary-foreground w-full">
+                      Connexion
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
           </motion.div>
