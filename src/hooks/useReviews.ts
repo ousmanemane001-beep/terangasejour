@@ -18,11 +18,30 @@ export function useReviews(listingId: string | undefined) {
       if (!listingId) return [];
       const { data, error } = await supabase
         .from("reviews")
-        .select("*, profiles(first_name, last_name, avatar_url)")
+        .select("*")
         .eq("listing_id", listingId)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as Review[];
+
+      const reviews = (data ?? []) as Array<Omit<Review, "profiles"> & { user_id: string }>;
+
+      // Fetch profiles for review authors
+      const userIds = [...new Set(reviews.map((r) => r.user_id))];
+      if (userIds.length === 0) return [] as Review[];
+
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, avatar_url")
+        .in("id", userIds);
+
+      const profileMap = new Map(
+        (profiles ?? []).map((p) => [p.id, p])
+      );
+
+      return reviews.map((r) => ({
+        ...r,
+        profiles: profileMap.get(r.user_id) || undefined,
+      })) as Review[];
     },
     enabled: !!listingId,
   });
