@@ -14,6 +14,7 @@ interface PropertyCardProps {
 }
 
 const PropertyCard = ({
+  id,
   image,
   title,
   location,
@@ -23,6 +24,7 @@ const PropertyCard = ({
   type,
 }: PropertyCardProps) => {
   return (
+    <Link to={`/property/${id}`}>
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
