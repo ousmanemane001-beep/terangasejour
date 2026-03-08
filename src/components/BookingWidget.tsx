@@ -10,6 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateBooking } from "@/hooks/useBookings";
+import { useBookedDates, getDisabledDates } from "@/hooks/useAvailability";
+import PaymentMethodSelector, { type PaymentMethod } from "@/components/PaymentMethodSelector";
 import { toast } from "sonner";
 
 interface BookingWidgetProps {
@@ -24,13 +26,15 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
   const { user } = useAuth();
   const navigate = useNavigate();
   const createBooking = useCreateBooking();
+  const { data: bookedRanges } = useBookedDates(listingId);
+  const disabledDates = bookedRanges ? getDisabledDates(bookedRanges) : [];
 
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [guests, setGuests] = useState(2);
   const [booked, setBooked] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("wave");
 
-  // Guest info for confirmation
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
@@ -40,6 +44,13 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
   const subtotal = nights * pricePerNight;
   const serviceFee = Math.round(subtotal * SERVICE_FEE_RATE);
   const total = subtotal + serviceFee;
+
+  const isDateDisabled = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (date < today) return true;
+    return disabledDates.some((d) => d.toDateString() === date.toDateString());
+  };
 
   const handleBook = async () => {
     if (!user) {
@@ -54,7 +65,6 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
 
     if (!showConfirmForm) {
       setShowConfirmForm(true);
-      // Pre-fill email from auth
       setGuestEmail(user.email || "");
       setGuestName([user.user_metadata?.first_name, user.user_metadata?.last_name].filter(Boolean).join(" "));
       setGuestPhone(user.user_metadata?.phone || "");
@@ -77,6 +87,7 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
         price_per_night: pricePerNight,
         service_fee: serviceFee,
         total_price: total,
+        payment_method: paymentMethod,
       });
       setBooked(true);
       toast.success("Réservation confirmée !");
@@ -121,7 +132,9 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
             <CalendarComponent
               mode="single" selected={checkIn}
               onSelect={(d) => { setCheckIn(d); if (checkOut && d && d >= checkOut) setCheckOut(undefined); }}
-              disabled={(date) => date < new Date()}
+              disabled={isDateDisabled}
+              modifiers={{ booked: disabledDates }}
+              modifiersClassNames={{ booked: "!bg-destructive/20 !text-destructive line-through" }}
               className={cn("p-3 pointer-events-auto")}
             />
           </PopoverContent>
@@ -139,7 +152,9 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
           <PopoverContent className="w-auto p-0" align="start">
             <CalendarComponent
               mode="single" selected={checkOut} onSelect={setCheckOut}
-              disabled={(date) => date < (checkIn || new Date())}
+              disabled={(date) => isDateDisabled(date) || date < (checkIn || new Date())}
+              modifiers={{ booked: disabledDates }}
+              modifiersClassNames={{ booked: "!bg-destructive/20 !text-destructive line-through" }}
               className={cn("p-3 pointer-events-auto")}
             />
           </PopoverContent>
@@ -183,17 +198,21 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetPro
         </div>
       )}
 
-      {/* Confirmation form */}
+      {/* Payment method + Confirmation form */}
       {showConfirmForm && nights > 0 && (
-        <div className="space-y-3 mb-6 p-4 rounded-xl bg-secondary border border-border">
-          <h4 className="font-display font-semibold text-foreground text-sm">Vos informations</h4>
-          <Input placeholder="Nom complet" className="rounded-xl" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
-          <Input placeholder="Email" type="email" className="rounded-xl" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} />
-          <Input placeholder="Téléphone" type="tel" className="rounded-xl" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} />
-          <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-border">
-            <p>📅 {checkIn && format(checkIn, "d MMMM yyyy", { locale: fr })} → {checkOut && format(checkOut, "d MMMM yyyy", { locale: fr })}</p>
-            <p>🌙 {nights} nuit{nights > 1 ? "s" : ""} · {guests} voyageur{guests > 1 ? "s" : ""}</p>
-            <p className="font-semibold text-foreground">💰 Total : {total.toLocaleString("fr-FR")} FCFA</p>
+        <div className="space-y-4 mb-6">
+          <PaymentMethodSelector selected={paymentMethod} onSelect={setPaymentMethod} />
+          
+          <div className="space-y-3 p-4 rounded-xl bg-secondary border border-border">
+            <h4 className="font-display font-semibold text-foreground text-sm">Vos informations</h4>
+            <Input placeholder="Nom complet" className="rounded-xl" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
+            <Input placeholder="Email" type="email" className="rounded-xl" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} />
+            <Input placeholder="Téléphone" type="tel" className="rounded-xl" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} />
+            <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-border">
+              <p>📅 {checkIn && format(checkIn, "d MMMM yyyy", { locale: fr })} → {checkOut && format(checkOut, "d MMMM yyyy", { locale: fr })}</p>
+              <p>🌙 {nights} nuit{nights > 1 ? "s" : ""} · {guests} voyageur{guests > 1 ? "s" : ""}</p>
+              <p className="font-semibold text-foreground">💰 Total : {total.toLocaleString("fr-FR")} FCFA</p>
+            </div>
           </div>
         </div>
       )}

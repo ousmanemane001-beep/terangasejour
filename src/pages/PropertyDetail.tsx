@@ -2,6 +2,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BookingWidget from "@/components/BookingWidget";
 import ReviewSection from "@/components/ReviewSection";
+import AvailabilityCalendar from "@/components/AvailabilityCalendar";
+import VerifiedBadge from "@/components/VerifiedBadge";
 import { motion } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { properties } from "@/data/properties";
@@ -12,7 +14,6 @@ import {
   Tv, Lock, Flower2, ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 
 const amenityMap: Record<string, { icon: typeof Wifi; label: string }> = {
   wifi: { icon: Wifi, label: "Wi-Fi" },
@@ -49,7 +50,7 @@ const PropertyDetail = () => {
         price: dbListing.price_per_night, bedrooms: dbListing.bedrooms, bathrooms: dbListing.bathrooms,
         guests: dbListing.capacity, images: dbListing.photos || [],
         coverImage: dbListing.photos?.[0] || "/placeholder.svg",
-        rating: null as number | null, reviewCount: null as number | null, isDB: true, verified: false,
+        rating: null as number | null, reviewCount: null as number | null, isDB: true, verified: dbListing.verified,
       }
     : staticProperty
     ? {
@@ -130,7 +131,7 @@ const PropertyDetail = () => {
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium capitalize">{listing.type}</span>
-                      {listing.verified && <Badge className="bg-primary/10 text-primary gap-1"><ShieldCheck className="w-3 h-3" /> Vérifié</Badge>}
+                      {listing.verified && <VerifiedBadge size="md" />}
                     </div>
                     <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">{listing.title}</h1>
                     <div className="flex items-center gap-2 mt-2 text-muted-foreground">
@@ -151,6 +152,21 @@ const PropertyDetail = () => {
                     <button className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"><Share2 className="w-4 h-4" /></button>
                   </div>
                 </div>
+              </div>
+
+              {/* Trust elements */}
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { icon: "🔒", text: "Paiement sécurisé" },
+                  { icon: "✓", text: "Logements vérifiés" },
+                  { icon: "📞", text: "Assistance 7j/7" },
+                  { icon: "⚡", text: "Réservation rapide" },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-full bg-primary/5 text-sm text-foreground border border-primary/10">
+                    <span>{item.icon}</span>
+                    <span>{item.text}</span>
+                  </div>
+                ))}
               </div>
 
               <div className="flex flex-wrap gap-6 py-4 border-y border-border">
@@ -175,6 +191,13 @@ const PropertyDetail = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Availability Calendar */}
+              {isUUID && id && (
+                <div className="border-t border-border pt-8">
+                  <AvailabilityCalendar listingId={id} />
+                </div>
+              )}
 
               {isUUID && id && (
                 <div className="border-t border-border pt-8">

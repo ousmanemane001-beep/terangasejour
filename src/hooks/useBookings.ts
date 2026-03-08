@@ -13,6 +13,8 @@ export interface Booking {
   service_fee: number;
   total_price: number;
   status: string;
+  payment_method: string;
+  payment_status: string;
   created_at: string;
 }
 
@@ -29,10 +31,11 @@ export function useCreateBooking() {
       price_per_night: number;
       service_fee: number;
       total_price: number;
+      payment_method?: string;
     }) => {
       const { data, error } = await supabase
         .from("bookings")
-        .insert(booking)
+        .insert(booking as any)
         .select("id")
         .single();
       if (error) throw error;
@@ -40,6 +43,7 @@ export function useCreateBooking() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["bookings"] });
+      qc.invalidateQueries({ queryKey: ["booked-dates"] });
     },
   });
 }

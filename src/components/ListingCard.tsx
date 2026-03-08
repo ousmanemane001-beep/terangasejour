@@ -2,6 +2,7 @@ import { Heart, MapPin, Users, Bed, Bath } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import VerifiedBadge from "@/components/VerifiedBadge";
 import type { DBListing } from "@/hooks/useListings";
 
 const ListingCard = ({ listing }: { listing: DBListing }) => {
@@ -22,7 +23,10 @@ const ListingCard = ({ listing }: { listing: DBListing }) => {
           >
             <Heart className="w-4 h-4 text-foreground" />
           </button>
-          <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground capitalize">{listing.property_type}</span>
+          <div className="absolute top-3 left-3 flex items-center gap-1.5">
+            <span className="px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground capitalize">{listing.property_type}</span>
+            {listing.verified && <VerifiedBadge className="bg-background/80 backdrop-blur-sm" />}
+          </div>
         </div>
       </Link>
       <div className="p-4">

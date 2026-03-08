@@ -15,9 +15,10 @@ interface PropertyCardProps {
   guests: number;
   bedrooms: number;
   bathrooms?: number;
+  verified?: boolean;
 }
 
-const PropertyCard = ({ id, image, title, location, price, rating, reviewCount, type, guests, bedrooms, bathrooms }: PropertyCardProps) => {
+const PropertyCard = ({ id, image, title, location, price, rating, reviewCount, type, guests, bedrooms, bathrooms, verified }: PropertyCardProps) => {
   return (
     <motion.div
       whileHover={{ y: -4 }}
@@ -33,7 +34,14 @@ const PropertyCard = ({ id, image, title, location, price, rating, reviewCount, 
           >
             <Heart className="w-4 h-4 text-foreground" />
           </button>
-          <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground">{type}</span>
+          <div className="absolute top-3 left-3 flex items-center gap-1.5">
+            <span className="px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground">{type}</span>
+            {verified && (
+              <span className="px-2 py-1 rounded-full bg-primary/90 text-primary-foreground text-xs font-medium flex items-center gap-1">
+                ✓ Vérifié
+              </span>
+            )}
+          </div>
         </div>
       </Link>
       <div className="p-4">
