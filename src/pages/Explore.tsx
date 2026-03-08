@@ -229,7 +229,6 @@ const Explore = () => {
           <div className="p-4">
             {filteredDBListings.length > 0 && (
               <DBListingsWithRatings listings={filteredDBListings} showMap={showMap} />
-              </div>
             )}
             <p className="text-sm text-muted-foreground mb-4">
               <span className="font-semibold text-foreground">{filteredProperties.length}</span> logement{filteredProperties.length !== 1 ? "s" : ""} populaire{filteredProperties.length !== 1 ? "s" : ""}
