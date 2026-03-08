@@ -1,6 +1,7 @@
-import { Heart, Star, MapPin } from "lucide-react";
+import { Heart, Star, MapPin, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface PropertyCardProps {
   id: number;
@@ -11,6 +12,7 @@ interface PropertyCardProps {
   rating: number;
   reviewCount: number;
   type: string;
+  guests: number;
 }
 
 const PropertyCard = ({
@@ -22,28 +24,33 @@ const PropertyCard = ({
   rating,
   reviewCount,
   type,
+  guests,
 }: PropertyCardProps) => {
   return (
-    <Link to={`/property/${id}`}>
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
-      className="group rounded-2xl overflow-hidden bg-card shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow cursor-pointer"
+      className="group rounded-2xl overflow-hidden bg-card shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow"
     >
       {/* Image */}
-      <div className="relative aspect-[4/3] overflow-hidden">
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-        <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors">
-          <Heart className="w-4 h-4 text-foreground" />
-        </button>
-        <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground">
-          {type}
-        </span>
-      </div>
+      <Link to={`/property/${id}`}>
+        <div className="relative aspect-[4/3] overflow-hidden">
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          <button
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+            onClick={(e) => e.preventDefault()}
+          >
+            <Heart className="w-4 h-4 text-foreground" />
+          </button>
+          <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground">
+            {type}
+          </span>
+        </div>
+      </Link>
 
       {/* Content */}
       <div className="p-4">
@@ -57,19 +64,29 @@ const PropertyCard = ({
             <span className="text-xs text-muted-foreground">({reviewCount})</span>
           </div>
         </div>
-        <div className="flex items-center gap-1 text-muted-foreground mb-3">
+        <div className="flex items-center gap-1 text-muted-foreground mb-1">
           <MapPin className="w-3.5 h-3.5" />
           <span className="text-sm">{location}</span>
         </div>
-        <div>
-          <span className="text-lg font-bold text-foreground">
-            {price.toLocaleString("fr-FR")} F
-          </span>
-          <span className="text-sm text-muted-foreground"> / nuit</span>
+        <div className="flex items-center gap-1 text-muted-foreground mb-3">
+          <Users className="w-3.5 h-3.5" />
+          <span className="text-sm">{guests} voyageur{guests > 1 ? "s" : ""}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-lg font-bold text-foreground">
+              {price.toLocaleString("fr-FR")} F
+            </span>
+            <span className="text-sm text-muted-foreground"> / nuit</span>
+          </div>
+          <Link to={`/property/${id}`}>
+            <Button size="sm" variant="outline" className="rounded-full text-xs">
+              Voir le logement
+            </Button>
+          </Link>
         </div>
       </div>
     </motion.div>
-    </Link>
   );
 };
 
