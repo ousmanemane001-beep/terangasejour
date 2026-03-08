@@ -266,9 +266,6 @@ const Dashboard = () => {
                           <Badge className={`absolute top-3 left-3 ${listing.status === "published" ? "bg-primary text-primary-foreground" : listing.status === "pending_approval" ? "bg-amber-500/90 text-white" : "bg-muted text-muted-foreground"}`}>
                             {statusMap[listing.status]?.label || listing.status}
                           </Badge>
-                          {listing.verified && (
-                            <div className="absolute top-3 right-3"><VerifiedBadge className="bg-background/80 backdrop-blur-sm" /></div>
-                          )}
                         </div>
                         <CardContent className="p-4 space-y-2.5">
                           <h3 className="font-display font-semibold text-foreground line-clamp-1">{listing.title}</h3>
