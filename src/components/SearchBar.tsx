@@ -132,7 +132,7 @@ const SearchBar = () => {
         <Popover>
           <PopoverTrigger asChild>
             <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors cursor-pointer">
-              <Calendar className="w-4 h-4 text-accent shrink-0" />
+              <Calendar className="w-4 h-4 text-primary shrink-0" />
               <div>
                 <p className="text-xs text-muted-foreground font-medium">Durée du séjour</p>
                 <p className="text-sm text-foreground">
