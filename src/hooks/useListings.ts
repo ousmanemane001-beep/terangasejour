@@ -7,6 +7,10 @@ export interface DBListing {
   description: string | null;
   property_type: string;
   location: string | null;
+  address: string | null;
+  city: string | null;
+  latitude: number | null;
+  longitude: number | null;
   bedrooms: number;
   bathrooms: number;
   capacity: number;

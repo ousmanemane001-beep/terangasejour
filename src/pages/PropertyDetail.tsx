@@ -4,6 +4,7 @@ import BookingWidget from "@/components/BookingWidget";
 import ReviewSection from "@/components/ReviewSection";
 import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import PropertyMap from "@/components/PropertyMap";
 import { motion } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { properties } from "@/data/properties";
@@ -51,6 +52,8 @@ const PropertyDetail = () => {
         guests: dbListing.capacity, images: dbListing.photos || [],
         coverImage: dbListing.photos?.[0] || "/placeholder.svg",
         rating: null as number | null, reviewCount: null as number | null, isDB: true, verified: dbListing.verified,
+        latitude: dbListing.latitude, longitude: dbListing.longitude,
+        address: dbListing.address, city: dbListing.city,
       }
     : staticProperty
     ? {
@@ -61,6 +64,8 @@ const PropertyDetail = () => {
         guests: staticProperty.guests, images: staticProperty.images || [staticProperty.image],
         coverImage: staticProperty.image, rating: staticProperty.rating,
         reviewCount: staticProperty.reviewCount, isDB: false, verified: false,
+        latitude: null as number | null, longitude: null as number | null,
+        address: null as string | null, city: null as string | null,
       }
     : null;
 
@@ -191,6 +196,19 @@ const PropertyDetail = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Property Map */}
+              {listing.latitude && listing.longitude && (
+                <div className="border-t border-border pt-8">
+                  <PropertyMap
+                    latitude={listing.latitude}
+                    longitude={listing.longitude}
+                    title={listing.title}
+                    address={listing.address || undefined}
+                    city={listing.city || undefined}
+                  />
+                </div>
+              )}
 
               {/* Availability Calendar */}
               {isUUID && id && (

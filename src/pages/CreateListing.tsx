@@ -59,6 +59,10 @@ const CreateListing = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
 
   // Step 2
   const [bedrooms, setBedrooms] = useState(1);
@@ -154,13 +158,17 @@ const CreateListing = () => {
           description: description.trim(),
           property_type: selectedType,
           location: location.trim(),
+          address: address.trim() || null,
+          city: city.trim() || null,
+          latitude: latitude ? parseFloat(latitude) : null,
+          longitude: longitude ? parseFloat(longitude) : null,
           bedrooms,
           bathrooms,
           capacity,
           price_per_night: parseInt(price),
           photos: photoUrls,
           status: "published",
-        })
+        } as any)
         .select("id")
         .single();
 
@@ -285,6 +293,27 @@ const CreateListing = () => {
                       </label>
                       <Input placeholder="Ville, quartier, rue..." className="rounded-xl h-12" value={location} onChange={(e) => setLocation(e.target.value)} />
                     </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">Adresse</label>
+                        <Input placeholder="Rue, quartier..." className="rounded-xl h-12" value={address} onChange={(e) => setAddress(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">Ville</label>
+                        <Input placeholder="Ex: Saly, Dakar..." className="rounded-xl h-12" value={city} onChange={(e) => setCity(e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">Latitude</label>
+                        <Input type="number" step="any" placeholder="Ex: 14.4474" className="rounded-xl h-12" value={latitude} onChange={(e) => setLatitude(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">Longitude</label>
+                        <Input type="number" step="any" placeholder="Ex: -16.9536" className="rounded-xl h-12" value={longitude} onChange={(e) => setLongitude(e.target.value)} />
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">💡 Trouvez vos coordonnées sur <a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Maps</a> (clic droit → coordonnées).</p>
                   </CardContent>
                 </Card>
               </motion.div>
