@@ -165,7 +165,7 @@ const CreateListing = () => {
         photoUrls.push(urlData.publicUrl);
       }
 
-      // Insert listing
+      // Insert listing with pending_approval status
       const { data, error: insertError } = await supabase
         .from("listings")
         .insert({
@@ -183,7 +183,9 @@ const CreateListing = () => {
           capacity,
           price_per_night: parseInt(price),
           photos: photoUrls,
-          status: "published",
+          status: "pending_approval",
+          booking_mode: bookingMode,
+          availability_mode: availabilityMode,
         } as any)
         .select("id")
         .single();
@@ -191,10 +193,29 @@ const CreateListing = () => {
       if (insertError) throw insertError;
 
       setPublishedId(data.id);
-      // Invalidate listings cache so homepage and explore show the new listing immediately
       queryClient.invalidateQueries({ queryKey: ["listings"] });
       queryClient.invalidateQueries({ queryKey: ["owner-listings"] });
-      toast.success("Votre logement a été publié avec succès !");
+
+      // Create notification for admins (best effort)
+      try {
+        const { data: admins } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+        if (admins) {
+          for (const admin of admins) {
+            await supabase.from("notifications").insert({
+              user_id: admin.user_id,
+              type: "new_listing",
+              title: "Nouveau logement soumis",
+              message: `${title.trim()} à ${location.trim()} est en attente d'approbation.`,
+              data: { listing_id: data.id },
+            } as any);
+          }
+        }
+      } catch {}
+
+      toast.success("Votre logement a été soumis pour approbation !");
     } catch (err: any) {
       toast.error(err.message || "Erreur lors de la création de l'annonce.");
     } finally {
