@@ -112,14 +112,14 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="font-display text-xl md:text-2xl font-bold text-foreground">Nos coups de coeur du moment</h2>
+                <h2 className="font-display text-xl md:text-2xl font-bold text-foreground">Ils vous intéressent toujours ?</h2>
                 <p className="text-muted-foreground mt-1 text-sm">Découvrez une sélection choisie avec soin pour des séjours inoubliables.</p>
               </div>
               <Link to="/explore">
                 <Button variant="outline" size="sm" className="hidden md:flex rounded">Voir plus</Button>
               </Link>
             </div>
-            <IndexListingsGrid listings={dbListings} />
+            <IndexListingsCarousel listings={dbListings} />
           </div>
         </section>
       ) : null}
