@@ -8,7 +8,6 @@ import PropertyCard from "@/components/PropertyCard";
 import ListingCard from "@/components/ListingCard";
 import ExploreMap from "@/components/ExploreMap";
 import ExploreHero from "@/components/explore/ExploreHero";
-import ExploreSearchBar from "@/components/explore/ExploreSearchBar";
 import ExploreFilters from "@/components/explore/ExploreFilters";
 import HostCTA from "@/components/explore/HostCTA";
 import { properties } from "@/data/properties";
@@ -35,7 +34,7 @@ const Explore = () => {
   const [guestFilter, setGuestFilter] = useState(0);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [showMap, setShowMap] = useState(true);
+  const [showMap, setShowMap] = useState(false);
   const [hoveredProperty, setHoveredProperty] = useState<number | null>(null);
 
   const toggleType = (type: string) => setSelectedTypes((prev) => prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]);
@@ -71,21 +70,18 @@ const Explore = () => {
   const totalResults = filteredProperties.length + filteredDBListings.length;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
-      {/* Hero Section */}
-      <ExploreHero />
-
-      {/* Search Bar */}
-      <ExploreSearchBar
+      {/* Hero with integrated search — sejour.sn style */}
+      <ExploreHero
         destination={destination} setDestination={setDestination}
         checkIn={checkIn} setCheckIn={setCheckIn}
         checkOut={checkOut} setCheckOut={setCheckOut}
         guestCount={guestCount} setGuestCount={setGuestCount}
       />
 
-      {/* Filters */}
+      {/* Results header + Carte/Filtrer + filters */}
       <ExploreFilters
         showFilters={showFilters} setShowFilters={setShowFilters}
         showMap={showMap} setShowMap={setShowMap}
@@ -95,26 +91,22 @@ const Explore = () => {
         selectedTypes={selectedTypes} toggleType={toggleType}
         selectedAmenities={selectedAmenities} toggleAmenity={toggleAmenity}
         clearFilters={clearFilters} activeFilterCount={activeFilterCount}
+        totalResults={totalResults}
       />
-
-      {/* Results Header */}
-      <div className="container mx-auto px-4 pt-5 pb-2">
-        <h2 className="font-display text-xl font-bold text-foreground">
-          Les logements les plus populaires
-        </h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          <span className="font-semibold text-foreground">{totalResults}</span> logement{totalResults !== 1 ? "s" : ""} trouvé{totalResults !== 1 ? "s" : ""}
-        </p>
-      </div>
 
       {/* Main Content */}
       <div className="flex-1 flex">
         <div className={cn("flex-1 overflow-y-auto", showMap ? "lg:w-[55%]" : "w-full")}>
-          <div className="p-4">
+          <div className="container mx-auto px-4 py-4">
             {filteredDBListings.length > 0 && (
               <DBListingsWithRatings listings={filteredDBListings} showMap={showMap} />
             )}
-            <div className={cn("grid gap-5", showMap ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4")}>
+            <div className={cn(
+              "grid gap-5",
+              showMap
+                ? "grid-cols-1 sm:grid-cols-2"
+                : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            )}>
               {filteredProperties.map((property) => (
                 <div key={property.id} onMouseEnter={() => setHoveredProperty(property.id)} onMouseLeave={() => setHoveredProperty(null)}>
                   <PropertyCard {...property} />
@@ -132,7 +124,7 @@ const Explore = () => {
           </div>
         </div>
         {showMap && (
-          <div className="hidden lg:block lg:w-[45%] sticky top-[8.5rem] h-[calc(100vh-8.5rem)]">
+          <div className="hidden lg:block lg:w-[45%] sticky top-16 h-[calc(100vh-4rem)]">
             <ExploreMap properties={filteredProperties} hoveredProperty={hoveredProperty} />
           </div>
         )}

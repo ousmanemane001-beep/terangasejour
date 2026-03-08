@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import {
   SlidersHorizontal, X, Wifi, Car, Waves, Wind,
-  UtensilsCrossed, Tv, Lock, Flower2, Map as MapIcon, LayoutGrid,
+  UtensilsCrossed, Tv, Lock, Flower2, Map as MapIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +38,7 @@ interface ExploreFiltersProps {
   toggleAmenity: (id: string) => void;
   clearFilters: () => void;
   activeFilterCount: number;
+  totalResults: number;
 }
 
 const ExploreFilters = ({
@@ -49,25 +50,51 @@ const ExploreFilters = ({
   selectedTypes, toggleType,
   selectedAmenities, toggleAmenity,
   clearFilters, activeFilterCount,
+  totalResults,
 }: ExploreFiltersProps) => {
   return (
     <>
-      {/* Filters Bar */}
-      <div className="border-b border-border bg-background">
-        <div className="container mx-auto px-4 py-2.5 flex items-center gap-2 overflow-x-auto scrollbar-none">
-          <Button
-            variant={showFilters ? "default" : "outline"}
-            size="sm"
-            className="rounded-full gap-1.5 shrink-0 font-semibold"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" /> Filtrer
-            {activeFilterCount > 0 && (
-              <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full bg-accent text-accent-foreground text-xs">
-                {activeFilterCount}
-              </Badge>
-            )}
-          </Button>
+      {/* Section header with Carte / Filtrer — sejour.sn style */}
+      <div className="container mx-auto px-4 pt-8 pb-3">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h2 className="font-display text-xl md:text-2xl font-bold text-foreground">
+              Les logements les plus populaires
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              <span className="font-semibold text-foreground">{totalResults}</span> logement{totalResults !== 1 ? "s" : ""} trouvé{totalResults !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={showMap ? "default" : "outline"}
+              size="sm"
+              className="rounded-full gap-1.5 font-semibold"
+              onClick={() => setShowMap(!showMap)}
+            >
+              <MapIcon className="w-3.5 h-3.5" />
+              Carte
+            </Button>
+            <Button
+              variant={showFilters ? "default" : "outline"}
+              size="sm"
+              className="rounded-full gap-1.5 font-semibold"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" /> Filtrer
+              {activeFilterCount > 0 && (
+                <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full text-xs">
+                  {activeFilterCount}
+                </Badge>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Property type pills */}
+      <div className="container mx-auto px-4 pb-3">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
           {propertyTypes.map((type) => (
             <Button
               key={type}
@@ -79,17 +106,6 @@ const ExploreFilters = ({
               {type}
             </Button>
           ))}
-          <div className="ml-auto flex items-center gap-2 shrink-0">
-            <Button
-              variant={showMap ? "default" : "outline"}
-              size="sm"
-              className="rounded-full gap-1.5 font-semibold"
-              onClick={() => setShowMap(!showMap)}
-            >
-              {showMap ? <LayoutGrid className="w-3.5 h-3.5" /> : <MapIcon className="w-3.5 h-3.5" />}
-              {showMap ? "Grille" : "Carte"}
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -100,7 +116,7 @@ const ExploreFilters = ({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-b border-border bg-secondary"
+            className="overflow-hidden border-y border-border bg-secondary"
           >
             <div className="container mx-auto px-4 py-6">
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
