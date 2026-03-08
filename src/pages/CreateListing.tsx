@@ -52,6 +52,7 @@ const TOTAL_STEPS = 4;
 const CreateListing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Step 1
   const [selectedType, setSelectedType] = useState("villa");
