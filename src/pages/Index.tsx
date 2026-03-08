@@ -218,18 +218,18 @@ const IndexListingsGrid = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
 IndexListingsGrid.displayName = "IndexListingsGrid";
 
 const PropertySection = ({ title, subtitle, items, bg }: { title: string; subtitle: string; items: typeof properties; bg?: boolean }) => (
-  <section className={`py-16 ${bg ? "bg-secondary" : ""}`}>
+  <section className={`py-12 md:py-16 ${bg ? "bg-secondary" : ""}`}>
     <div className="container mx-auto px-4">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
-          <p className="text-muted-foreground mt-1">{subtitle}</p>
+      <div className="flex items-center justify-between mb-6 md:mb-8 gap-4">
+        <div className="min-w-0">
+          <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-bold text-foreground truncate">{title}</h2>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">{subtitle}</p>
         </div>
-        <Link to="/explore">
+        <Link to="/explore" className="shrink-0">
           <Button variant="outline" className="hidden md:flex rounded-full">Voir tout</Button>
         </Link>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-5">
         {items.map((property) => (
           <PropertyCard key={property.id} {...property} />
         ))}

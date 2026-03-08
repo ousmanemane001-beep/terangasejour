@@ -196,19 +196,19 @@ const Dashboard = () => {
           )}
 
           {/* Tab Navigation */}
-          <div className="bg-card rounded-xl p-1 shadow-[var(--shadow-card)] flex flex-wrap gap-1 mb-6">
+          <div className="bg-card rounded-xl p-1 shadow-[var(--shadow-card)] flex gap-1 mb-6 overflow-x-auto scrollbar-hide">
             {tabs.map((t) => (
               <button
                 key={t.id}
                 onClick={() => navigate(t.id === (isHost ? "overview" : "my-bookings") ? "/dashboard" : `/dashboard/${t.id}`)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer hover:scale-[1.02]",
+                  "flex items-center gap-2 px-3 md:px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer hover:scale-[1.02] whitespace-nowrap shrink-0",
                   activeTab === t.id
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
-                <t.icon className="w-4 h-4" />
+                <t.icon className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">{t.label}</span>
               </button>
             ))}
