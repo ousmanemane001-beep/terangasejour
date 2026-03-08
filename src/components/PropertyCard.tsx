@@ -34,12 +34,7 @@ const PropertyCard = ({ id, image, title, location, price, rating, reviewCount, 
       <Link to={`/property/${id}`} className="block">
         <div className="relative aspect-[4/3] overflow-hidden">
           <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-          <button
-            className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background hover:scale-110 transition-all duration-200"
-            onClick={(e) => e.preventDefault()}
-          >
-            <Heart className="w-4 h-4 text-foreground" />
-          </button>
+          <FavoriteButton listingId={String(id)} className="absolute top-2.5 right-2.5" />
           {verified && (
             <div className="absolute top-2.5 left-2.5">
               <span className="px-2 py-0.5 rounded bg-primary text-primary-foreground text-xs font-medium">Vérifié</span>

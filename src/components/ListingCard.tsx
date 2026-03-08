@@ -31,12 +31,7 @@ const ListingCard = forwardRef<HTMLDivElement, { listing: DBListing; rating?: Li
               loading="lazy"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
-            <button
-              className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background hover:scale-110 transition-all duration-200"
-              onClick={(e) => e.preventDefault()}
-            >
-              <Heart className="w-4 h-4 text-foreground" />
-            </button>
+            <FavoriteButton listingId={listing.id} className="absolute top-2.5 right-2.5" />
             {listing.verified && (
               <div className="absolute top-2.5 left-2.5">
                 <VerifiedBadge className="bg-background/90 backdrop-blur-sm" />
