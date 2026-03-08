@@ -54,12 +54,6 @@ const CreateListing = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Redirect non-hosts to become-host page
-  if (!isHost && user) {
-    navigate("/become-host");
-    return null;
-  }
-
   // Step 1
   const [selectedType, setSelectedType] = useState("villa");
   const [title, setTitle] = useState("");
@@ -83,6 +77,12 @@ const CreateListing = () => {
 
   // UI state
   const [step, setStep] = useState(1);
+
+  // Redirect non-hosts to become-host page
+  if (!isHost && user) {
+    navigate("/become-host");
+    return null;
+  }
   const [loading, setLoading] = useState(false);
   const [publishedId, setPublishedId] = useState<string | null>(null);
 
