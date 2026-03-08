@@ -10,17 +10,24 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import { properties } from "@/data/properties";
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
-import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones, Zap, Home, Shield } from "lucide-react";
+import { useDestinationCounts } from "@/hooks/useDestinationCounts";
+import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones, Home, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import DestinationCard from "@/components/DestinationCard";
 import heroBg from "@/assets/hero-bg.jpg";
 
-const destinations = [
-  { name: "Saly", filter: "Saly", image: "/images/villa-saly-1.jpg", count: 24, avgPrice: "45 000" },
-  { name: "Les Almadies", filter: "Almadies", image: "/images/villa-saly-2.jfif", count: 18, avgPrice: "55 000" },
-  { name: "Ngaparou", filter: "Ngaparou", image: "/images/villa-saly-3.jfif", count: 12, avgPrice: "40 000" },
-  { name: "Somone", filter: "Somone", image: "/images/villa-saly-4.jfif", count: 15, avgPrice: "50 000" },
-  { name: "Dakar", filter: "Dakar", image: "/images/villa-saly-5.jfif", count: 42, avgPrice: "35 000" },
+const DESTINATIONS = [
+  { name: "Dakar", image: "/images/dest-dakar.jpg" },
+  { name: "Saly", image: "/images/dest-saly.jpg" },
+  { name: "Mbour", image: "/images/dest-mbour.jpg" },
+  { name: "Somone", image: "/images/dest-somone.jpg" },
+  { name: "Ngaparou", image: "/images/dest-ngaparou.jpg" },
+  { name: "Popenguine", image: "/images/dest-popenguine.jpg" },
+  { name: "Pointe Sarene", image: "/images/dest-pointe-sarene.jpg" },
+  { name: "Cap Skirring", image: "/images/dest-cap-skirring.jpg" },
 ];
+
+const DESTINATION_CITIES = DESTINATIONS.map((d) => d.name);
 
 const trustPoints = [
   { icon: ShieldCheck, title: "Paiement sécurisé", desc: "Transactions protégées via Wave, Orange Money et carte bancaire." },
