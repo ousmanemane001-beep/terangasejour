@@ -87,27 +87,19 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">Destinations populaires</h2>
           <p className="text-muted-foreground mb-8">Les lieux les plus prisés par nos voyageurs</p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {destinations.map((dest, i) => (
-              <motion.div
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">Destinations populaires</h2>
+          <p className="text-muted-foreground mb-8">Les lieux les plus prisés par nos voyageurs</p>
+          <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory md:snap-none scrollbar-hide">
+            {DESTINATIONS.map((dest, i) => (
+              <DestinationCard
                 key={dest.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-              >
-                <Link
-                  to={`/explore?destination=${encodeURIComponent(dest.filter)}`}
-                  className="group block rounded-2xl overflow-hidden relative aspect-[3/4] hover:shadow-[var(--shadow-card-hover)] transition-shadow"
-                >
-                  <img src={dest.image} alt={dest.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <h3 className="font-display font-bold text-background text-lg">{dest.name}</h3>
-                    <p className="text-background/80 text-sm">{dest.count} logements · à partir de {dest.avgPrice} F</p>
-                  </div>
-                </Link>
-              </motion.div>
+                name={dest.name}
+                image={dest.image}
+                count={destCounts?.[dest.name.toLowerCase()] ?? 0}
+                index={i}
+              />
             ))}
           </div>
         </div>
