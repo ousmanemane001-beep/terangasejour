@@ -1,20 +1,95 @@
-import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Property } from "@/data/properties";
-import { Star, MapPin } from "lucide-react";
-import { Link } from "react-router-dom";
 
-// Fix default marker icons
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-});
+interface ExploreMapProps {
+  properties: Property[];
+  hoveredProperty: number | null;
+}
 
-const createPriceIcon = (price: number, isHovered: boolean) => {
+const ExploreMap = ({ properties, hoveredProperty }: ExploreMapProps) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<Map<number, L.Marker>>(new Map());
+
+  // Initialize map
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current) return;
+
+    const map = L.map(mapRef.current, {
+      center: [14.6928, -17.4467],
+      zoom: 7,
+      zoomControl: true,
+    });
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map);
+
+    mapInstanceRef.current = map;
+
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
+    };
+  }, []);
+
+  // Update markers when properties change
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    // Clear existing markers
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current.clear();
+
+    if (properties.length === 0) return;
+
+    properties.forEach((property) => {
+      const icon = createPriceIcon(property.price, false);
+      const marker = L.marker([property.lat, property.lng], { icon }).addTo(map);
+
+      const popupContent = `
+        <a href="/property/${property.id}" style="display:block;width:220px;text-decoration:none;color:inherit;">
+          <img src="${property.image}" alt="${property.title}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:8px;" />
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;font-family:'DM Sans',sans-serif;">${property.title}</div>
+          <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">📍 ${property.location}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-weight:700;font-size:13px;">${property.price.toLocaleString("fr-FR")} F<span style="font-size:11px;font-weight:400;color:#6b7280"> /nuit</span></span>
+            <span style="font-size:11px;">⭐ ${property.rating}</span>
+          </div>
+        </a>
+      `;
+
+      marker.bindPopup(popupContent, { closeButton: false, maxWidth: 240 });
+      markersRef.current.set(property.id, marker);
+    });
+
+    // Fit bounds
+    const bounds = L.latLngBounds(properties.map((p) => [p.lat, p.lng] as [number, number]));
+    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+  }, [properties]);
+
+  // Update hovered marker
+  useEffect(() => {
+    markersRef.current.forEach((marker, id) => {
+      const property = properties.find((p) => p.id === id);
+      if (property) {
+        marker.setIcon(createPriceIcon(property.price, hoveredProperty === id));
+        if (hoveredProperty === id) {
+          marker.setZIndexOffset(1000);
+        } else {
+          marker.setZIndexOffset(0);
+        }
+      }
+    });
+  }, [hoveredProperty, properties]);
+
+  return <div ref={mapRef} className="w-full h-full" />;
+};
+
+function createPriceIcon(price: number, isHovered: boolean) {
   return L.divIcon({
     className: "custom-price-marker",
     html: `<div style="
@@ -30,77 +105,11 @@ const createPriceIcon = (price: number, isHovered: boolean) => {
       border: 1.5px solid ${isHovered ? "hsl(37, 91%, 55%)" : "hsl(220, 13%, 91%)"};
       transform: ${isHovered ? "scale(1.15)" : "scale(1)"};
       transition: all 0.2s ease;
+      cursor: pointer;
     ">${(price / 1000).toFixed(0)}K F</div>`,
     iconSize: [0, 0],
     iconAnchor: [30, 15],
   });
-};
-
-interface ExploreMapProps {
-  properties: Property[];
-  hoveredProperty: number | null;
 }
-
-const FitBounds = ({ properties }: { properties: Property[] }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (properties.length > 0) {
-      const bounds = L.latLngBounds(properties.map((p) => [p.lat, p.lng]));
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
-    }
-  }, [properties, map]);
-  return null;
-};
-
-const ExploreMap = ({ properties, hoveredProperty }: ExploreMapProps) => {
-  const center: [number, number] = [14.6928, -17.4467];
-
-  return (
-    <MapContainer
-      center={center}
-      zoom={7}
-      className="w-full h-full"
-      zoomControl={true}
-      style={{ background: "hsl(40, 10%, 96%)" }}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <FitBounds properties={properties} />
-      {properties.map((property) => (
-        <Marker
-          key={property.id}
-          position={[property.lat, property.lng]}
-          icon={createPriceIcon(property.price, hoveredProperty === property.id)}
-        >
-          <Popup closeButton={false} className="custom-popup">
-            <Link to={`/property/${property.id}`} className="block w-56">
-              <img
-                src={property.image}
-                alt={property.title}
-                className="w-full h-32 object-cover rounded-lg mb-2"
-              />
-              <h3 className="font-semibold text-sm text-foreground leading-tight mb-1">
-                {property.title}
-              </h3>
-              <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1">
-                <MapPin className="w-3 h-3" />
-                {property.location}
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-sm">{property.price.toLocaleString("fr-FR")} F<span className="text-xs font-normal text-muted-foreground"> /nuit</span></span>
-                <span className="flex items-center gap-0.5 text-xs">
-                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                  {property.rating}
-                </span>
-              </div>
-            </Link>
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
-  );
-};
 
 export default ExploreMap;
