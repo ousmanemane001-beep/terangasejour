@@ -103,7 +103,7 @@ const SearchBar = () => {
                   return (
                     <div key={cat}>
                       <p className="px-4 pt-3 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        {categoryIcons[cat as Destination["category"]]} {catLabel}
+                        {categoryLabelsOnly[cat as Destination["category"]] || catLabel}
                       </p>
                       {items.map((d) => (
                         <button
