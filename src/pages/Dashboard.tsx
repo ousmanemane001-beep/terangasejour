@@ -28,6 +28,9 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
   pending: { label: "En attente", variant: "secondary" },
   cancelled: { label: "Annulée", variant: "destructive" },
   published: { label: "Actif", variant: "default" },
+  pending_approval: { label: "En attente d'approbation", variant: "secondary" },
+  rejected: { label: "Rejeté", variant: "destructive" },
+  suspended: { label: "Suspendu", variant: "destructive" },
   draft: { label: "Brouillon", variant: "outline" },
 };
 
