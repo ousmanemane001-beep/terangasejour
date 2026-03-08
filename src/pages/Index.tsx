@@ -11,7 +11,7 @@ import { properties } from "@/data/properties";
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
 import { useDestinationCounts } from "@/hooks/useDestinationCounts";
-import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones, Home, Shield } from "lucide-react";
+import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones, Home, Shield, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DestinationCard from "@/components/DestinationCard";
 import heroBg from "@/assets/hero-bg.jpg";
