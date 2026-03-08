@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -321,19 +322,21 @@ const AdminPanel = () => {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
                 {overviewStats.map((stat, i) => (
-                  <Card
-                    key={i}
-                    className="border-none shadow-[var(--shadow-card)] cursor-pointer hover:shadow-[var(--shadow-card-hover)] hover:scale-[1.02] transition-all duration-200"
-                    onClick={() => setActiveSection(stat.section)}
-                  >
-                    <CardContent className="p-5">
-                      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center mb-3", stat.color)}>
-                        <stat.icon className="w-5 h-5" />
-                      </div>
-                      <p className="font-display text-2xl font-bold text-foreground">{stat.value}</p>
-                      <p className="text-sm text-muted-foreground">{stat.label}</p>
-                    </CardContent>
-                  </Card>
+                  <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
+                    <Card
+                      className="border-none shadow-[var(--shadow-card)] cursor-pointer hover:shadow-[var(--shadow-card-hover)] hover:scale-[1.03] transition-all duration-300 group"
+                      onClick={() => setActiveSection(stat.section)}
+                    >
+                      <CardContent className="p-5">
+                        <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center mb-3 transition-transform group-hover:scale-110", stat.color)}>
+                          <stat.icon className="w-5 h-5" />
+                        </div>
+                        <p className="font-display text-2xl font-bold text-foreground leading-none mb-1">{stat.value}</p>
+                        <p className="text-sm text-muted-foreground">{stat.label}</p>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground/40 absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
 

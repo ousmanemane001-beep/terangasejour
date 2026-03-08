@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -197,16 +198,27 @@ const Index = () => {
   );
 };
 
-function IndexListingsGrid({ listings }: { listings: DBListing[] }) {
-  const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-      {listings.map((listing) => (
-        <ListingCard key={listing.id} listing={listing} rating={ratingsMap?.[listing.id]} />
-      ))}
-    </div>
-  );
-}
+const IndexListingsGrid = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
+  ({ listings }, ref) => {
+    const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
+    return (
+      <div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {listings.map((listing, i) => (
+          <motion.div
+            key={listing.id}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.05 }}
+          >
+            <ListingCard listing={listing} rating={ratingsMap?.[listing.id]} />
+          </motion.div>
+        ))}
+      </div>
+    );
+  }
+);
+IndexListingsGrid.displayName = "IndexListingsGrid";
 
 const PropertySection = ({ title, subtitle, items, bg }: { title: string; subtitle: string; items: typeof properties; bg?: boolean }) => (
   <section className={`py-16 ${bg ? "bg-secondary" : ""}`}>
