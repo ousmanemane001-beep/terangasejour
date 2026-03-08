@@ -1,6 +1,7 @@
-import { Heart, MapPin, Users, Bed, Bath, Star, ThumbsUp } from "lucide-react";
+import { MapPin, Users, Bed, Bath, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import FavoriteButton from "@/components/FavoriteButton";
 import type { DBListing } from "@/hooks/useListings";
 import type { ListingRating } from "@/hooks/useReviews";
 import { forwardRef } from "react";
