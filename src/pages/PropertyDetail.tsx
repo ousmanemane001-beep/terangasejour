@@ -1,15 +1,18 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
+import BookingWidget from "@/components/BookingWidget";
+import ReviewSection from "@/components/ReviewSection";
 import { motion } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { properties } from "@/data/properties";
 import { useListing } from "@/hooks/useListings";
 import {
   Star, MapPin, Heart, Share2, Bed, Bath, Users,
-  Wifi, Car, AirVent, ChefHat, Waves, ArrowLeft, Calendar, Loader2,
+  Wifi, Car, AirVent, ChefHat, Waves, ArrowLeft, Loader2,
+  Tv, Lock, Flower2, ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
 const amenityMap: Record<string, { icon: typeof Wifi; label: string }> = {
   wifi: { icon: Wifi, label: "Wi-Fi" },
@@ -17,6 +20,9 @@ const amenityMap: Record<string, { icon: typeof Wifi; label: string }> = {
   ac: { icon: AirVent, label: "Climatisation" },
   kitchen: { icon: ChefHat, label: "Cuisine équipée" },
   pool: { icon: Waves, label: "Piscine" },
+  tv: { icon: Tv, label: "Télévision" },
+  security: { icon: Lock, label: "Sécurité 24h" },
+  garden: { icon: Flower2, label: "Jardin" },
 };
 
 const defaultAmenities = [
@@ -30,13 +36,8 @@ const defaultAmenities = [
 const PropertyDetail = () => {
   const { id } = useParams();
   const isUUID = id && id.includes("-");
-
-  // DB listing for UUID ids
   const { data: dbListing, isLoading } = useListing(isUUID ? id : undefined);
-
-  // Static fallback for numeric ids
   const staticProperty = !isUUID ? properties.find((p) => p.id === Number(id)) : null;
-
   const [selectedImage, setSelectedImage] = useState(0);
 
   if (isLoading) {
@@ -51,9 +52,9 @@ const PropertyDetail = () => {
     );
   }
 
-  // Build a unified view model
   const listing = dbListing
     ? {
+        id: dbListing.id,
         title: dbListing.title,
         description: dbListing.description || "",
         location: dbListing.location || "Non précisé",
@@ -66,9 +67,12 @@ const PropertyDetail = () => {
         coverImage: dbListing.photos?.[0] || "/placeholder.svg",
         rating: null as number | null,
         reviewCount: null as number | null,
+        isDB: true,
+        verified: false,
       }
     : staticProperty
     ? {
+        id: String(staticProperty.id),
         title: staticProperty.title,
         description:
           staticProperty.description ||
@@ -83,6 +87,8 @@ const PropertyDetail = () => {
         coverImage: staticProperty.image,
         rating: staticProperty.rating,
         reviewCount: staticProperty.reviewCount,
+        isDB: false,
+        verified: false,
       }
     : null;
 
@@ -102,6 +108,10 @@ const PropertyDetail = () => {
     );
   }
 
+  const amenities = listing.isDB
+    ? Object.entries(amenityMap).map(([, v]) => v)
+    : (staticProperty?.amenities || []).map((a) => amenityMap[a] || { icon: Wifi, label: a }).filter(Boolean);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -118,12 +128,7 @@ const PropertyDetail = () => {
             {listing.images.length > 1 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 rounded-2xl overflow-hidden">
                 <div className="aspect-[4/3] md:aspect-auto md:row-span-2">
-                  <img
-                    src={listing.images[selectedImage]}
-                    alt={listing.title}
-                    className="w-full h-full object-cover cursor-pointer"
-                    loading="lazy"
-                  />
+                  <img src={listing.images[selectedImage]} alt={listing.title} className="w-full h-full object-cover cursor-pointer" loading="lazy" />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {listing.images.slice(0, 4).map((img, i) => (
@@ -163,9 +168,16 @@ const PropertyDetail = () => {
               <div>
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <span className="inline-block px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-medium mb-2 capitalize">
-                      {listing.type}
-                    </span>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="inline-block px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-medium capitalize">
+                        {listing.type}
+                      </span>
+                      {listing.verified && (
+                        <Badge className="bg-accent/10 text-accent gap-1">
+                          <ShieldCheck className="w-3 h-3" /> Vérifié
+                        </Badge>
+                      )}
+                    </div>
                     <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">
                       {listing.title}
                     </h1>
@@ -196,32 +208,27 @@ const PropertyDetail = () => {
               {/* Details */}
               <div className="flex gap-6 py-4 border-y border-border">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Bed className="w-4 h-4" />
-                  <span>{listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}</span>
+                  <Bed className="w-4 h-4" /> <span>{listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Bath className="w-4 h-4" />
-                  <span>{listing.bathrooms} salle{listing.bathrooms > 1 ? "s" : ""} de bain</span>
+                  <Bath className="w-4 h-4" /> <span>{listing.bathrooms} salle{listing.bathrooms > 1 ? "s" : ""} de bain</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Users className="w-4 h-4" />
-                  <span>{listing.guests} voyageur{listing.guests > 1 ? "s" : ""}</span>
+                  <Users className="w-4 h-4" /> <span>{listing.guests} voyageur{listing.guests > 1 ? "s" : ""}</span>
                 </div>
               </div>
 
               {/* Description */}
               <div>
                 <h2 className="font-display text-xl font-semibold text-foreground mb-3">Description</h2>
-                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                  {listing.description}
-                </p>
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{listing.description}</p>
               </div>
 
               {/* Amenities */}
               <div>
                 <h2 className="font-display text-xl font-semibold text-foreground mb-4">Équipements</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {defaultAmenities.map((amenity, i) => (
+                  {amenities.map((amenity, i) => (
                     <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border">
                       <amenity.icon className="w-5 h-5 text-accent" />
                       <span className="text-sm text-foreground">{amenity.label}</span>
@@ -229,61 +236,32 @@ const PropertyDetail = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Reviews */}
+              {isUUID && id && (
+                <div className="border-t border-border pt-8">
+                  <ReviewSection listingId={id} />
+                </div>
+              )}
             </div>
 
-            {/* Booking Card */}
+            {/* Booking Widget */}
             <div className="lg:col-span-1">
-              <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6">
-                <div className="mb-4">
-                  <span className="text-2xl font-bold text-foreground">
-                    {listing.price.toLocaleString("fr-FR")} F
-                  </span>
-                  <span className="text-muted-foreground"> / nuit</span>
+              {isUUID && id ? (
+                <BookingWidget
+                  listingId={id}
+                  pricePerNight={listing.price}
+                  maxGuests={listing.guests}
+                />
+              ) : (
+                <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6">
+                  <div className="mb-4">
+                    <span className="text-2xl font-bold text-foreground">{listing.price.toLocaleString("fr-FR")} F</span>
+                    <span className="text-muted-foreground"> / nuit</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Contactez l'hôte pour réserver ce logement.</p>
                 </div>
-
-                <div className="space-y-3 mb-6">
-                  <div className="rounded-xl border border-border p-3">
-                    <label className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      Arrivée
-                    </label>
-                    <p className="text-sm text-foreground mt-0.5">Sélectionner</p>
-                  </div>
-                  <div className="rounded-xl border border-border p-3">
-                    <label className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      Départ
-                    </label>
-                    <p className="text-sm text-foreground mt-0.5">Sélectionner</p>
-                  </div>
-                  <div className="rounded-xl border border-border p-3">
-                    <label className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5" />
-                      Voyageurs
-                    </label>
-                    <p className="text-sm text-foreground mt-0.5">2 voyageurs</p>
-                  </div>
-                </div>
-
-                <div className="space-y-2 mb-6 text-sm">
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>{listing.price.toLocaleString("fr-FR")} F × 7 nuits</span>
-                    <span>{(listing.price * 7).toLocaleString("fr-FR")} F</span>
-                  </div>
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Frais de service</span>
-                    <span>{Math.round(listing.price * 0.1).toLocaleString("fr-FR")} F</span>
-                  </div>
-                  <div className="border-t border-border pt-2 flex justify-between font-semibold text-foreground">
-                    <span>Total</span>
-                    <span>{(listing.price * 7 + Math.round(listing.price * 0.1)).toLocaleString("fr-FR")} F</span>
-                  </div>
-                </div>
-
-                <Button className="w-full rounded-xl h-12 bg-accent text-accent-foreground font-medium text-base hover:bg-accent/90">
-                  Réserver
-                </Button>
-              </div>
+              )}
             </div>
           </div>
         </div>

@@ -103,6 +103,18 @@ const Explore = () => {
     });
   }, [destination, priceRange, bedroomFilter, guestFilter, selectedTypes, selectedAmenities]);
 
+  const filteredDBListings = useMemo(() => {
+    if (!dbListings) return [];
+    return dbListings.filter((l) => {
+      if (destination && !(l.location || "").toLowerCase().includes(destination.toLowerCase()) && !l.title.toLowerCase().includes(destination.toLowerCase())) return false;
+      if (l.price_per_night < priceRange[0] || l.price_per_night > priceRange[1]) return false;
+      if (bedroomFilter > 0 && l.bedrooms < bedroomFilter) return false;
+      if (guestFilter > 0 && l.capacity < guestFilter) return false;
+      if (selectedTypes.length > 0 && !selectedTypes.map(t => t.toLowerCase()).includes(l.property_type.toLowerCase())) return false;
+      return true;
+    });
+  }, [dbListings, destination, priceRange, bedroomFilter, guestFilter, selectedTypes]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -341,16 +353,16 @@ const Explore = () => {
         <div className={cn("flex-1 overflow-y-auto", showMap ? "lg:w-[55%]" : "w-full")}>
           <div className="p-4">
             {/* DB Listings */}
-            {dbListings && dbListings.length > 0 && (
+            {filteredDBListings.length > 0 && (
               <div className="mb-8">
                 <p className="text-sm font-semibold text-foreground mb-4">
-                  {dbListings.length} logement{dbListings.length !== 1 ? "s" : ""} publié{dbListings.length !== 1 ? "s" : ""}
+                  {filteredDBListings.length} logement{filteredDBListings.length !== 1 ? "s" : ""} publié{filteredDBListings.length !== 1 ? "s" : ""}
                 </p>
                 <div className={cn(
                   "grid gap-5",
                   showMap ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                 )}>
-                  {dbListings.map((listing) => (
+                  {filteredDBListings.map((listing) => (
                     <ListingCard key={listing.id} listing={listing} />
                   ))}
                 </div>
@@ -377,7 +389,7 @@ const Explore = () => {
                 </div>
               ))}
             </div>
-            {filteredProperties.length === 0 && (!dbListings || dbListings.length === 0) && (
+            {filteredProperties.length === 0 && filteredDBListings.length === 0 && (
               <div className="text-center py-20">
                 <Search className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
                 <h3 className="font-display text-lg font-semibold text-foreground mb-2">Aucun logement disponible pour le moment</h3>
