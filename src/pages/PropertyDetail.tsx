@@ -7,13 +7,17 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import PropertyMap from "@/components/PropertyMap";
 import { motion } from "framer-motion";
 import { useListingRating } from "@/hooks/useReviews";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { properties } from "@/data/properties";
 import { useListing } from "@/hooks/useListings";
+import { useStartConversation } from "@/hooks/useConversations";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Star, MapPin, Heart, Share2, Bed, Bath, Users,
   Wifi, Car, AirVent, ChefHat, Waves, ArrowLeft, Loader2,
-  Tv, Lock, Flower2, ShieldCheck,
+  Tv, Lock, Flower2, ShieldCheck, MessageCircle,
 } from "lucide-react";
 import { useState } from "react";
 
