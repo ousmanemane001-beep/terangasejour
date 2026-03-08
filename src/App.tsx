@@ -20,6 +20,7 @@ import CreateListing from "./pages/CreateListing";
 import Profile from "./pages/Profile";
 import BecomeHost from "./pages/BecomeHost";
 import Favorites from "./pages/Favorites";
+import AdminVerification from "./pages/AdminVerification";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/become-host" element={<BecomeHost />} />
             <Route path="/favorites" element={<Favorites />} />
+            <Route path="/admin/verification" element={<AdminVerification />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -24,6 +24,8 @@ export type Database = {
           id: string
           listing_id: string
           nights: number
+          payment_method: string
+          payment_status: string
           price_per_night: number
           service_fee: number
           status: string
@@ -39,6 +41,8 @@ export type Database = {
           id?: string
           listing_id: string
           nights: number
+          payment_method?: string
+          payment_status?: string
           price_per_night: number
           service_fee?: number
           status?: string
@@ -54,6 +58,8 @@ export type Database = {
           id?: string
           listing_id?: string
           nights?: number
+          payment_method?: string
+          payment_status?: string
           price_per_night?: number
           service_fee?: number
           status?: string
