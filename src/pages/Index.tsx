@@ -50,9 +50,9 @@ const Index = () => {
       <Navbar />
 
       {/* Hero */}
-      <section className="relative py-24 md:py-36 overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroBg})` }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-[hsl(216_85%_20%/0.7)] to-[hsl(216_85%_34%/0.5)]" />
+      <section className="relative min-h-[75vh] md:min-h-[85vh] flex items-center overflow-hidden">
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${heroBg})` }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-[hsl(216_85%_12%/0.55)] via-[hsl(216_85%_20%/0.4)] to-[hsl(216_85%_34%/0.6)]" />
         <div className="relative container mx-auto px-4 text-center">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
