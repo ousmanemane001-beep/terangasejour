@@ -228,11 +228,7 @@ const Explore = () => {
         <div className={cn("flex-1 overflow-y-auto", showMap ? "lg:w-[55%]" : "w-full")}>
           <div className="p-4">
             {filteredDBListings.length > 0 && (
-              <div className="mb-8">
-                <p className="text-sm font-semibold text-foreground mb-4">{filteredDBListings.length} logement{filteredDBListings.length !== 1 ? "s" : ""} publié{filteredDBListings.length !== 1 ? "s" : ""}</p>
-                <div className={cn("grid gap-5", showMap ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4")}>
-                  {filteredDBListings.map((listing) => <ListingCard key={listing.id} listing={listing} />)}
-                </div>
+              <DBListingsWithRatings listings={filteredDBListings} showMap={showMap} />
               </div>
             )}
             <p className="text-sm text-muted-foreground mb-4">
