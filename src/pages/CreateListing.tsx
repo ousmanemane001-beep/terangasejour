@@ -42,7 +42,7 @@ const CreateListing = () => {
   const [step, setStep] = useState(1);
   const [selectedType, setSelectedType] = useState("");
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<{ id: string; file: File; preview: string }[]>([]);
 
   const toggleAmenity = (id: string) => {
     setSelectedAmenities((prev) =>
