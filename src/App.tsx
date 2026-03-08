@@ -53,6 +53,8 @@ const App = () => (
             <Route path="/become-host" element={<BecomeHost />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/admin/verification" element={<AdminVerification />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/messages" element={<Messages />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
