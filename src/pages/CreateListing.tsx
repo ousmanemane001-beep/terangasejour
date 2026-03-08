@@ -238,10 +238,10 @@ const CreateListing = () => {
               <CheckCircle className="w-10 h-10 text-accent" />
             </div>
             <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">
-              Votre logement a été publié avec succès !
+              Votre logement a été soumis !
             </h1>
             <p className="text-muted-foreground mb-8">
-              Votre annonce est maintenant visible par les voyageurs sur la plateforme.
+              Votre annonce est en cours de vérification par notre équipe. Vous recevrez une notification une fois approuvée.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button
