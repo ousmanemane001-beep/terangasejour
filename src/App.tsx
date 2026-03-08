@@ -45,6 +45,7 @@ const App = () => (
             <Route path="/certification" element={<Certification />} />
             <Route path="/property/:id" element={<PropertyDetail />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/:tab" element={<Dashboard />} />
             <Route path="/create-listing" element={<CreateListing />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/become-host" element={<BecomeHost />} />
