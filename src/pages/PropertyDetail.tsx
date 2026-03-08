@@ -267,7 +267,6 @@ const PropertyDetail = () => {
                   hostId={dbListing?.user_id}
                 />
               ) : (
-              ) : (
                 <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6">
                   <div className="mb-4">
                     <span className="text-2xl font-bold text-foreground">{listing.price.toLocaleString("fr-FR")} F</span>
