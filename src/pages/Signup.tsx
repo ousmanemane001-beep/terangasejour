@@ -67,7 +67,7 @@ const Signup = () => {
               </div>
               <h1 className="font-display text-2xl font-bold text-foreground">Créer un compte</h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Rejoignez la communauté VotreSéjour
+                Rejoignez la communauté TerangaSéjour
               </p>
             </div>
 
