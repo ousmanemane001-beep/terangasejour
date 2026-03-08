@@ -50,9 +50,15 @@ const rulesList = [
 const TOTAL_STEPS = 4;
 
 const CreateListing = () => {
-  const { user } = useAuth();
+  const { user, isHost } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Redirect non-hosts to become-host page
+  if (!isHost && user) {
+    navigate("/become-host");
+    return null;
+  }
 
   // Step 1
   const [selectedType, setSelectedType] = useState("villa");
