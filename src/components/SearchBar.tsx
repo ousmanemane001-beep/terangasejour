@@ -177,7 +177,7 @@ const SearchBar = () => {
         <Popover>
           <PopoverTrigger asChild>
             <div className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors cursor-pointer">
-              <Users className="w-4 h-4 text-accent shrink-0" />
+              <Users className="w-4 h-4 text-primary shrink-0" />
               <div>
                 <p className="text-xs text-muted-foreground font-medium">Voyageurs</p>
                 <p className="text-sm text-foreground">{guestCount}</p>
