@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Home, CalendarDays, Star, TrendingUp, Plus, Settings,
-  CreditCard, MapPin, Loader2, Eye, Trash2, Heart,
+  CreditCard, MapPin, Loader2, Eye, Trash2, Heart, MessageCircle,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOwnerListings, useOwnerBookings, useGuestBookings } from "@/hooks/useOwnerData";
