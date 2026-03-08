@@ -18,6 +18,7 @@ import PhotoUploader from "@/components/PhotoUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 const propertyTypes = [
   { value: "villa", label: "Villa", icon: "🏡" },
@@ -51,6 +52,7 @@ const TOTAL_STEPS = 4;
 const CreateListing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Step 1
   const [selectedType, setSelectedType] = useState("villa");
@@ -157,6 +159,9 @@ const CreateListing = () => {
       if (insertError) throw insertError;
 
       setPublishedId(data.id);
+      // Invalidate listings cache so homepage and explore show the new listing immediately
+      queryClient.invalidateQueries({ queryKey: ["listings"] });
+      queryClient.invalidateQueries({ queryKey: ["owner-listings"] });
       toast.success("Votre logement a été publié avec succès !");
     } catch (err: any) {
       toast.error(err.message || "Erreur lors de la création de l'annonce.");
