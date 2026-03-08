@@ -36,7 +36,7 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
 };
 
 const Dashboard = () => {
-  const { user, loading: authLoading, isHost, profile } = useAuth();
+  const { user, loading: authLoading, isHost, isAdmin, profile } = useAuth();
   const navigate = useNavigate();
   const { tab } = useParams<{ tab?: string }>();
   const qc = useQueryClient();
