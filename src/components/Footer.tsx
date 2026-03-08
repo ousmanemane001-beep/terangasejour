@@ -8,9 +8,9 @@ const Footer = () => {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-7 h-7 rounded-lg bg-accent flex items-center justify-center">
-                <span className="font-display font-bold text-accent-foreground text-xs">S</span>
+                <span className="font-display font-bold text-accent-foreground text-xs">VS</span>
               </div>
-              <span className="font-display text-lg font-bold">Séjour</span>
+              <span className="font-display text-lg font-bold">VotreSéjour</span>
             </div>
             <p className="text-sm text-primary-foreground/70 leading-relaxed">
               Trouvez votre chez-vous, partout au Sénégal.
@@ -65,7 +65,7 @@ const Footer = () => {
         </div>
         <div className="border-t border-primary-foreground/10 pt-6 text-center">
           <p className="text-xs text-primary-foreground/50">
-            © 2026 Séjour. Tous droits réservés.
+            © 2026 VotreSéjour. Tous droits réservés.
           </p>
         </div>
       </div>
