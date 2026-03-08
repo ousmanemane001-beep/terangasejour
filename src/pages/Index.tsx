@@ -10,17 +10,24 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import { properties } from "@/data/properties";
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
-import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones, Zap, Home, Shield } from "lucide-react";
+import { useDestinationCounts } from "@/hooks/useDestinationCounts";
+import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones, Home, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import DestinationCard from "@/components/DestinationCard";
 import heroBg from "@/assets/hero-bg.jpg";
 
-const destinations = [
-  { name: "Saly", filter: "Saly", image: "/images/villa-saly-1.jpg", count: 24, avgPrice: "45 000" },
-  { name: "Les Almadies", filter: "Almadies", image: "/images/villa-saly-2.jfif", count: 18, avgPrice: "55 000" },
-  { name: "Ngaparou", filter: "Ngaparou", image: "/images/villa-saly-3.jfif", count: 12, avgPrice: "40 000" },
-  { name: "Somone", filter: "Somone", image: "/images/villa-saly-4.jfif", count: 15, avgPrice: "50 000" },
-  { name: "Dakar", filter: "Dakar", image: "/images/villa-saly-5.jfif", count: 42, avgPrice: "35 000" },
+const DESTINATIONS = [
+  { name: "Dakar", image: "/images/dest-dakar.jpg" },
+  { name: "Saly", image: "/images/dest-saly.jpg" },
+  { name: "Mbour", image: "/images/dest-mbour.jpg" },
+  { name: "Somone", image: "/images/dest-somone.jpg" },
+  { name: "Ngaparou", image: "/images/dest-ngaparou.jpg" },
+  { name: "Popenguine", image: "/images/dest-popenguine.jpg" },
+  { name: "Pointe Sarene", image: "/images/dest-pointe-sarene.jpg" },
+  { name: "Cap Skirring", image: "/images/dest-cap-skirring.jpg" },
 ];
+
+const DESTINATION_CITIES = DESTINATIONS.map((d) => d.name);
 
 const trustPoints = [
   { icon: ShieldCheck, title: "Paiement sécurisé", desc: "Transactions protégées via Wave, Orange Money et carte bancaire." },
@@ -31,6 +38,8 @@ const trustPoints = [
 
 const Index = () => {
   const { data: dbListings, isLoading } = useListings(8);
+
+  const { data: destCounts } = useDestinationCounts(DESTINATION_CITIES);
 
   const villas = properties.filter((p) => p.type === "Villa");
   const apartments = properties.filter((p) => p.type === "Appartement" || p.type === "Loft" || p.type === "Studio");
@@ -78,27 +87,15 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">Destinations populaires</h2>
           <p className="text-muted-foreground mb-8">Les lieux les plus prisés par nos voyageurs</p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {destinations.map((dest, i) => (
-              <motion.div
+          <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory md:snap-none scrollbar-hide">
+            {DESTINATIONS.map((dest, i) => (
+              <DestinationCard
                 key={dest.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-              >
-                <Link
-                  to={`/explore?destination=${encodeURIComponent(dest.filter)}`}
-                  className="group block rounded-2xl overflow-hidden relative aspect-[3/4] hover:shadow-[var(--shadow-card-hover)] transition-shadow"
-                >
-                  <img src={dest.image} alt={dest.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <h3 className="font-display font-bold text-background text-lg">{dest.name}</h3>
-                    <p className="text-background/80 text-sm">{dest.count} logements · à partir de {dest.avgPrice} F</p>
-                  </div>
-                </Link>
-              </motion.div>
+                name={dest.name}
+                image={dest.image}
+                count={destCounts?.[dest.name.toLowerCase()] ?? 0}
+                index={i}
+              />
             ))}
           </div>
         </div>
