@@ -1,10 +1,13 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
 import PropertyCard from "@/components/PropertyCard";
+import ListingCard from "@/components/ListingCard";
 import Footer from "@/components/Footer";
 import { properties } from "@/data/properties";
-import { Home, Shield } from "lucide-react";
+import { useListings } from "@/hooks/useListings";
+import { Home, Shield, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroBg from "@/assets/hero-bg.jpg";
 
