@@ -113,74 +113,7 @@ const AdminPanel = () => {
     enabled: !!user && isAdmin === true,
   });
 
-  if (authLoading || adminLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-      </div>
-    );
-  }
-
-  if (!user || !isAdmin) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
-  const handleListingAction = async (id: string, action: "approve" | "reject" | "suspend" | "delete") => {
-    setUpdatingId(id);
-    if (action === "delete") {
-      if (!confirm("Supprimer définitivement ce logement ?")) { setUpdatingId(null); return; }
-      const { error } = await supabase.from("listings").delete().eq("id", id);
-      if (error) { toast.error(error.message); setUpdatingId(null); return; }
-      toast.success("Logement supprimé");
-      qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
-      setUpdatingId(null);
-      return;
-    }
-
-    const statusMap = { approve: "published", reject: "rejected", suspend: "suspended" };
-    const newStatus = statusMap[action];
-    const { error } = await supabase.from("listings").update({ status: newStatus, verified: action === "approve" }).eq("id", id);
-    if (error) { toast.error(error.message); setUpdatingId(null); return; }
-
-    const listing = allListings?.find((l) => l.id === id);
-    if (listing) {
-      const messages: Record<string, string> = {
-        approve: `Votre logement "${listing.title}" a été approuvé et est maintenant visible.`,
-        reject: `Votre logement "${listing.title}" n'a pas été approuvé. Veuillez vérifier les critères.`,
-        suspend: `Votre logement "${listing.title}" a été suspendu.`,
-      };
-      await supabase.from("notifications").insert({
-        user_id: listing.user_id,
-        type: `listing_${action}`,
-        title: action === "approve" ? "Logement approuvé !" : action === "reject" ? "Logement non approuvé" : "Logement suspendu",
-        message: messages[action],
-        data: { listing_id: id },
-      } as any);
-    }
-
-    toast.success(action === "approve" ? "Logement approuvé" : action === "reject" ? "Logement rejeté" : "Logement suspendu");
-    qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
-    setUpdatingId(null);
-  };
-
-  const handleCancelBooking = async (id: string) => {
-    if (!confirm("Annuler cette réservation ?")) return;
-    const { error } = await supabase.from("bookings").update({ status: "cancelled" } as any).eq("id", id);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Réservation annulée");
-    qc.invalidateQueries({ queryKey: ["admin-all-bookings"] });
-  };
-
-  const handleDeleteReview = async (id: string) => {
-    if (!confirm("Supprimer cet avis ?")) return;
-    const { error } = await supabase.from("reviews").delete().eq("id", id);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Avis supprimé");
-    qc.invalidateQueries({ queryKey: ["admin-all-reviews"] });
-  };
-
-  // Computed stats
+  // Computed stats (must be before early returns)
   const pendingListings = allListings?.filter((l) => l.status === "pending_approval") || [];
   const totalRevenue = allBookings?.filter((b) => b.status === "confirmed").reduce((s, b) => s + b.total_price, 0) || 0;
   const platformCommission = Math.round(totalRevenue * 0.15);
@@ -190,11 +123,8 @@ const AdminPanel = () => {
   const avgRating = allReviews && allReviews.length > 0
     ? (allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length).toFixed(1)
     : "—";
-
-  // Unique cities for filter
   const cities = [...new Set(allListings?.map((l) => l.city).filter(Boolean) || [])];
 
-  // Filtered listings
   const filteredListings = useMemo(() => {
     let items = allListings || [];
     if (searchQuery) {
@@ -206,7 +136,6 @@ const AdminPanel = () => {
     return items;
   }, [allListings, searchQuery, filterStatus, filterLocation]);
 
-  // Filtered bookings
   const filteredBookings = useMemo(() => {
     let items = allBookings || [];
     if (searchQuery) {
@@ -218,7 +147,6 @@ const AdminPanel = () => {
     return items;
   }, [allBookings, searchQuery, filterStatus, filterPayment]);
 
-  // Filtered users
   const filteredUsers = useMemo(() => {
     let items = allProfiles || [];
     if (searchQuery) {
