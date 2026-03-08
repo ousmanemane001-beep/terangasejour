@@ -53,7 +53,7 @@ const Index = () => {
       <section className="relative min-h-[75vh] md:min-h-[85vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${heroBg})` }} />
         <div className="absolute inset-0 bg-gradient-to-b from-[hsl(216_85%_12%/0.55)] via-[hsl(216_85%_20%/0.4)] to-[hsl(216_85%_34%/0.6)]" />
-        <div className="relative container mx-auto px-4 text-center">
+        <div className="relative container mx-auto px-4 text-left">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -68,7 +68,7 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="text-background/85 text-lg md:text-xl mb-10 max-w-2xl mx-auto"
+            className="text-background/85 text-lg md:text-xl mb-10 max-w-2xl"
           >
             Réservez villas, appartements et maisons de vacances au meilleur prix.
           </motion.p>
