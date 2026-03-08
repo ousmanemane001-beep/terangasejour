@@ -52,6 +52,8 @@ const PropertyDetail = () => {
         guests: dbListing.capacity, images: dbListing.photos || [],
         coverImage: dbListing.photos?.[0] || "/placeholder.svg",
         rating: null as number | null, reviewCount: null as number | null, isDB: true, verified: dbListing.verified,
+        latitude: dbListing.latitude, longitude: dbListing.longitude,
+        address: dbListing.address, city: dbListing.city,
       }
     : staticProperty
     ? {
