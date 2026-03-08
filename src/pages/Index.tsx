@@ -39,6 +39,8 @@ const trustPoints = [
 const Index = () => {
   const { data: dbListings, isLoading } = useListings(8);
 
+  const { data: destCounts } = useDestinationCounts(DESTINATION_CITIES);
+
   const villas = properties.filter((p) => p.type === "Villa");
   const apartments = properties.filter((p) => p.type === "Appartement" || p.type === "Loft" || p.type === "Studio");
   const beachProperties = properties.filter((p) => p.amenities.includes("pool") || p.location.toLowerCase().includes("saly") || p.location.toLowerCase().includes("somone") || p.location.toLowerCase().includes("cap"));
