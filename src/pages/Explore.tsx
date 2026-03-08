@@ -10,7 +10,7 @@ import PropertyCard from "@/components/PropertyCard";
 import ListingCard from "@/components/ListingCard";
 import ExploreMap from "@/components/ExploreMap";
 import { properties, Property } from "@/data/properties";
-import { useListings } from "@/hooks/useListings";
+import { useListings, type DBListing } from "@/hooks/useListings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
