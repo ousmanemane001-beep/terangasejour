@@ -47,7 +47,18 @@ const rulesList = [
   "Arrivée autonome (serrure connectée)",
 ];
 
-const TOTAL_STEPS = 4;
+const bookingModes = [
+  { value: "instant", label: "Réservation instantanée", icon: "⚡", desc: "Les voyageurs réservent et paient directement." },
+  { value: "request", label: "Demande de disponibilité", icon: "📩", desc: "Les voyageurs demandent d'abord, vous approuvez." },
+];
+
+const availabilityModes = [
+  { value: "always", label: "Toujours disponible", icon: "🟢", desc: "Disponible toute l'année sauf dates réservées." },
+  { value: "calendar", label: "Calendrier personnalisé", icon: "📅", desc: "Vous définissez les dates disponibles manuellement." },
+  { value: "request_only", label: "Sur demande uniquement", icon: "📞", desc: "Les voyageurs doivent demander la disponibilité." },
+];
+
+const TOTAL_STEPS = 5;
 
 const CreateListing = () => {
   const { user, isHost } = useAuth();
