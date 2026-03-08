@@ -3,12 +3,53 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
-import { Mail, Lock, User, Phone, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, User, Phone, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [accepted, setAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!firstName || !lastName || !email || !password) {
+      toast.error("Veuillez remplir tous les champs obligatoires");
+      return;
+    }
+    if (!accepted) {
+      toast.error("Veuillez accepter les conditions d'utilisation");
+      return;
+    }
+    if (password.length < 6) {
+      toast.error("Le mot de passe doit contenir au moins 6 caractères");
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { first_name: firstName, last_name: lastName, phone },
+      },
+    });
+    setLoading(false);
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Compte créé ! Vérifiez votre email pour confirmer votre inscription.");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -30,24 +71,24 @@ const Signup = () => {
               </p>
             </div>
 
-            <form className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input placeholder="Prénom" className="pl-10 rounded-xl h-12" />
+                  <Input placeholder="Prénom" className="pl-10 rounded-xl h-12" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                 </div>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input placeholder="Nom" className="pl-10 rounded-xl h-12" />
+                  <Input placeholder="Nom" className="pl-10 rounded-xl h-12" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                 </div>
               </div>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input type="email" placeholder="Adresse email" className="pl-10 rounded-xl h-12" />
+                <Input type="email" placeholder="Adresse email" className="pl-10 rounded-xl h-12" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input type="tel" placeholder="Numéro de téléphone" className="pl-10 rounded-xl h-12" />
+                <Input type="tel" placeholder="Numéro de téléphone" className="pl-10 rounded-xl h-12" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -55,6 +96,8 @@ const Signup = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="Mot de passe"
                   className="pl-10 pr-10 rounded-xl h-12"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -66,7 +109,7 @@ const Signup = () => {
               </div>
 
               <label className="flex items-start gap-2 text-sm text-muted-foreground">
-                <input type="checkbox" className="rounded mt-0.5" />
+                <input type="checkbox" className="rounded mt-0.5" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
                 <span>
                   J'accepte les{" "}
                   <a href="#" className="text-accent hover:underline">conditions d'utilisation</a>
@@ -75,8 +118,12 @@ const Signup = () => {
                 </span>
               </label>
 
-              <Button className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium">
-                Créer mon compte
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Créer mon compte"}
               </Button>
             </form>
 
