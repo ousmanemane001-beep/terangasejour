@@ -158,13 +158,17 @@ const CreateListing = () => {
           description: description.trim(),
           property_type: selectedType,
           location: location.trim(),
+          address: address.trim() || null,
+          city: city.trim() || null,
+          latitude: latitude ? parseFloat(latitude) : null,
+          longitude: longitude ? parseFloat(longitude) : null,
           bedrooms,
           bathrooms,
           capacity,
           price_per_night: parseInt(price),
           photos: photoUrls,
           status: "published",
-        })
+        } as any)
         .select("id")
         .single();
 
