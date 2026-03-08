@@ -44,6 +44,9 @@ const Dashboard = () => {
   const { data: ownerBookings, isLoading: bookingsLoading } = useOwnerBookings();
   const { data: guestBookings } = useGuestBookings();
   const { data: favorites } = useFavorites();
+  const { data: bookingRequests } = useBookingRequests();
+  const respondToRequest = useRespondToRequest();
+  const { data: notifications } = useNotifications();
 
   const activeTab = tab || (isHost ? "overview" : "my-bookings");
 
