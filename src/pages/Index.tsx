@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -11,7 +11,7 @@ import { properties } from "@/data/properties";
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
 import { useDestinationCounts } from "@/hooks/useDestinationCounts";
-import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones, Home, Shield } from "lucide-react";
+import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones, Home, Shield, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DestinationCard from "@/components/DestinationCard";
 import heroBg from "@/assets/hero-bg.jpg";
@@ -191,25 +191,70 @@ const Index = () => {
 };
 
 const IndexListingsCarousel = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
-  ({ listings }, ref) => {
+  ({ listings }, _ref) => {
     const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(true);
+
+    const updateScrollState = () => {
+      const el = scrollRef.current;
+      if (!el) return;
+      setCanScrollLeft(el.scrollLeft > 0);
+      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    };
+
+    useEffect(() => {
+      const el = scrollRef.current;
+      if (!el) return;
+      updateScrollState();
+      el.addEventListener("scroll", updateScrollState, { passive: true });
+      return () => el.removeEventListener("scroll", updateScrollState);
+    }, [listings]);
+
+    const scroll = (dir: "left" | "right") => {
+      const el = scrollRef.current;
+      if (!el) return;
+      el.scrollBy({ left: dir === "left" ? -320 : 320, behavior: "smooth" });
+    };
+
     return (
-      <div
-        ref={ref}
-        className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide"
-      >
-        {listings.map((listing, i) => (
-          <motion.div
-            key={listing.id}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.05 }}
-            className="min-w-[280px] max-w-[320px] w-[75vw] sm:w-[320px] shrink-0 snap-start"
+      <div className="relative group">
+        {canScrollLeft && (
+          <button
+            onClick={() => scroll("left")}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-accent transition-colors hidden md:flex"
+            aria-label="Précédent"
           >
-            <ListingCard listing={listing} rating={ratingsMap?.[listing.id]} />
-          </motion.div>
-        ))}
+            <ChevronLeft className="w-5 h-5 text-foreground" />
+          </button>
+        )}
+        <div
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide"
+        >
+          {listings.map((listing, i) => (
+            <motion.div
+              key={listing.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05 }}
+              className="min-w-[280px] max-w-[320px] w-[75vw] sm:w-[320px] shrink-0 snap-start"
+            >
+              <ListingCard listing={listing} rating={ratingsMap?.[listing.id]} />
+            </motion.div>
+          ))}
+        </div>
+        {canScrollRight && (
+          <button
+            onClick={() => scroll("right")}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-card border border-border shadow-md flex items-center justify-center hover:bg-accent transition-colors hidden md:flex"
+            aria-label="Suivant"
+          >
+            <ChevronRight className="w-5 h-5 text-foreground" />
+          </button>
+        )}
       </div>
     );
   }
