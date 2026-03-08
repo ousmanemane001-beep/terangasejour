@@ -51,17 +51,17 @@ const Index = () => {
       {/* Hero with background image + search bar — Booking.com style */}
       <section className="relative bg-primary overflow-hidden">
         {/* Background image */}
-        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30" style={{ backgroundImage: `url(${heroBg})` }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/70 to-primary" />
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20" style={{ backgroundImage: `url(${heroBg})` }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/90 via-primary/80 to-primary" />
         
-        <div className="relative container mx-auto px-4 pt-10 pb-8 md:pt-16 md:pb-12">
+        <div className="relative container mx-auto px-4 pt-10 pb-8 md:pt-14 md:pb-10">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="font-display text-2xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-2 leading-tight"
+            className="font-display text-2xl md:text-4xl lg:text-[2.75rem] font-bold text-primary-foreground mb-2 leading-tight"
           >
-            Trouvez votre séjour idéal au Sénégal
+            Trouvez votre prochain séjour
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -69,7 +69,7 @@ const Index = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-primary-foreground/80 text-sm md:text-base mb-6 md:mb-8 max-w-xl"
           >
-            Villas, appartements et maisons d'hôtes — réservez en toute simplicité.
+            Recherchez des offres sur des hébergements indépendants et plus encore
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -112,14 +112,14 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="font-display text-xl md:text-2xl font-bold text-foreground">Nos coups de coeur du moment</h2>
+                <h2 className="font-display text-xl md:text-2xl font-bold text-foreground">Ils vous intéressent toujours ?</h2>
                 <p className="text-muted-foreground mt-1 text-sm">Découvrez une sélection choisie avec soin pour des séjours inoubliables.</p>
               </div>
               <Link to="/explore">
                 <Button variant="outline" size="sm" className="hidden md:flex rounded">Voir plus</Button>
               </Link>
             </div>
-            <IndexListingsGrid listings={dbListings} />
+            <IndexListingsCarousel listings={dbListings} />
           </div>
         </section>
       ) : null}
@@ -190,11 +190,14 @@ const Index = () => {
   );
 };
 
-const IndexListingsGrid = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
+const IndexListingsCarousel = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
   ({ listings }, ref) => {
     const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
     return (
-      <div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      <div
+        ref={ref}
+        className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide"
+      >
         {listings.map((listing, i) => (
           <motion.div
             key={listing.id}
@@ -202,6 +205,7 @@ const IndexListingsGrid = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.05 }}
+            className="min-w-[280px] max-w-[320px] w-[75vw] sm:w-[320px] shrink-0 snap-start"
           >
             <ListingCard listing={listing} rating={ratingsMap?.[listing.id]} />
           </motion.div>
@@ -210,7 +214,7 @@ const IndexListingsGrid = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
     );
   }
 );
-IndexListingsGrid.displayName = "IndexListingsGrid";
+IndexListingsCarousel.displayName = "IndexListingsCarousel";
 
 const PropertySection = ({ title, subtitle, items, bg }: { title: string; subtitle: string; items: typeof properties; bg?: boolean }) => (
   <section className={`py-10 md:py-14 ${bg ? "bg-secondary" : ""}`}>
@@ -224,9 +228,11 @@ const PropertySection = ({ title, subtitle, items, bg }: { title: string; subtit
           <Button variant="outline" size="sm" className="hidden md:flex rounded">Voir tout</Button>
         </Link>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide">
         {items.map((property) => (
-          <PropertyCard key={property.id} {...property} />
+          <div key={property.id} className="min-w-[250px] max-w-[280px] w-[70vw] sm:w-[280px] shrink-0 snap-start">
+            <PropertyCard {...property} />
+          </div>
         ))}
       </div>
     </div>
