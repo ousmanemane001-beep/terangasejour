@@ -158,6 +158,71 @@ const AdminPanel = () => {
     return items;
   }, [allProfiles, searchQuery, filterStatus]);
 
+  // Early returns AFTER all hooks
+  if (authLoading || adminLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const handleListingAction = async (id: string, action: "approve" | "reject" | "suspend" | "delete") => {
+    setUpdatingId(id);
+    if (action === "delete") {
+      if (!confirm("Supprimer définitivement ce logement ?")) { setUpdatingId(null); return; }
+      const { error } = await supabase.from("listings").delete().eq("id", id);
+      if (error) { toast.error(error.message); setUpdatingId(null); return; }
+      toast.success("Logement supprimé");
+      qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
+      setUpdatingId(null);
+      return;
+    }
+    const statusMap = { approve: "published", reject: "rejected", suspend: "suspended" };
+    const newStatus = statusMap[action];
+    const { error } = await supabase.from("listings").update({ status: newStatus, verified: action === "approve" }).eq("id", id);
+    if (error) { toast.error(error.message); setUpdatingId(null); return; }
+    const listing = allListings?.find((l) => l.id === id);
+    if (listing) {
+      const msgs: Record<string, string> = {
+        approve: `Votre logement "${listing.title}" a été approuvé et est maintenant visible.`,
+        reject: `Votre logement "${listing.title}" n'a pas été approuvé. Veuillez vérifier les critères.`,
+        suspend: `Votre logement "${listing.title}" a été suspendu.`,
+      };
+      await supabase.from("notifications").insert({
+        user_id: listing.user_id,
+        type: `listing_${action}`,
+        title: action === "approve" ? "Logement approuvé !" : action === "reject" ? "Logement non approuvé" : "Logement suspendu",
+        message: msgs[action],
+        data: { listing_id: id },
+      } as any);
+    }
+    toast.success(action === "approve" ? "Logement approuvé" : action === "reject" ? "Logement rejeté" : "Logement suspendu");
+    qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
+    setUpdatingId(null);
+  };
+
+  const handleCancelBooking = async (id: string) => {
+    if (!confirm("Annuler cette réservation ?")) return;
+    const { error } = await supabase.from("bookings").update({ status: "cancelled" } as any).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Réservation annulée");
+    qc.invalidateQueries({ queryKey: ["admin-all-bookings"] });
+  };
+
+  const handleDeleteReview = async (id: string) => {
+    if (!confirm("Supprimer cet avis ?")) return;
+    const { error } = await supabase.from("reviews").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Avis supprimé");
+    qc.invalidateQueries({ queryKey: ["admin-all-reviews"] });
+  };
+
   const overviewStats = [
     { label: "Total logements", value: allListings?.length || 0, icon: Home, section: "properties" as AdminSection, color: "bg-blue-500/10 text-blue-600" },
     { label: "En attente", value: pendingListings.length, icon: Clock, section: "approvals" as AdminSection, color: "bg-yellow-500/10 text-yellow-600" },
