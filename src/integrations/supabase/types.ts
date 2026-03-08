@@ -107,13 +107,17 @@ export type Database = {
       }
       listings: {
         Row: {
+          address: string | null
           bathrooms: number
           bedrooms: number
           capacity: number
+          city: string | null
           created_at: string
           description: string | null
           id: string
+          latitude: number | null
           location: string | null
+          longitude: number | null
           photos: string[] | null
           price_per_night: number
           property_type: string
@@ -124,13 +128,17 @@ export type Database = {
           verified: boolean
         }
         Insert: {
+          address?: string | null
           bathrooms?: number
           bedrooms?: number
           capacity?: number
+          city?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           photos?: string[] | null
           price_per_night: number
           property_type?: string
@@ -141,13 +149,17 @@ export type Database = {
           verified?: boolean
         }
         Update: {
+          address?: string | null
           bathrooms?: number
           bedrooms?: number
           capacity?: number
+          city?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           photos?: string[] | null
           price_per_night?: number
           property_type?: string
