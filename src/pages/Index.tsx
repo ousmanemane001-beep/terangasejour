@@ -7,7 +7,7 @@ import PropertyCard from "@/components/PropertyCard";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { properties } from "@/data/properties";
-import { useListings } from "@/hooks/useListings";
+import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
 import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones, Zap, Home, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
