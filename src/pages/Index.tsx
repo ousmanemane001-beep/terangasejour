@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useState, useEffect } from "react";
+import { forwardRef, useRef, useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -212,14 +212,31 @@ const IndexListingsCarousel = forwardRef<HTMLDivElement, { listings: DBListing[]
       return () => el.removeEventListener("scroll", updateScrollState);
     }, [listings]);
 
-    const scroll = (dir: "left" | "right") => {
+    const scroll = useCallback((dir: "left" | "right") => {
       const el = scrollRef.current;
       if (!el) return;
       el.scrollBy({ left: dir === "left" ? -320 : 320, behavior: "smooth" });
-    };
+    }, []);
+
+    // Auto-scroll every 4 seconds, pause on hover
+    const [paused, setPaused] = useState(false);
+    useEffect(() => {
+      if (paused) return;
+      const interval = setInterval(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+        if (atEnd) {
+          el.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          el.scrollBy({ left: 320, behavior: "smooth" });
+        }
+      }, 4000);
+      return () => clearInterval(interval);
+    }, [paused]);
 
     return (
-      <div className="relative group">
+      <div className="relative group" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
         {canScrollLeft && (
           <button
             onClick={() => scroll("left")}
