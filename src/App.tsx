@@ -8,6 +8,12 @@ import Explore from "./pages/Explore";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import MapPage from "./pages/MapPage";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import Publish from "./pages/Publish";
+import Certification from "./pages/Certification";
+import PropertyDetail from "./pages/PropertyDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +30,12 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/map" element={<MapPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/publish" element={<Publish />} />
+          <Route path="/certification" element={<Certification />} />
+          <Route path="/property/:id" element={<PropertyDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

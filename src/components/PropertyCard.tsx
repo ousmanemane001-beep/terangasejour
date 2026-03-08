@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 interface PropertyCardProps {
+  id: number;
   image: string;
   title: string;
   location: string;
