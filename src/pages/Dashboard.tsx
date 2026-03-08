@@ -63,6 +63,11 @@ const Dashboard = () => {
     );
   }
 
+  // Redirect Super Admin to admin panel
+  if (isAdmin) {
+    return <Navigate to="/admin" replace />;
+  }
+
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col">
