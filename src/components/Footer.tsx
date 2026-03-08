@@ -54,8 +54,12 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-semibold mb-3 text-sm">Hôtes</h4>
             <div className="space-y-2">
-              <span className="block text-sm text-primary-foreground/70">Publier un logement</span>
-              <span className="block text-sm text-primary-foreground/70">Certification</span>
+              <Link to="/publish" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                Publier un logement
+              </Link>
+              <Link to="/certification" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                Certification
+              </Link>
             </div>
           </div>
         </div>
