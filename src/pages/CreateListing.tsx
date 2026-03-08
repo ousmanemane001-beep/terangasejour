@@ -480,6 +480,62 @@ const CreateListing = () => {
                 </Card>
               </motion.div>
             )}
+
+            {/* Step 5: Booking Settings */}
+            {step === 5 && (
+              <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
+                  Paramètres de réservation
+                </h1>
+                <p className="text-muted-foreground mb-8">Choisissez comment les voyageurs peuvent réserver votre logement.</p>
+
+                <Card className="border-none shadow-[var(--shadow-card)] mb-8">
+                  <CardContent className="p-6">
+                    <h3 className="font-display font-semibold text-foreground mb-4">Mode de réservation</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {bookingModes.map((mode) => (
+                        <div
+                          key={mode.value}
+                          onClick={() => setBookingMode(mode.value)}
+                          className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                            bookingMode === mode.value ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"
+                          }`}
+                        >
+                          <div className="text-2xl mb-2">{mode.icon}</div>
+                          <p className="font-medium text-foreground text-sm">{mode.label}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{mode.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-[var(--shadow-card)]">
+                  <CardContent className="p-6">
+                    <h3 className="font-display font-semibold text-foreground mb-4">Disponibilité</h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      {availabilityModes.map((mode) => (
+                        <div
+                          key={mode.value}
+                          onClick={() => setAvailabilityMode(mode.value)}
+                          className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                            availabilityMode === mode.value ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{mode.icon}</span>
+                            <div>
+                              <p className="font-medium text-foreground text-sm">{mode.label}</p>
+                              <p className="text-xs text-muted-foreground">{mode.desc}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
           </AnimatePresence>
 
           {/* Navigation */}
