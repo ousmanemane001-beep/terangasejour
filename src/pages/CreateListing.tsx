@@ -159,6 +159,9 @@ const CreateListing = () => {
       if (insertError) throw insertError;
 
       setPublishedId(data.id);
+      // Invalidate listings cache so homepage and explore show the new listing immediately
+      queryClient.invalidateQueries({ queryKey: ["listings"] });
+      queryClient.invalidateQueries({ queryKey: ["owner-listings"] });
       toast.success("Votre logement a été publié avec succès !");
     } catch (err: any) {
       toast.error(err.message || "Erreur lors de la création de l'annonce.");
