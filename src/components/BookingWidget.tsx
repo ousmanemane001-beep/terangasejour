@@ -31,6 +31,7 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
   const { user } = useAuth();
   const navigate = useNavigate();
   const createBooking = useCreateBooking();
+  const createNotification = useCreateNotification();
   const { data: bookedRanges } = useBookedDates(listingId);
   const disabledDates = bookedRanges ? getDisabledDates(bookedRanges) : [];
 
