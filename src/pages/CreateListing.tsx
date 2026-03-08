@@ -90,6 +90,10 @@ const CreateListing = () => {
   const [monthDiscount, setMonthDiscount] = useState("");
   const [selectedRules, setSelectedRules] = useState<string[]>([]);
 
+  // Step 5 - Booking settings
+  const [bookingMode, setBookingMode] = useState("instant");
+  const [availabilityMode, setAvailabilityMode] = useState("always");
+
   // UI state
   const [step, setStep] = useState(1);
 
