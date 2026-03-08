@@ -190,11 +190,14 @@ const Index = () => {
   );
 };
 
-const IndexListingsGrid = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
+const IndexListingsCarousel = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
   ({ listings }, ref) => {
     const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
     return (
-      <div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      <div
+        ref={ref}
+        className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide"
+      >
         {listings.map((listing, i) => (
           <motion.div
             key={listing.id}
@@ -202,6 +205,7 @@ const IndexListingsGrid = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.05 }}
+            className="min-w-[280px] max-w-[320px] w-[75vw] sm:w-[320px] shrink-0 snap-start"
           >
             <ListingCard listing={listing} rating={ratingsMap?.[listing.id]} />
           </motion.div>
@@ -210,7 +214,7 @@ const IndexListingsGrid = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
     );
   }
 );
-IndexListingsGrid.displayName = "IndexListingsGrid";
+IndexListingsCarousel.displayName = "IndexListingsCarousel";
 
 const PropertySection = ({ title, subtitle, items, bg }: { title: string; subtitle: string; items: typeof properties; bg?: boolean }) => (
   <section className={`py-10 md:py-14 ${bg ? "bg-secondary" : ""}`}>
