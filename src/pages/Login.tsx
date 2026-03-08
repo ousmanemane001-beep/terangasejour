@@ -53,7 +53,7 @@ const Login = () => {
               </div>
               <h1 className="font-display text-2xl font-bold text-foreground">Connexion</h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Accédez à votre compte VotreSéjour
+                Accédez à votre compte TerangaSéjour
               </p>
             </div>
 
