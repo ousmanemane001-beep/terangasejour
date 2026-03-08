@@ -211,6 +211,8 @@ export type Database = {
           created_at: string
           id: string
           listing_id: string
+          owner_reply: string | null
+          owner_reply_at: string | null
           rating: number
           user_id: string
         }
@@ -220,6 +222,8 @@ export type Database = {
           created_at?: string
           id?: string
           listing_id: string
+          owner_reply?: string | null
+          owner_reply_at?: string | null
           rating: number
           user_id: string
         }
@@ -229,6 +233,8 @@ export type Database = {
           created_at?: string
           id?: string
           listing_id?: string
+          owner_reply?: string | null
+          owner_reply_at?: string | null
           rating?: number
           user_id?: string
         }

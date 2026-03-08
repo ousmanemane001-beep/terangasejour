@@ -6,6 +6,7 @@ import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import PropertyMap from "@/components/PropertyMap";
 import { motion } from "framer-motion";
+import { useListingRating } from "@/hooks/useReviews";
 import { useParams, Link } from "react-router-dom";
 import { properties } from "@/data/properties";
 import { useListing } from "@/hooks/useListings";
@@ -31,6 +32,7 @@ const PropertyDetail = () => {
   const { id } = useParams();
   const isUUID = id && id.includes("-");
   const { data: dbListing, isLoading } = useListing(isUUID ? id : undefined);
+  const { data: dbRating } = useListingRating(isUUID ? id : undefined);
   const staticProperty = !isUUID ? properties.find((p) => p.id === Number(id)) : null;
   const [selectedImage, setSelectedImage] = useState(0);
 
@@ -51,7 +53,7 @@ const PropertyDetail = () => {
         price: dbListing.price_per_night, bedrooms: dbListing.bedrooms, bathrooms: dbListing.bathrooms,
         guests: dbListing.capacity, images: dbListing.photos || [],
         coverImage: dbListing.photos?.[0] || "/placeholder.svg",
-        rating: null as number | null, reviewCount: null as number | null, isDB: true, verified: dbListing.verified,
+        rating: dbRating?.avg ?? null, reviewCount: dbRating?.count ?? null, isDB: true, verified: dbListing.verified,
         latitude: dbListing.latitude, longitude: dbListing.longitude,
         address: dbListing.address, city: dbListing.city,
       }

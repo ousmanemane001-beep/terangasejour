@@ -7,7 +7,8 @@ import PropertyCard from "@/components/PropertyCard";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { properties } from "@/data/properties";
-import { useListings } from "@/hooks/useListings";
+import { useListings, type DBListing } from "@/hooks/useListings";
+import { useListingsRatings } from "@/hooks/useReviews";
 import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones, Zap, Home, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroBg from "@/assets/hero-bg.jpg";
@@ -121,11 +122,7 @@ const Index = () => {
                 <Button variant="outline" className="hidden md:flex rounded-full">Voir plus</Button>
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {dbListings.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} />
-              ))}
-            </div>
+            <IndexListingsGrid listings={dbListings} />
           </div>
         </section>
       ) : null}
@@ -199,6 +196,17 @@ const Index = () => {
     </div>
   );
 };
+
+function IndexListingsGrid({ listings }: { listings: DBListing[] }) {
+  const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      {listings.map((listing) => (
+        <ListingCard key={listing.id} listing={listing} rating={ratingsMap?.[listing.id]} />
+      ))}
+    </div>
+  );
+}
 
 const PropertySection = ({ title, subtitle, items, bg }: { title: string; subtitle: string; items: typeof properties; bg?: boolean }) => (
   <section className={`py-16 ${bg ? "bg-secondary" : ""}`}>

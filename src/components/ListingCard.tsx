@@ -1,11 +1,12 @@
-import { Heart, MapPin, Users, Bed, Bath } from "lucide-react";
+import { Heart, MapPin, Users, Bed, Bath, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import type { DBListing } from "@/hooks/useListings";
+import type { ListingRating } from "@/hooks/useReviews";
 
-const ListingCard = ({ listing }: { listing: DBListing }) => {
+const ListingCard = ({ listing, rating }: { listing: DBListing; rating?: ListingRating }) => {
   const coverImage = listing.photos?.[0] || "/placeholder.svg";
 
   return (
@@ -30,7 +31,16 @@ const ListingCard = ({ listing }: { listing: DBListing }) => {
         </div>
       </Link>
       <div className="p-4">
-        <h3 className="font-display font-semibold text-foreground text-base leading-tight line-clamp-1 mb-1">{listing.title}</h3>
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="font-display font-semibold text-foreground text-base leading-tight line-clamp-1">{listing.title}</h3>
+          {rating && rating.avg !== null && (
+            <div className="flex items-center gap-1 shrink-0 ml-2">
+              <Star className="w-3.5 h-3.5 fill-primary text-primary" />
+              <span className="text-sm font-medium text-foreground">{rating.avg}</span>
+              <span className="text-xs text-muted-foreground">({rating.count})</span>
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-1 text-muted-foreground mb-2">
           <MapPin className="w-3.5 h-3.5" />
           <span className="text-sm line-clamp-1">{listing.location || "Non précisé"}</span>

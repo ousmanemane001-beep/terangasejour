@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useListingsRatings } from "@/hooks/useReviews";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import Navbar from "@/components/Navbar";
@@ -9,7 +10,7 @@ import PropertyCard from "@/components/PropertyCard";
 import ListingCard from "@/components/ListingCard";
 import ExploreMap from "@/components/ExploreMap";
 import { properties, Property } from "@/data/properties";
-import { useListings } from "@/hooks/useListings";
+import { useListings, type DBListing } from "@/hooks/useListings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
@@ -227,12 +228,7 @@ const Explore = () => {
         <div className={cn("flex-1 overflow-y-auto", showMap ? "lg:w-[55%]" : "w-full")}>
           <div className="p-4">
             {filteredDBListings.length > 0 && (
-              <div className="mb-8">
-                <p className="text-sm font-semibold text-foreground mb-4">{filteredDBListings.length} logement{filteredDBListings.length !== 1 ? "s" : ""} publié{filteredDBListings.length !== 1 ? "s" : ""}</p>
-                <div className={cn("grid gap-5", showMap ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4")}>
-                  {filteredDBListings.map((listing) => <ListingCard key={listing.id} listing={listing} />)}
-                </div>
-              </div>
+              <DBListingsWithRatings listings={filteredDBListings} showMap={showMap} />
             )}
             <p className="text-sm text-muted-foreground mb-4">
               <span className="font-semibold text-foreground">{filteredProperties.length}</span> logement{filteredProperties.length !== 1 ? "s" : ""} populaire{filteredProperties.length !== 1 ? "s" : ""}
@@ -264,5 +260,18 @@ const Explore = () => {
     </div>
   );
 };
+
+/* Sub-component to batch-fetch ratings for DB listings */
+function DBListingsWithRatings({ listings, showMap }: { listings: DBListing[]; showMap: boolean }) {
+  const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
+  return (
+    <div className="mb-8">
+      <p className="text-sm font-semibold text-foreground mb-4">{listings.length} logement{listings.length !== 1 ? "s" : ""} publié{listings.length !== 1 ? "s" : ""}</p>
+      <div className={cn("grid gap-5", showMap ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4")}>
+        {listings.map((listing) => <ListingCard key={listing.id} listing={listing} rating={ratingsMap?.[listing.id]} />)}
+      </div>
+    </div>
+  );
+}
 
 export default Explore;
