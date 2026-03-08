@@ -195,9 +195,9 @@ const SearchBar = () => {
         </Popover>
 
         {/* Search button */}
-        <Button onClick={handleSearch} className="bg-primary text-primary-foreground rounded-xl px-6 h-12 font-medium shrink-0">
+        <Button onClick={handleSearch} className="bg-primary text-primary-foreground rounded-xl px-6 h-12 font-semibold shrink-0">
           <Search className="w-4 h-4 mr-2" />
-          Rechercher
+          RECHERCHER
         </Button>
       </div>
     </div>
