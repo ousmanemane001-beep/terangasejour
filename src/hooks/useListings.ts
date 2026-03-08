@@ -13,6 +13,7 @@ export interface DBListing {
   price_per_night: number;
   photos: string[] | null;
   status: string;
+  verified: boolean;
   created_at: string;
   user_id: string;
 }
