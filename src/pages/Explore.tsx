@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -35,11 +36,17 @@ const amenityOptions = [
 ];
 
 const Explore = () => {
+  const [searchParams] = useSearchParams();
+
   // Search state
-  const [destination, setDestination] = useState("");
-  const [checkIn, setCheckIn] = useState<Date>();
-  const [checkOut, setCheckOut] = useState<Date>();
-  const [guestCount, setGuestCount] = useState(1);
+  const [destination, setDestination] = useState(searchParams.get("destination") || "");
+  const [checkIn, setCheckIn] = useState<Date | undefined>(
+    searchParams.get("checkIn") ? new Date(searchParams.get("checkIn")!) : undefined
+  );
+  const [checkOut, setCheckOut] = useState<Date | undefined>(
+    searchParams.get("checkOut") ? new Date(searchParams.get("checkOut")!) : undefined
+  );
+  const [guestCount, setGuestCount] = useState(Number(searchParams.get("guests")) || 1);
 
   // Filter state
   const [showFilters, setShowFilters] = useState(false);
