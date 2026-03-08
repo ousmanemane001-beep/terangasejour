@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -36,7 +36,7 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
 };
 
 const Dashboard = () => {
-  const { user, loading: authLoading, isHost, profile } = useAuth();
+  const { user, loading: authLoading, isHost, isAdmin, profile } = useAuth();
   const navigate = useNavigate();
   const { tab } = useParams<{ tab?: string }>();
   const qc = useQueryClient();
@@ -61,6 +61,11 @@ const Dashboard = () => {
         <div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
       </div>
     );
+  }
+
+  // Redirect Super Admin to admin panel
+  if (isAdmin) {
+    return <Navigate to="/admin" replace />;
   }
 
   if (!user) {

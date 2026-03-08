@@ -9,14 +9,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { useIsAdmin, useUnreadCount } from "@/hooks/useAdmin";
+import { useUnreadCount } from "@/hooks/useAdmin";
 import { Badge } from "@/components/ui/badge";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const { user, isHost, profile, signOut } = useAuth();
-  const { data: isAdmin } = useIsAdmin();
+  const { user, isHost, isAdmin, profile, signOut } = useAuth();
   const unreadCount = useUnreadCount();
 
   const initials = profile
@@ -30,6 +29,9 @@ const Navbar = () => {
     { label: "Explorer", path: "/explore" },
     { label: "Carte", path: "/map" },
   ];
+
+  const roleLabel = isAdmin ? "Super Admin" : isHost ? "Hôte" : "Voyageur";
+  const dashboardPath = isAdmin ? "/admin" : "/dashboard";
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
@@ -52,13 +54,16 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Link to={isHost ? "/create-listing" : "/become-host"}>
-            <Button variant="outline" size="sm" className="rounded-full text-sm">Publier un logement</Button>
-          </Link>
+          {/* Hide "Publier un logement" for admins */}
+          {!isAdmin && (
+            <Link to={isHost ? "/create-listing" : "/become-host"}>
+              <Button variant="outline" size="sm" className="rounded-full text-sm">Publier un logement</Button>
+            </Link>
+          )}
           {user ? (
             <>
               {unreadCount > 0 && (
-                <Link to="/dashboard" className="relative">
+                <Link to={dashboardPath} className="relative">
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Bell className="w-5 h-5" />
                     <Badge className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] h-5 w-5 flex items-center justify-center p-0 rounded-full">{unreadCount}</Badge>
@@ -69,7 +74,7 @@ const Navbar = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">{initials}</AvatarFallback>
+                    <AvatarFallback className={`${isAdmin ? "bg-destructive" : "bg-primary"} text-primary-foreground text-xs font-bold`}>{initials}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
@@ -78,46 +83,55 @@ const Navbar = () => {
                   <p className="text-sm font-medium text-foreground">
                     {[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Utilisateur"}
                   </p>
-                  <p className="text-xs text-muted-foreground">{isHost ? "Hôte" : "Voyageur"}</p>
+                  <p className="text-xs text-muted-foreground">{roleLabel}</p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/dashboard" className="flex items-center gap-2"><Home className="w-4 h-4" /> Mon espace</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/favorites" className="flex items-center gap-2"><Heart className="w-4 h-4" /> Mes favoris</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/messages" className="flex items-center gap-2"><MessageCircle className="w-4 h-4" /> Messages</Link>
-                </DropdownMenuItem>
-                {isHost && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard?tab=listings" className="flex items-center gap-2"><CalendarDays className="w-4 h-4" /> Mes logements</Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem asChild>
-                  <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
-                </DropdownMenuItem>
-                {isAdmin && (
+
+                {isAdmin ? (
+                  /* Admin-only menu items */
                   <>
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link to="/admin" className="flex items-center gap-2 text-primary font-medium">
-                        <Shield className="w-4 h-4" /> Administration
+                        <Shield className="w-4 h-4" /> Panel Admin
                       </Link>
                     </DropdownMenuItem>
-                  </>
-                )}
-                {!isHost && (
-                  <>
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to="/become-host" className="flex items-center gap-2 text-primary font-medium">
-                        <Home className="w-4 h-4" /> Devenir hôte
-                      </Link>
+                      <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
                     </DropdownMenuItem>
                   </>
+                ) : (
+                  /* Host/Guest menu items */
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard" className="flex items-center gap-2"><Home className="w-4 h-4" /> Mon espace</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/favorites" className="flex items-center gap-2"><Heart className="w-4 h-4" /> Mes favoris</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/messages" className="flex items-center gap-2"><MessageCircle className="w-4 h-4" /> Messages</Link>
+                    </DropdownMenuItem>
+                    {isHost && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard?tab=listings" className="flex items-center gap-2"><CalendarDays className="w-4 h-4" /> Mes logements</Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
+                    </DropdownMenuItem>
+                    {!isHost && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link to="/become-host" className="flex items-center gap-2 text-primary font-medium">
+                            <Home className="w-4 h-4" /> Devenir hôte
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </>
                 )}
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut} className="flex items-center gap-2 text-destructive">
                   <LogOut className="w-4 h-4" /> Déconnexion
@@ -153,7 +167,7 @@ const Navbar = () => {
                   }`}
                 >{link.label}</Link>
               ))}
-              {user && (
+              {user && !isAdmin && (
                 <>
                   <Link to="/favorites" onClick={() => setMobileOpen(false)}
                     className="block px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground">
@@ -167,14 +181,24 @@ const Navbar = () => {
                   )}
                 </>
               )}
-              <div className="pt-3 flex flex-col gap-2">
-                <Link to={isHost ? "/create-listing" : "/become-host"} onClick={() => setMobileOpen(false)}>
-                  <Button variant="outline" size="sm" className="rounded-full w-full">Publier un logement</Button>
+              {user && isAdmin && (
+                <Link to="/admin" onClick={() => setMobileOpen(false)}
+                  className="block px-3 py-2 rounded-lg text-sm font-medium text-primary">
+                  <Shield className="w-4 h-4 inline mr-1" /> Panel Admin
                 </Link>
+              )}
+              <div className="pt-3 flex flex-col gap-2">
+                {!isAdmin && (
+                  <Link to={isHost ? "/create-listing" : "/become-host"} onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" size="sm" className="rounded-full w-full">Publier un logement</Button>
+                  </Link>
+                )}
                 {user ? (
                   <>
-                    <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
-                      <Button size="sm" className="rounded-full bg-primary text-primary-foreground w-full">Mon espace</Button>
+                    <Link to={dashboardPath} onClick={() => setMobileOpen(false)}>
+                      <Button size="sm" className="rounded-full bg-primary text-primary-foreground w-full">
+                        {isAdmin ? "Panel Admin" : "Mon espace"}
+                      </Button>
                     </Link>
                     <Button variant="ghost" size="sm" className="rounded-full text-destructive" onClick={() => { signOut(); setMobileOpen(false); }}>
                       Déconnexion
