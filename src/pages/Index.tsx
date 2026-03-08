@@ -1,14 +1,18 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
 import PropertyCard from "@/components/PropertyCard";
+import ListingCard from "@/components/ListingCard";
 import Footer from "@/components/Footer";
 import { properties } from "@/data/properties";
-import { Home, Shield } from "lucide-react";
+import { useListings } from "@/hooks/useListings";
+import { Home, Shield, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const Index = () => {
+  const { data: dbListings, isLoading } = useListings(8);
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -49,8 +53,49 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Popular Listings */}
-      <section className="py-16 bg-warm-gray">
+      {/* Published Listings from DB */}
+      {isLoading ? (
+        <section className="py-16 bg-warm-gray">
+          <div className="container mx-auto px-4 flex justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-accent" />
+          </div>
+        </section>
+      ) : dbListings && dbListings.length > 0 ? (
+        <section className="py-16 bg-warm-gray">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                  Logements récemment publiés
+                </h2>
+                <p className="text-muted-foreground mt-1">
+                  Les derniers logements ajoutés par nos hôtes
+                </p>
+              </div>
+              <Link to="/explore">
+                <Button variant="outline" className="hidden md:flex rounded-full">
+                  Voir plus de logements
+                </Button>
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {dbListings.map((listing) => (
+                <ListingCard key={listing.id} listing={listing} />
+              ))}
+            </div>
+            <div className="mt-8 text-center md:hidden">
+              <Link to="/explore">
+                <Button variant="outline" className="rounded-full">
+                  Voir plus de logements
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Static Popular Listings */}
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -61,12 +106,14 @@ const Index = () => {
                 Découvrez les meilleures adresses au Sénégal
               </p>
             </div>
-            <Button variant="outline" className="hidden md:flex rounded-full">
-              Voir tout
-            </Button>
+            <Link to="/explore">
+              <Button variant="outline" className="hidden md:flex rounded-full">
+                Voir tout
+              </Button>
+            </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-            {properties.map((property) => (
+            {properties.slice(0, 5).map((property) => (
               <PropertyCard key={property.id} {...property} />
             ))}
           </div>

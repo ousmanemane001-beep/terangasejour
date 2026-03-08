@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
@@ -6,8 +6,10 @@ import { fr } from "date-fns/locale";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
+import ListingCard from "@/components/ListingCard";
 import ExploreMap from "@/components/ExploreMap";
 import { properties, Property } from "@/data/properties";
+import { useListings } from "@/hooks/useListings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
@@ -37,6 +39,7 @@ const amenityOptions = [
 
 const Explore = () => {
   const [searchParams] = useSearchParams();
+  const { data: dbListings } = useListings();
 
   // Search state
   const [destination, setDestination] = useState(searchParams.get("destination") || "");
@@ -337,8 +340,26 @@ const Explore = () => {
         {/* Property Grid */}
         <div className={cn("flex-1 overflow-y-auto", showMap ? "lg:w-[55%]" : "w-full")}>
           <div className="p-4">
+            {/* DB Listings */}
+            {dbListings && dbListings.length > 0 && (
+              <div className="mb-8">
+                <p className="text-sm font-semibold text-foreground mb-4">
+                  {dbListings.length} logement{dbListings.length !== 1 ? "s" : ""} publié{dbListings.length !== 1 ? "s" : ""}
+                </p>
+                <div className={cn(
+                  "grid gap-5",
+                  showMap ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                )}>
+                  {dbListings.map((listing) => (
+                    <ListingCard key={listing.id} listing={listing} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Static listings */}
             <p className="text-sm text-muted-foreground mb-4">
-              <span className="font-semibold text-foreground">{filteredProperties.length}</span> logement{filteredProperties.length !== 1 ? "s" : ""} trouvé{filteredProperties.length !== 1 ? "s" : ""}
+              <span className="font-semibold text-foreground">{filteredProperties.length}</span> logement{filteredProperties.length !== 1 ? "s" : ""} populaire{filteredProperties.length !== 1 ? "s" : ""}
             </p>
             <div className={cn(
               "grid gap-5",
@@ -356,10 +377,10 @@ const Explore = () => {
                 </div>
               ))}
             </div>
-            {filteredProperties.length === 0 && (
+            {filteredProperties.length === 0 && (!dbListings || dbListings.length === 0) && (
               <div className="text-center py-20">
                 <Search className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-                <h3 className="font-display text-lg font-semibold text-foreground mb-2">Aucun résultat</h3>
+                <h3 className="font-display text-lg font-semibold text-foreground mb-2">Aucun logement disponible pour le moment</h3>
                 <p className="text-sm text-muted-foreground mb-4">Essayez de modifier vos filtres ou votre recherche.</p>
                 <Button variant="outline" className="rounded-full" onClick={clearFilters}>Effacer les filtres</Button>
               </div>
