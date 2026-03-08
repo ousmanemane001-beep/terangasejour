@@ -70,6 +70,35 @@ export type Database = {
           },
         ]
       }
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           bathrooms: number
@@ -130,6 +159,7 @@ export type Database = {
           created_at: string
           first_name: string | null
           id: string
+          is_host: boolean
           last_name: string | null
           phone: string | null
           updated_at: string
@@ -139,6 +169,7 @@ export type Database = {
           created_at?: string
           first_name?: string | null
           id: string
+          is_host?: boolean
           last_name?: string | null
           phone?: string | null
           updated_at?: string
@@ -148,6 +179,7 @@ export type Database = {
           created_at?: string
           first_name?: string | null
           id?: string
+          is_host?: boolean
           last_name?: string | null
           phone?: string | null
           updated_at?: string

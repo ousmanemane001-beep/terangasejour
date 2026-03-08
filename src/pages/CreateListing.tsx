@@ -50,7 +50,7 @@ const rulesList = [
 const TOTAL_STEPS = 4;
 
 const CreateListing = () => {
-  const { user } = useAuth();
+  const { user, isHost } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -77,6 +77,8 @@ const CreateListing = () => {
 
   // UI state
   const [step, setStep] = useState(1);
+
+  // Redirect non-hosts to become-host page
   const [loading, setLoading] = useState(false);
   const [publishedId, setPublishedId] = useState<string | null>(null);
 
@@ -99,6 +101,12 @@ const CreateListing = () => {
     if (step === 3) return photos.length >= 5;
     return true;
   }, [step, title, description, location, photos.length]);
+
+  // Redirect non-hosts to become-host page
+  if (!isHost && user) {
+    navigate("/become-host");
+    return null;
+  }
 
   const validate = (): string | null => {
     if (!title.trim()) return "Le titre est obligatoire.";

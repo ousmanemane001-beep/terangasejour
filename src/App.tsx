@@ -18,6 +18,8 @@ import PropertyDetail from "./pages/PropertyDetail";
 import Dashboard from "./pages/Dashboard";
 import CreateListing from "./pages/CreateListing";
 import Profile from "./pages/Profile";
+import BecomeHost from "./pages/BecomeHost";
+import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +46,8 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/create-listing" element={<CreateListing />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/become-host" element={<BecomeHost />} />
+            <Route path="/favorites" element={<Favorites />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
