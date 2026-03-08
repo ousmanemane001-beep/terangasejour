@@ -14,6 +14,7 @@ const villaSaly5 = "/images/villa-saly-5.jfif";
 export interface Property {
   id: number;
   image: string;
+  images?: string[];
   title: string;
   location: string;
   price: number;
@@ -21,8 +22,10 @@ export interface Property {
   reviewCount: number;
   type: string;
   bedrooms: number;
+  bathrooms?: number;
   guests: number;
   amenities: string[];
+  description?: string;
   lat: number;
   lng: number;
 }
