@@ -87,10 +87,6 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">Destinations populaires</h2>
           <p className="text-muted-foreground mb-8">Les lieux les plus prisés par nos voyageurs</p>
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">Destinations populaires</h2>
-          <p className="text-muted-foreground mb-8">Les lieux les plus prisés par nos voyageurs</p>
           <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory md:snap-none scrollbar-hide">
             {DESTINATIONS.map((dest, i) => (
               <DestinationCard
