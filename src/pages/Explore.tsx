@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useListingsRatings } from "@/hooks/useReviews";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import Navbar from "@/components/Navbar";
