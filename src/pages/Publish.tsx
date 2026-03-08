@@ -64,6 +64,10 @@ const Publish = () => {
       toast.error("Veuillez remplir le titre et le prix");
       return;
     }
+    if (photoFiles.length < 5) {
+      toast.error("Vous devez ajouter au moins 5 photos pour publier ce logement.");
+      return;
+    }
 
     setLoading(true);
     try {
