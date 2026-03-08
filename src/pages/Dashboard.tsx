@@ -392,6 +392,27 @@ const Dashboard = () => {
             </Card>
           )}
 
+          {isHost && activeTab === "calendar" && (
+            <Card className="border-none shadow-[var(--shadow-card)]">
+              <CardHeader><CardTitle className="font-display text-lg">Calendrier de disponibilité</CardTitle></CardHeader>
+              <CardContent>
+                {listings && listings.length > 0 ? (
+                  <div className="space-y-8">
+                    {listings.filter((l) => l.status === "published").map((listing) => (
+                      <div key={listing.id}>
+                        <h4 className="font-display font-semibold text-foreground mb-4 flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-primary" />
+                          {listing.title}
+                        </h4>
+                        <BlockedDatesCalendar listingId={listing.id} />
+                      </div>
+                    ))}
+                  </div>
+                ) : <p className="text-center text-muted-foreground py-8">Aucun logement publié.</p>}
+              </CardContent>
+            </Card>
+          )}
+
           {activeTab === "my-bookings" && (
             <Card className="border-none shadow-[var(--shadow-card)]">
               <CardHeader><CardTitle className="font-display text-lg">Mes réservations</CardTitle></CardHeader>
