@@ -97,7 +97,7 @@ const Publish = () => {
         price_per_night: parseInt(price),
         photos: photoUrls,
         status: "published",
-      } as any);
+      });
 
       if (error) throw error;
       toast.success("Logement publié avec succès !");
