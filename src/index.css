@@ -15,25 +15,25 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 14%;
 
-    /* Booking.com deep blue */
-    --primary: 216 100% 21%;
+    /* Terracotta — warm African earth tone */
+    --primary: 18 76% 44%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 20% 14%;
+    --secondary: 30 25% 96%;
+    --secondary-foreground: 20 20% 14%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 30 20% 96%;
+    --muted-foreground: 20 10% 46%;
 
-    /* Booking.com yellow/gold accent */
-    --accent: 44 97% 50%;
-    --accent-foreground: 220 20% 14%;
+    /* Gold sand accent */
+    --accent: 38 92% 55%;
+    --accent-foreground: 20 20% 14%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --border: 30 15% 90%;
+    --input: 30 15% 90%;
     --ring: 216 100% 21%;
 
     --radius: 0.5rem;
