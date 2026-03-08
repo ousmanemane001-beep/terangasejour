@@ -567,12 +567,12 @@ const CreateListing = () => {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Publication en cours...
+                    Soumission en cours...
                   </>
                 ) : (
                   <>
                     <CheckCircle className="w-4 h-4" />
-                    Publier mon logement
+                    Soumettre pour approbation
                   </>
                 )}
               </Button>
