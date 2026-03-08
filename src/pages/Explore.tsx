@@ -389,7 +389,7 @@ const Explore = () => {
                 </div>
               ))}
             </div>
-            {filteredProperties.length === 0 && (!dbListings || dbListings.length === 0) && (
+            {filteredProperties.length === 0 && filteredDBListings.length === 0 && (
               <div className="text-center py-20">
                 <Search className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
                 <h3 className="font-display text-lg font-semibold text-foreground mb-2">Aucun logement disponible pour le moment</h3>
