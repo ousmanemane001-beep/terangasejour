@@ -139,6 +139,9 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex gap-3">
+              <Link to="/messages">
+                <Button variant="outline" className="rounded-full gap-2 hover:scale-105 transition-transform"><MessageCircle className="w-4 h-4" /> Messages</Button>
+              </Link>
               {isHost ? (
                 <Link to="/create-listing">
                   <Button className="rounded-full bg-primary text-primary-foreground gap-2 hover:scale-105 transition-transform"><Plus className="w-4 h-4" /> Nouveau logement</Button>
