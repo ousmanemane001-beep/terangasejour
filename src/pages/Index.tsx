@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const Index = () => {
+  const { data: dbListings, isLoading } = useListings(8);
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
