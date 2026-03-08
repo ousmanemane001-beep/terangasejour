@@ -173,7 +173,7 @@ const PropertyDetail = () => {
                         {listing.type}
                       </span>
                       {listing.verified && (
-                        <Badge className="bg-green-100 text-green-700 gap-1">
+                        <Badge className="bg-accent/10 text-accent gap-1">
                           <ShieldCheck className="w-3 h-3" /> Vérifié
                         </Badge>
                       )}

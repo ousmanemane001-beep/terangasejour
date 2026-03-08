@@ -103,6 +103,18 @@ const Explore = () => {
     });
   }, [destination, priceRange, bedroomFilter, guestFilter, selectedTypes, selectedAmenities]);
 
+  const filteredDBListings = useMemo(() => {
+    if (!dbListings) return [];
+    return dbListings.filter((l) => {
+      if (destination && !(l.location || "").toLowerCase().includes(destination.toLowerCase()) && !l.title.toLowerCase().includes(destination.toLowerCase())) return false;
+      if (l.price_per_night < priceRange[0] || l.price_per_night > priceRange[1]) return false;
+      if (bedroomFilter > 0 && l.bedrooms < bedroomFilter) return false;
+      if (guestFilter > 0 && l.capacity < guestFilter) return false;
+      if (selectedTypes.length > 0 && !selectedTypes.map(t => t.toLowerCase()).includes(l.property_type.toLowerCase())) return false;
+      return true;
+    });
+  }, [dbListings, destination, priceRange, bedroomFilter, guestFilter, selectedTypes]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
