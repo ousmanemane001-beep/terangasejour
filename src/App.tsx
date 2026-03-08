@@ -14,6 +14,9 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Publish from "./pages/Publish";
 import Certification from "./pages/Certification";
 import PropertyDetail from "./pages/PropertyDetail";
+import Dashboard from "./pages/Dashboard";
+import CreateListing from "./pages/CreateListing";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +39,9 @@ const App = () => (
           <Route path="/publish" element={<Publish />} />
           <Route path="/certification" element={<Certification />} />
           <Route path="/property/:id" element={<PropertyDetail />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/create-listing" element={<CreateListing />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
