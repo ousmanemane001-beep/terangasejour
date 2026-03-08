@@ -62,16 +62,38 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
     return disabledDates.some((d) => d.toDateString() === date.toDateString());
   };
 
+  const handleRequestAvailability = async () => {
+    if (!user) { toast.error("Connectez-vous pour faire une demande."); navigate("/login"); return; }
+    if (!checkIn || !checkOut || nights < 1) { toast.error("Sélectionnez vos dates."); return; }
+    try {
+      await supabase.from("booking_requests").insert({
+        listing_id: listingId,
+        guest_id: user.id,
+        check_in: format(checkIn, "yyyy-MM-dd"),
+        check_out: format(checkOut, "yyyy-MM-dd"),
+        guests,
+        message: requestMessage.trim() || null,
+      } as any);
+      // Notify host
+      if (hostId) {
+        await createNotification.mutateAsync({
+          user_id: hostId,
+          type: "booking_request",
+          title: "Nouvelle demande de réservation",
+          message: `Un voyageur souhaite réserver du ${format(checkIn, "d MMM", { locale: fr })} au ${format(checkOut, "d MMM", { locale: fr })}.`,
+          data: { listing_id: listingId },
+        });
+      }
+      setRequestSent(true);
+      toast.success("Demande envoyée à l'hôte !");
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de l'envoi.");
+    }
+  };
+
   const handleBook = async () => {
-    if (!user) {
-      toast.error("Veuillez vous connecter pour réserver.");
-      navigate("/login");
-      return;
-    }
-    if (!checkIn || !checkOut || nights < 1) {
-      toast.error("Veuillez sélectionner vos dates de séjour.");
-      return;
-    }
+    if (!user) { toast.error("Veuillez vous connecter pour réserver."); navigate("/login"); return; }
+    if (!checkIn || !checkOut || nights < 1) { toast.error("Veuillez sélectionner vos dates de séjour."); return; }
 
     if (!showConfirmForm) {
       setShowConfirmForm(true);
@@ -81,10 +103,7 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
       return;
     }
 
-    if (!guestName.trim() || !guestEmail.trim()) {
-      toast.error("Veuillez remplir votre nom et email.");
-      return;
-    }
+    if (!guestName.trim() || !guestEmail.trim()) { toast.error("Veuillez remplir votre nom et email."); return; }
 
     try {
       await createBooking.mutateAsync({
@@ -99,12 +118,37 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
         total_price: total,
         payment_method: paymentMethod,
       });
+      // Notify host
+      if (hostId) {
+        await createNotification.mutateAsync({
+          user_id: hostId,
+          type: "new_booking",
+          title: "Nouvelle réservation",
+          message: `Réservation confirmée du ${format(checkIn, "d MMM", { locale: fr })} au ${format(checkOut, "d MMM", { locale: fr })} · ${total.toLocaleString("fr-FR")} F`,
+          data: { listing_id: listingId },
+        });
+      }
       setBooked(true);
       toast.success("Réservation confirmée !");
     } catch (err: any) {
       toast.error(err.message || "Erreur lors de la réservation.");
     }
   };
+
+  if (requestSent) {
+    return (
+      <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6 text-center">
+        <MessageCircle className="w-12 h-12 text-primary mx-auto mb-3" />
+        <h3 className="font-display text-lg font-bold text-foreground mb-1">Demande envoyée !</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          L'hôte va examiner votre demande pour le {format(checkIn!, "d MMMM", { locale: fr })} au {format(checkOut!, "d MMMM yyyy", { locale: fr })}.
+        </p>
+        <Button className="rounded-full bg-primary text-primary-foreground" onClick={() => navigate("/dashboard/my-bookings")}>
+          Voir mes demandes
+        </Button>
+      </div>
+    );
+  }
 
   if (booked) {
     return (
