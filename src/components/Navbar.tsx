@@ -55,9 +55,9 @@ const Navbar = () => {
               Publier mon logement
             </Button>
           </Link>
-          <Link to="/login">
+          <Link to="/dashboard">
             <Button size="sm" className="rounded-full bg-primary text-primary-foreground text-sm">
-              Connexion
+              Mon espace
             </Button>
           </Link>
         </div>
