@@ -236,7 +236,7 @@ const IndexListingsCarousel = forwardRef<HTMLDivElement, { listings: DBListing[]
     }, [paused]);
 
     return (
-      <div className="relative group">
+      <div className="relative group" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
         {canScrollLeft && (
           <button
             onClick={() => scroll("left")}
