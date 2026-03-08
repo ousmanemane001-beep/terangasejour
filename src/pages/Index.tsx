@@ -197,6 +197,17 @@ const Index = () => {
   );
 };
 
+function IndexListingsGrid({ listings }: { listings: DBListing[] }) {
+  const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      {listings.map((listing) => (
+        <ListingCard key={listing.id} listing={listing} rating={ratingsMap?.[listing.id]} />
+      ))}
+    </div>
+  );
+}
+
 const PropertySection = ({ title, subtitle, items, bg }: { title: string; subtitle: string; items: typeof properties; bg?: boolean }) => (
   <section className={`py-16 ${bg ? "bg-secondary" : ""}`}>
     <div className="container mx-auto px-4">
