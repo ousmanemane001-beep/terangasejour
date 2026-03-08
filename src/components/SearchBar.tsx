@@ -73,7 +73,7 @@ const SearchBar = () => {
   return (
     <div className="w-full max-w-5xl">
       {/* Booking.com style: horizontal bar with yellow search button */}
-      <div className="flex flex-col md:flex-row items-stretch gap-1 bg-accent p-1 rounded-lg">
+      <div className="flex flex-col md:flex-row items-stretch gap-1 p-1 rounded-xl" style={{ backgroundColor: 'hsl(var(--search-highlight))' }}>
         {/* Destination */}
         <div className="flex-[2] relative">
           <div className="flex items-center gap-2 bg-background rounded px-3 py-2.5 h-full">

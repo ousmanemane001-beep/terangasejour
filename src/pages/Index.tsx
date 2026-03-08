@@ -51,17 +51,17 @@ const Index = () => {
       {/* Hero with background image + search bar — Booking.com style */}
       <section className="relative bg-primary overflow-hidden">
         {/* Background image */}
-        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30" style={{ backgroundImage: `url(${heroBg})` }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/70 to-primary" />
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20" style={{ backgroundImage: `url(${heroBg})` }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/90 via-primary/80 to-primary" />
         
-        <div className="relative container mx-auto px-4 pt-10 pb-8 md:pt-16 md:pb-12">
+        <div className="relative container mx-auto px-4 pt-10 pb-8 md:pt-14 md:pb-10">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="font-display text-2xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-2 leading-tight"
+            className="font-display text-2xl md:text-4xl lg:text-[2.75rem] font-bold text-primary-foreground mb-2 leading-tight"
           >
-            Trouvez votre séjour idéal au Sénégal
+            Trouvez votre prochain séjour
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -69,7 +69,7 @@ const Index = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-primary-foreground/80 text-sm md:text-base mb-6 md:mb-8 max-w-xl"
           >
-            Villas, appartements et maisons d'hôtes — réservez en toute simplicité.
+            Recherchez des offres sur des hébergements indépendants et plus encore
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
