@@ -23,7 +23,7 @@ export function useBookedDates(listingId: string | undefined) {
   });
 }
 
-export function getDisabledDates(bookedRanges: BookedRange[]): Date[] {
+export function getDisabledDates(bookedRanges: BookedRange[], blockedDates?: string[]): Date[] {
   const disabled: Date[] = [];
   for (const range of bookedRanges) {
     const start = new Date(range.check_in);
@@ -32,6 +32,11 @@ export function getDisabledDates(bookedRanges: BookedRange[]): Date[] {
     while (current <= end) {
       disabled.push(new Date(current));
       current.setDate(current.getDate() + 1);
+    }
+  }
+  if (blockedDates) {
+    for (const d of blockedDates) {
+      disabled.push(new Date(d + "T00:00:00"));
     }
   }
   return disabled;

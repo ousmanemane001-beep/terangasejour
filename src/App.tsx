@@ -21,6 +21,8 @@ import Profile from "./pages/Profile";
 import BecomeHost from "./pages/BecomeHost";
 import Favorites from "./pages/Favorites";
 import AdminVerification from "./pages/AdminVerification";
+import AdminPanel from "./pages/AdminPanel";
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +53,8 @@ const App = () => (
             <Route path="/become-host" element={<BecomeHost />} />
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/admin/verification" element={<AdminVerification />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/messages" element={<Messages />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

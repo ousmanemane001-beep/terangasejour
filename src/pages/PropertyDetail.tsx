@@ -7,13 +7,17 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import PropertyMap from "@/components/PropertyMap";
 import { motion } from "framer-motion";
 import { useListingRating } from "@/hooks/useReviews";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { properties } from "@/data/properties";
 import { useListing } from "@/hooks/useListings";
+import { useStartConversation } from "@/hooks/useConversations";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Star, MapPin, Heart, Share2, Bed, Bath, Users,
   Wifi, Car, AirVent, ChefHat, Waves, ArrowLeft, Loader2,
-  Tv, Lock, Flower2, ShieldCheck,
+  Tv, Lock, Flower2, ShieldCheck, MessageCircle,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -35,6 +39,9 @@ const PropertyDetail = () => {
   const { data: dbRating } = useListingRating(isUUID ? id : undefined);
   const staticProperty = !isUUID ? properties.find((p) => p.id === Number(id)) : null;
   const [selectedImage, setSelectedImage] = useState(0);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const startConversation = useStartConversation();
 
   if (isLoading) {
     return (
@@ -159,6 +166,30 @@ const PropertyDetail = () => {
                     <button className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"><Share2 className="w-4 h-4" /></button>
                   </div>
                 </div>
+
+                {/* Contact host button */}
+                {isUUID && dbListing && user && user.id !== dbListing.user_id && (
+                  <Button
+                    variant="outline"
+                    className="mt-3 rounded-full gap-2 hover:scale-105 transition-transform"
+                    onClick={async () => {
+                      try {
+                        const conv = await startConversation.mutateAsync({
+                          listingId: dbListing.id,
+                          guestId: user.id,
+                          hostId: dbListing.user_id,
+                        });
+                        navigate(`/messages?conv=${conv.id}`);
+                      } catch (e: any) {
+                        toast.error("Impossible de démarrer la conversation");
+                      }
+                    }}
+                    disabled={startConversation.isPending}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Contacter l'hôte
+                  </Button>
+                )}
               </div>
 
               {/* Trust elements */}

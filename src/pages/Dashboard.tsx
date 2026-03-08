@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Home, CalendarDays, Star, TrendingUp, Plus, Settings,
-  CreditCard, MapPin, Loader2, Eye, Trash2, Heart,
+  CreditCard, MapPin, Loader2, Eye, Trash2, Heart, MessageCircle,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOwnerListings, useOwnerBookings, useGuestBookings } from "@/hooks/useOwnerData";
@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import BlockedDatesCalendar from "@/components/BlockedDatesCalendar";
 
 const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   confirmed: { label: "Confirmée", variant: "default" },
@@ -102,6 +103,7 @@ const Dashboard = () => {
     { id: "properties", label: "Mes logements", icon: Home },
     { id: "reservations", label: "Réservations reçues", icon: CalendarDays },
     { id: "revenue", label: "Revenus", icon: CreditCard },
+    { id: "calendar", label: "Calendrier", icon: CalendarDays },
   ];
 
   const commonTabs = [
@@ -137,6 +139,9 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex gap-3">
+              <Link to="/messages">
+                <Button variant="outline" className="rounded-full gap-2 hover:scale-105 transition-transform"><MessageCircle className="w-4 h-4" /> Messages</Button>
+              </Link>
               {isHost ? (
                 <Link to="/create-listing">
                   <Button className="rounded-full bg-primary text-primary-foreground gap-2 hover:scale-105 transition-transform"><Plus className="w-4 h-4" /> Nouveau logement</Button>
@@ -381,6 +386,27 @@ const Dashboard = () => {
                         </div>
                       );
                     })}
+                  </div>
+                ) : <p className="text-center text-muted-foreground py-8">Aucun logement publié.</p>}
+              </CardContent>
+            </Card>
+          )}
+
+          {isHost && activeTab === "calendar" && (
+            <Card className="border-none shadow-[var(--shadow-card)]">
+              <CardHeader><CardTitle className="font-display text-lg">Calendrier de disponibilité</CardTitle></CardHeader>
+              <CardContent>
+                {listings && listings.length > 0 ? (
+                  <div className="space-y-8">
+                    {listings.filter((l) => l.status === "published").map((listing) => (
+                      <div key={listing.id}>
+                        <h4 className="font-display font-semibold text-foreground mb-4 flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-primary" />
+                          {listing.title}
+                        </h4>
+                        <BlockedDatesCalendar listingId={listing.id} />
+                      </div>
+                    ))}
                   </div>
                 ) : <p className="text-center text-muted-foreground py-8">Aucun logement publié.</p>}
               </CardContent>
