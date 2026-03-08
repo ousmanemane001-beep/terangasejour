@@ -166,6 +166,30 @@ const PropertyDetail = () => {
                     <button className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"><Share2 className="w-4 h-4" /></button>
                   </div>
                 </div>
+
+                {/* Contact host button */}
+                {isUUID && dbListing && user && user.id !== dbListing.user_id && (
+                  <Button
+                    variant="outline"
+                    className="mt-3 rounded-full gap-2 hover:scale-105 transition-transform"
+                    onClick={async () => {
+                      try {
+                        const conv = await startConversation.mutateAsync({
+                          listingId: dbListing.id,
+                          guestId: user.id,
+                          hostId: dbListing.user_id,
+                        });
+                        navigate(`/messages?conv=${conv.id}`);
+                      } catch (e: any) {
+                        toast.error("Impossible de démarrer la conversation");
+                      }
+                    }}
+                    disabled={startConversation.isPending}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Contacter l'hôte
+                  </Button>
+                )}
               </div>
 
               {/* Trust elements */}
