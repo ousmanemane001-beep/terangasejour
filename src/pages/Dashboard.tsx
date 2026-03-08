@@ -16,7 +16,6 @@ import { useOwnerListings, useOwnerBookings, useGuestBookings } from "@/hooks/us
 import { useFavorites } from "@/hooks/useFavorites";
 import { useListingsRatings } from "@/hooks/useReviews";
 import { useBookingRequests, useRespondToRequest, useNotifications, useMarkAsRead } from "@/hooks/useAdmin";
-import { useListingsRatings } from "@/hooks/useReviews";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
