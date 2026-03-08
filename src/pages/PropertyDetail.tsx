@@ -197,6 +197,19 @@ const PropertyDetail = () => {
                 </div>
               </div>
 
+              {/* Property Map */}
+              {listing.latitude && listing.longitude && (
+                <div className="border-t border-border pt-8">
+                  <PropertyMap
+                    latitude={listing.latitude}
+                    longitude={listing.longitude}
+                    title={listing.title}
+                    address={listing.address || undefined}
+                    city={listing.city || undefined}
+                  />
+                </div>
+              )}
+
               {/* Availability Calendar */}
               {isUUID && id && (
                 <div className="border-t border-border pt-8">
