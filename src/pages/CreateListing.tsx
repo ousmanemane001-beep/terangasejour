@@ -82,12 +82,6 @@ const CreateListing = () => {
   const [loading, setLoading] = useState(false);
   const [publishedId, setPublishedId] = useState<string | null>(null);
 
-  // Redirect non-hosts to become-host page
-  if (!isHost && user) {
-    navigate("/become-host");
-    return null;
-  }
-
   const toggleAmenity = (id: string) => {
     setSelectedAmenities((prev) =>
       prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
@@ -107,6 +101,12 @@ const CreateListing = () => {
     if (step === 3) return photos.length >= 5;
     return true;
   }, [step, title, description, location, photos.length]);
+
+  // Redirect non-hosts to become-host page
+  if (!isHost && user) {
+    navigate("/become-host");
+    return null;
+  }
 
   const validate = (): string | null => {
     if (!title.trim()) return "Le titre est obligatoire.";
