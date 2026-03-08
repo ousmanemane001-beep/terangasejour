@@ -79,12 +79,14 @@ const CreateListing = () => {
   const [step, setStep] = useState(1);
 
   // Redirect non-hosts to become-host page
+  const [loading, setLoading] = useState(false);
+  const [publishedId, setPublishedId] = useState<string | null>(null);
+
+  // Redirect non-hosts to become-host page
   if (!isHost && user) {
     navigate("/become-host");
     return null;
   }
-  const [loading, setLoading] = useState(false);
-  const [publishedId, setPublishedId] = useState<string | null>(null);
 
   const toggleAmenity = (id: string) => {
     setSelectedAmenities((prev) =>
