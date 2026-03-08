@@ -53,7 +53,7 @@ const Certification = () => {
               Certification d'Hôte
             </h1>
             <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto mb-8">
-              Gagnez la confiance des voyageurs et maximisez vos réservations avec la certification Séjour.
+              Gagnez la confiance des voyageurs et maximisez vos réservations avec la certification VotreSéjour.
             </p>
             <Button className="rounded-full bg-accent text-accent-foreground font-medium px-8 h-12 text-base hover:bg-amber-dark">
               Demander la certification
