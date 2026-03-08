@@ -118,8 +118,9 @@ const CreateListing = () => {
   const canGoNext = useCallback(() => {
     if (step === 1) return !!title.trim() && !!description.trim() && !!location.trim();
     if (step === 3) return photos.length >= 5;
+    if (step === 4) return !!price && parseInt(price) > 0;
     return true;
-  }, [step, title, description, location, photos.length]);
+  }, [step, title, description, location, photos.length, price]);
 
   // Redirect non-hosts to become-host page
   if (!isHost && user) {
