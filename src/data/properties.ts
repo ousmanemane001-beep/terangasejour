@@ -4,6 +4,13 @@ import property3 from "@/assets/property-3.jpg";
 import property4 from "@/assets/property-4.jpg";
 import property5 from "@/assets/property-5.jpg";
 
+// Villa Saly images (public folder)
+const villaSaly1 = "/images/villa-saly-1.jpg";
+const villaSaly2 = "/images/villa-saly-2.jfif";
+const villaSaly3 = "/images/villa-saly-3.jfif";
+const villaSaly4 = "/images/villa-saly-4.jfif";
+const villaSaly5 = "/images/villa-saly-5.jfif";
+
 export interface Property {
   id: number;
   image: string;
