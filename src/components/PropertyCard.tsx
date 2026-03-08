@@ -69,6 +69,7 @@ const PropertyCard = ({
         </div>
       </div>
     </motion.div>
+    </Link>
   );
 };
 
