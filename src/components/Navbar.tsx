@@ -56,6 +56,15 @@ const Navbar = () => {
             <Button variant="outline" size="sm" className="rounded-full text-sm">Publier un logement</Button>
           </Link>
           {user ? (
+            <>
+              {unreadCount > 0 && (
+                <Link to="/dashboard" className="relative">
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Bell className="w-5 h-5" />
+                    <Badge className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] h-5 w-5 flex items-center justify-center p-0 rounded-full">{unreadCount}</Badge>
+                  </Button>
+                </Link>
+              )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
