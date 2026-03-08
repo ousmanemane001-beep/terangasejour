@@ -1,7 +1,9 @@
 import { Heart, Star, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 interface PropertyCardProps {
+  id: number;
   image: string;
   title: string;
   location: string;
@@ -12,6 +14,7 @@ interface PropertyCardProps {
 }
 
 const PropertyCard = ({
+  id,
   image,
   title,
   location,
@@ -21,6 +24,7 @@ const PropertyCard = ({
   type,
 }: PropertyCardProps) => {
   return (
+    <Link to={`/property/${id}`}>
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
@@ -65,6 +69,7 @@ const PropertyCard = ({
         </div>
       </div>
     </motion.div>
+    </Link>
   );
 };
 

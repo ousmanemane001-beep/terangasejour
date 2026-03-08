@@ -50,12 +50,16 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-3">
           <span className="text-xs font-medium text-muted-foreground">FR</span>
           <span className="text-xs font-medium text-muted-foreground">XOF</span>
-          <Button variant="outline" size="sm" className="rounded-full text-sm">
-            Publier mon logement
-          </Button>
-          <Button size="sm" className="rounded-full bg-primary text-primary-foreground text-sm">
-            Connexion
-          </Button>
+          <Link to="/publish">
+            <Button variant="outline" size="sm" className="rounded-full text-sm">
+              Publier mon logement
+            </Button>
+          </Link>
+          <Link to="/login">
+            <Button size="sm" className="rounded-full bg-primary text-primary-foreground text-sm">
+              Connexion
+            </Button>
+          </Link>
         </div>
 
         {/* Mobile toggle */}
