@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 const HostCTA = () => {
   return (
-    <section className="bg-secondary border-t border-border">
+    <section className="bg-primary/[0.03] border-t border-border">
       <div className="container mx-auto px-4 py-14 md:py-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -28,10 +28,10 @@ const HostCTA = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="bg-card rounded-2xl p-6 border border-border shadow-sm hover:shadow-[var(--shadow-card-hover)] transition-shadow"
+            className="bg-card rounded-xl p-6 border border-border shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow"
           >
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-              <Home className="w-6 h-6 text-primary" />
+            <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+              <Home className="w-5 h-5 text-primary" />
             </div>
             <h3 className="font-display font-semibold text-foreground text-lg mb-2">
               Publiez votre logement
@@ -39,9 +39,9 @@ const HostCTA = () => {
             <p className="text-sm text-muted-foreground mb-4">
               Mettez votre propriété en ligne en quelques étapes et commencez à recevoir des réservations rapidement.
             </p>
-            <Button asChild variant="outline" className="rounded-full gap-2">
+            <Button asChild variant="outline" size="sm" className="rounded-full gap-2">
               <Link to="/publish">
-                En savoir plus <ArrowRight className="w-4 h-4" />
+                En savoir plus <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </Button>
           </motion.div>
@@ -51,10 +51,10 @@ const HostCTA = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="bg-card rounded-2xl p-6 border border-border shadow-sm hover:shadow-[var(--shadow-card-hover)] transition-shadow"
+            className="bg-card rounded-xl p-6 border border-border shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-shadow"
           >
-            <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center mb-4">
-              <Award className="w-6 h-6 text-accent" />
+            <div className="w-11 h-11 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+              <Award className="w-5 h-5 text-accent" />
             </div>
             <h3 className="font-display font-semibold text-foreground text-lg mb-2">
               Obtenez votre certification
@@ -62,9 +62,9 @@ const HostCTA = () => {
             <p className="text-sm text-muted-foreground mb-4">
               Gagnez la confiance des voyageurs avec notre certification d'hôte et maximisez vos réservations.
             </p>
-            <Button asChild variant="outline" className="rounded-full gap-2">
+            <Button asChild variant="outline" size="sm" className="rounded-full gap-2">
               <Link to="/certification">
-                En savoir plus <ArrowRight className="w-4 h-4" />
+                En savoir plus <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </Button>
           </motion.div>
