@@ -45,6 +45,10 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
   const [showConfirmForm, setShowConfirmForm] = useState(false);
+  const [requestMessage, setRequestMessage] = useState("");
+  const [requestSent, setRequestSent] = useState(false);
+
+  const isRequestMode = bookingMode === "request";
 
   const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
   const subtotal = nights * pricePerNight;
