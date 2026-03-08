@@ -11,9 +11,10 @@ import { properties } from "@/data/properties";
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
 import { useDestinationCounts } from "@/hooks/useDestinationCounts";
-import { Loader2, Home, Shield } from "lucide-react";
+import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones, Home, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DestinationCard from "@/components/DestinationCard";
+import heroBg from "@/assets/hero-bg.jpg";
 
 const DESTINATIONS = [
   { name: "Dakar", image: "/images/dest-dakar.jpg" },
@@ -28,6 +29,13 @@ const DESTINATIONS = [
 
 const DESTINATION_CITIES = DESTINATIONS.map((d) => d.name);
 
+const trustPoints = [
+  { icon: ShieldCheck, title: "Réservez maintenant et payez sur place", desc: "Annulation GRATUITE sur la plupart des hébergements" },
+  { icon: BadgeCheck, title: "Logements vérifiés", desc: "Chaque propriété est inspectée et validée par notre équipe." },
+  { icon: CreditCard, title: "Paiement sécurisé", desc: "Transactions protégées via Wave, Orange Money et carte bancaire." },
+  { icon: Headphones, title: "Service Clients disponible 7j/7", desc: "Nous sommes là pour vous aider, à tout moment." },
+];
+
 const Index = () => {
   const { data: dbListings, isLoading } = useListings(8);
   const { data: destCounts } = useDestinationCounts(DESTINATION_CITIES);
@@ -40,53 +48,75 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
-      {/* Hero — clean white centered like sejour.sn */}
-      <section className="pt-12 pb-8 md:pt-20 md:pb-12">
-        <div className="container mx-auto px-4 text-center">
+      {/* Hero with background image + search bar — Booking.com style */}
+      <section className="relative bg-primary overflow-hidden">
+        {/* Background image */}
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30" style={{ backgroundImage: `url(${heroBg})` }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/70 to-primary" />
+        
+        <div className="relative container mx-auto px-4 pt-10 pb-8 md:pt-16 md:pb-12">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="font-display text-3xl md:text-5xl lg:text-[3.5rem] font-extrabold text-foreground mb-4 leading-tight"
+            className="font-display text-2xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-2 leading-tight"
           >
-            Trouvez votre chez-vous, partout!
+            Trouvez votre séjour idéal au Sénégal
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-muted-foreground text-base md:text-lg mb-8 md:mb-10 max-w-xl mx-auto"
+            className="text-primary-foreground/80 text-sm md:text-base mb-6 md:mb-8 max-w-xl"
           >
-            Des logements uniques, une expérience authentique. Réservez en toute simplicité !
+            Villas, appartements et maisons d'hôtes — réservez en toute simplicité.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex justify-center"
           >
             <SearchBar />
           </motion.div>
         </div>
       </section>
 
-      {/* Nos coups de coeur / Published Listings from DB */}
+      {/* Trust points — like Booking.com "Pourquoi choisir" */}
+      <section className="py-8 md:py-10 border-b border-border">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {trustPoints.map((tp, i) => (
+              <div key={i} className="flex gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/5 flex items-center justify-center shrink-0">
+                  <tp.icon className="w-5 h-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-display font-semibold text-foreground text-sm leading-tight mb-1">{tp.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{tp.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Published Listings from DB */}
       {isLoading ? (
-        <section className="py-12 md:py-16">
+        <section className="py-12">
           <div className="container mx-auto px-4 flex justify-center">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         </section>
       ) : dbListings && dbListings.length > 0 ? (
-        <section className="py-12 md:py-16">
+        <section className="py-10 md:py-14">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-6 md:mb-8">
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-bold text-foreground">Nos coups de coeur du moment</h2>
-                <p className="text-muted-foreground mt-1 text-sm md:text-base">Découvrez une sélection choisie avec soin pour des séjours inoubliables.</p>
+                <h2 className="font-display text-xl md:text-2xl font-bold text-foreground">Nos coups de coeur du moment</h2>
+                <p className="text-muted-foreground mt-1 text-sm">Découvrez une sélection choisie avec soin pour des séjours inoubliables.</p>
               </div>
               <Link to="/explore">
-                <Button variant="outline" className="hidden md:flex rounded-full">Voir plus</Button>
+                <Button variant="outline" size="sm" className="hidden md:flex rounded">Voir plus</Button>
               </Link>
             </div>
             <IndexListingsGrid listings={dbListings} />
@@ -95,10 +125,10 @@ const Index = () => {
       ) : null}
 
       {/* Destinations populaires */}
-      <section className="py-12 md:py-16 bg-secondary">
+      <section className="py-10 md:py-14 bg-secondary">
         <div className="container mx-auto px-4">
-          <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-bold text-foreground mb-2">Destinations populaires</h2>
-          <p className="text-muted-foreground mb-6 md:mb-8 text-sm md:text-base">Les lieux les plus prisés par nos voyageurs</p>
+          <h2 className="font-display text-xl md:text-2xl font-bold text-foreground mb-2">Destinations populaires</h2>
+          <p className="text-muted-foreground mb-6 text-sm">Les lieux les plus prisés par nos voyageurs</p>
           <div className="flex md:grid md:grid-cols-4 gap-3 md:gap-4 overflow-x-auto pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory md:snap-none scrollbar-hide">
             {DESTINATIONS.map((dest, i) => (
               <DestinationCard
@@ -113,7 +143,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Les logements les plus populaires — Villas */}
+      {/* Popular Villas */}
       <PropertySection title="Les logements les plus populaires" subtitle="Les plus belles villas du Sénégal" items={villas.slice(0, 5)} />
 
       {/* Apartments */}
@@ -127,23 +157,23 @@ const Index = () => {
       )}
 
       {/* CTA — Partagez votre espace */}
-      <section className="py-12 md:py-16 bg-secondary">
+      <section className="py-10 md:py-14 bg-secondary">
         <div className="container mx-auto px-4">
-          <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-bold text-foreground text-center mb-2">Partagez votre espace</h2>
-          <p className="text-center text-muted-foreground mb-8 md:mb-10 max-w-lg mx-auto text-sm md:text-base">
+          <h2 className="font-display text-xl md:text-2xl font-bold text-foreground text-center mb-2">Partagez votre espace</h2>
+          <p className="text-center text-muted-foreground mb-8 max-w-lg mx-auto text-sm">
             Rejoignez TerangaSéjour et accueillez les voyageurs en toute facilité et sécurité.
           </p>
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            <Link to="/create-listing" className="rounded-2xl border border-border bg-card p-6 hover:shadow-[var(--shadow-card-hover)] transition-shadow block">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+            <Link to="/create-listing" className="rounded-lg border border-border bg-card p-6 hover:shadow-[var(--shadow-card-hover)] transition-shadow block">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                 <Home className="w-5 h-5 text-primary" />
               </div>
               <h3 className="font-display font-semibold text-lg text-foreground mb-2">Publiez votre logement</h3>
               <p className="text-sm text-muted-foreground mb-4">Mettez votre propriété en ligne en quelques étapes et commencez à recevoir des réservations rapidement.</p>
               <span className="text-sm font-semibold text-primary hover:underline">En savoir plus</span>
             </Link>
-            <Link to="/certification" className="rounded-2xl border border-border bg-card p-6 hover:shadow-[var(--shadow-card-hover)] transition-shadow block">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+            <Link to="/certification" className="rounded-lg border border-border bg-card p-6 hover:shadow-[var(--shadow-card-hover)] transition-shadow block">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                 <Shield className="w-5 h-5 text-primary" />
               </div>
               <h3 className="font-display font-semibold text-lg text-foreground mb-2">Obtenez votre certification</h3>
@@ -164,7 +194,7 @@ const IndexListingsGrid = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
   ({ listings }, ref) => {
     const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
     return (
-      <div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {listings.map((listing, i) => (
           <motion.div
             key={listing.id}
@@ -183,18 +213,18 @@ const IndexListingsGrid = forwardRef<HTMLDivElement, { listings: DBListing[] }>(
 IndexListingsGrid.displayName = "IndexListingsGrid";
 
 const PropertySection = ({ title, subtitle, items, bg }: { title: string; subtitle: string; items: typeof properties; bg?: boolean }) => (
-  <section className={`py-12 md:py-16 ${bg ? "bg-secondary" : ""}`}>
+  <section className={`py-10 md:py-14 ${bg ? "bg-secondary" : ""}`}>
     <div className="container mx-auto px-4">
-      <div className="flex items-center justify-between mb-6 md:mb-8 gap-4">
+      <div className="flex items-center justify-between mb-6 gap-4">
         <div className="min-w-0">
-          <h2 className="font-display text-xl md:text-2xl lg:text-3xl font-bold text-foreground">{title}</h2>
-          <p className="text-muted-foreground mt-1 text-sm md:text-base">{subtitle}</p>
+          <h2 className="font-display text-xl md:text-2xl font-bold text-foreground">{title}</h2>
+          <p className="text-muted-foreground mt-1 text-sm">{subtitle}</p>
         </div>
         <Link to="/explore" className="shrink-0">
-          <Button variant="outline" className="hidden md:flex rounded-full">Voir tout</Button>
+          <Button variant="outline" size="sm" className="hidden md:flex rounded">Voir tout</Button>
         </Link>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {items.map((property) => (
           <PropertyCard key={property.id} {...property} />
         ))}

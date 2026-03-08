@@ -15,47 +15,50 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 14%;
 
-    --primary: 216 85% 34%;
+    /* Booking.com deep blue */
+    --primary: 216 100% 21%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 214 32% 96%;
+    --secondary: 220 14% 96%;
     --secondary-foreground: 220 20% 14%;
 
-    --muted: 214 32% 96%;
+    --muted: 220 14% 96%;
     --muted-foreground: 220 10% 46%;
 
-    --accent: 199 89% 48%;
-    --accent-foreground: 0 0% 100%;
+    /* Booking.com yellow/gold accent */
+    --accent: 44 97% 50%;
+    --accent-foreground: 220 20% 14%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 216 85% 34%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 216 100% 21%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     /* Custom tokens */
-    --warm-gray: 214 20% 97%;
-    --warm-gray-dark: 214 15% 92%;
+    --nav-bg: 216 100% 21%;
+    --nav-foreground: 0 0% 100%;
+    --search-accent: 44 97% 50%;
 
     --font-display: 'Plus Jakarta Sans', sans-serif;
     --font-body: 'Inter', sans-serif;
 
-    --shadow-card: 0 1px 4px 0 hsl(220 20% 0% / 0.06), 0 1px 2px -1px hsl(220 20% 0% / 0.04);
-    --shadow-card-hover: 0 12px 28px -6px hsl(216 85% 34% / 0.1), 0 8px 12px -6px hsl(220 20% 0% / 0.06);
-    --shadow-nav: 0 1px 3px 0 hsl(220 20% 0% / 0.06);
-    --shadow-elevated: 0 20px 40px -8px hsl(220 20% 0% / 0.12);
+    --shadow-card: 0 1px 4px 0 hsl(220 20% 0% / 0.08);
+    --shadow-card-hover: 0 4px 14px 0 hsl(220 20% 0% / 0.12);
+    --shadow-nav: 0 2px 8px 0 hsl(220 20% 0% / 0.1);
+    --shadow-elevated: 0 8px 28px -6px hsl(220 20% 0% / 0.15);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 220 20% 26%;
-    --sidebar-primary: 216 85% 34%;
+    --sidebar-primary: 216 100% 21%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 214 32% 96%;
+    --sidebar-accent: 220 14% 96%;
     --sidebar-accent-foreground: 220 20% 14%;
-    --sidebar-border: 214 20% 90%;
-    --sidebar-ring: 216 85% 34%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 216 100% 21%;
   }
 }
 
@@ -77,7 +80,7 @@
 @layer utilities {
   .text-gradient-primary {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(199 89% 48%));
+    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(44 97% 50%));
   }
 
   .scrollbar-hide {
