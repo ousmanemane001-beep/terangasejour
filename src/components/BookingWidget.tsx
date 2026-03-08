@@ -27,7 +27,7 @@ interface BookingWidgetProps {
 
 const SERVICE_FEE_RATE = 0.15;
 
-const BookingWidget = ({ listingId, pricePerNight, maxGuests }: BookingWidgetProps) => {
+const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "instant", hostId }: BookingWidgetProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const createBooking = useCreateBooking();
