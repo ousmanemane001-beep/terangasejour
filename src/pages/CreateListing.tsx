@@ -201,25 +201,13 @@ const CreateListing = () => {
                 <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
                   Ajoutez vos photos
                 </h1>
-                <p className="text-muted-foreground mb-8">Des photos de qualité attirent plus de voyageurs. Ajoutez au moins 5 photos.</p>
+                <p className="text-muted-foreground mb-8">
+                  Des photos de qualité attirent plus de voyageurs. La première photo sera la photo principale de votre annonce.
+                </p>
 
                 <Card className="border-none shadow-[var(--shadow-card)]">
                   <CardContent className="p-6">
-                    <div className="border-2 border-dashed border-border rounded-2xl p-12 text-center hover:border-accent transition-colors cursor-pointer mb-6">
-                      <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                      <p className="font-medium text-foreground mb-1">Glissez vos photos ici</p>
-                      <p className="text-sm text-muted-foreground">ou cliquez pour parcourir</p>
-                      <p className="text-xs text-muted-foreground mt-2">JPG, PNG • Max 10 photos • 5 Mo par photo</p>
-                    </div>
-
-                    {/* Preview grid placeholder */}
-                    <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <div key={i} className="aspect-square rounded-xl bg-muted flex items-center justify-center">
-                          <Camera className="w-6 h-6 text-muted-foreground/40" />
-                        </div>
-                      ))}
-                    </div>
+                    <PhotoUploader photos={photos} onChange={setPhotos} />
                   </CardContent>
                 </Card>
               </motion.div>
