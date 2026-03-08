@@ -53,7 +53,7 @@ const PropertyDetail = () => {
         price: dbListing.price_per_night, bedrooms: dbListing.bedrooms, bathrooms: dbListing.bathrooms,
         guests: dbListing.capacity, images: dbListing.photos || [],
         coverImage: dbListing.photos?.[0] || "/placeholder.svg",
-        rating: null as number | null, reviewCount: null as number | null, isDB: true, verified: dbListing.verified,
+        rating: dbRating?.avg ?? null, reviewCount: dbRating?.count ?? null, isDB: true, verified: dbListing.verified,
         latitude: dbListing.latitude, longitude: dbListing.longitude,
         address: dbListing.address, city: dbListing.city,
       }
