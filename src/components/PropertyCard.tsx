@@ -1,5 +1,6 @@
-import { Heart, Star, MapPin, Users, Bed, Bath } from "lucide-react";
+import { Star, MapPin, Users, Bed, Bath } from "lucide-react";
 import { Link } from "react-router-dom";
+import FavoriteButton from "@/components/FavoriteButton";
 
 interface PropertyCardProps {
   id: number;
