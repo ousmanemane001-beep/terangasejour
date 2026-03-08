@@ -76,7 +76,7 @@ const SearchBar = () => {
       <div className="bg-background rounded-2xl shadow-[var(--shadow-card)] border border-border p-2 flex flex-col md:flex-row items-stretch gap-2">
         {/* Destination */}
         <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors relative">
-          <MapPin className="w-4 h-4 text-accent shrink-0" />
+          <MapPin className="w-4 h-4 text-primary shrink-0" />
           <div className="flex-1">
             <p className="text-xs text-muted-foreground font-medium">Destination</p>
             <Input
@@ -111,7 +111,7 @@ const SearchBar = () => {
                           onClick={() => selectDestination(d)}
                           className="w-full text-left px-4 py-2.5 hover:bg-muted transition-colors flex items-center gap-3"
                         >
-                          <MapPin className="w-3.5 h-3.5 text-accent shrink-0" />
+                          <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
                           <div>
                             <p className="text-sm font-medium text-foreground">{d.name}</p>
                             <p className="text-xs text-muted-foreground">{d.region}</p>
@@ -132,7 +132,7 @@ const SearchBar = () => {
         <Popover>
           <PopoverTrigger asChild>
             <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors cursor-pointer">
-              <Calendar className="w-4 h-4 text-accent shrink-0" />
+              <Calendar className="w-4 h-4 text-primary shrink-0" />
               <div>
                 <p className="text-xs text-muted-foreground font-medium">Durée du séjour</p>
                 <p className="text-sm text-foreground">
@@ -177,7 +177,7 @@ const SearchBar = () => {
         <Popover>
           <PopoverTrigger asChild>
             <div className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors cursor-pointer">
-              <Users className="w-4 h-4 text-accent shrink-0" />
+              <Users className="w-4 h-4 text-primary shrink-0" />
               <div>
                 <p className="text-xs text-muted-foreground font-medium">Voyageurs</p>
                 <p className="text-sm text-foreground">{guestCount}</p>
@@ -195,9 +195,9 @@ const SearchBar = () => {
         </Popover>
 
         {/* Search button */}
-        <Button onClick={handleSearch} className="bg-primary text-primary-foreground rounded-xl px-6 h-12 font-medium shrink-0">
+        <Button onClick={handleSearch} className="bg-primary text-primary-foreground rounded-xl px-6 h-12 font-semibold shrink-0">
           <Search className="w-4 h-4 mr-2" />
-          Rechercher
+          RECHERCHER
         </Button>
       </div>
     </div>

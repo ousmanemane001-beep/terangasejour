@@ -2,41 +2,29 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
-import PropertyCard from "@/components/PropertyCard";
 import ListingCard from "@/components/ListingCard";
+import PropertyCard from "@/components/PropertyCard";
 import Footer from "@/components/Footer";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import { properties } from "@/data/properties";
 import { useListings } from "@/hooks/useListings";
-import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Home, Shield } from "lucide-react";
+import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones, Zap, Home, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroBg from "@/assets/hero-bg.jpg";
 
-const categories = [
-  { label: "Villas", icon: "🏡", filter: "Villa" },
-  { label: "Plage", icon: "🏖️", filter: "plage" },
-  { label: "Apparts Dakar", icon: "🏢", filter: "Appartement" },
-  { label: "Budget", icon: "💰", filter: "budget" },
-  { label: "Lodges", icon: "🌿", filter: "Lodge" },
-  { label: "Lofts", icon: "🏙️", filter: "Loft" },
+const destinations = [
+  { name: "Saly", filter: "Saly", image: "/images/villa-saly-1.jpg", count: 24, avgPrice: "45 000" },
+  { name: "Les Almadies", filter: "Almadies", image: "/images/villa-saly-2.jfif", count: 18, avgPrice: "55 000" },
+  { name: "Ngaparou", filter: "Ngaparou", image: "/images/villa-saly-3.jfif", count: 12, avgPrice: "40 000" },
+  { name: "Somone", filter: "Somone", image: "/images/villa-saly-4.jfif", count: 15, avgPrice: "50 000" },
+  { name: "Dakar", filter: "Dakar", image: "/images/villa-saly-5.jfif", count: 42, avgPrice: "35 000" },
 ];
 
 const trustPoints = [
-  {
-    icon: ShieldCheck,
-    title: "Paiement sécurisé",
-    desc: "Transactions protégées via Wave, Orange Money et carte bancaire.",
-  },
-  {
-    icon: BadgeCheck,
-    title: "Logements vérifiés",
-    desc: "Chaque propriété est inspectée et validée par notre équipe.",
-  },
-  {
-    icon: CreditCard,
-    title: "Annulation flexible",
-    desc: "Annulez sans frais jusqu'à 48h avant votre arrivée.",
-  },
+  { icon: ShieldCheck, title: "Paiement sécurisé", desc: "Transactions protégées via Wave, Orange Money et carte bancaire." },
+  { icon: BadgeCheck, title: "Logements vérifiés", desc: "Chaque propriété est inspectée et validée par notre équipe." },
+  { icon: CreditCard, title: "Annulation flexible", desc: "Annulez sans frais jusqu'à 48h avant votre arrivée." },
+  { icon: Headphones, title: "Assistance 7j/7", desc: "Notre équipe vous accompagne avant, pendant et après votre séjour." },
 ];
 
 const Index = () => {
@@ -51,27 +39,27 @@ const Index = () => {
       <Navbar />
 
       {/* Hero */}
-      <section className="relative py-20 md:py-32 overflow-hidden">
+      <section className="relative py-24 md:py-36 overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroBg})` }} />
-        <div className="absolute inset-0 bg-foreground/50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-foreground/60 to-foreground/40" />
         <div className="relative container mx-auto px-4 text-center">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="font-display text-4xl md:text-6xl font-bold text-background mb-4 leading-tight"
+            className="font-display text-4xl md:text-6xl font-extrabold text-background mb-4 leading-tight"
           >
-            Trouvez votre chez-vous,
+            Trouvez votre logement idéal
             <br />
-            <span className="text-gradient-amber">partout!</span>
+            <span className="text-primary">au Sénégal</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="text-background/80 text-lg mb-10 max-w-xl mx-auto"
+            className="text-background/85 text-lg md:text-xl mb-10 max-w-2xl mx-auto"
           >
-            Des logements uniques, une expérience authentique. Réservez en toute simplicité !
+            Réservez villas, appartements et maisons de vacances au meilleur prix.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -83,21 +71,32 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="py-8 border-b border-border">
+      {/* Destinations populaires */}
+      <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="flex gap-4 overflow-x-auto scrollbar-none pb-2">
-            {categories.map((cat) => (
-              <Link
-                key={cat.label}
-                to={`/explore?destination=${encodeURIComponent(cat.filter)}`}
-                className="flex flex-col items-center gap-2 min-w-[80px] p-3 rounded-xl hover:bg-muted transition-colors group"
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">Destinations populaires</h2>
+          <p className="text-muted-foreground mb-8">Les lieux les plus prisés par nos voyageurs</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {destinations.map((dest, i) => (
+              <motion.div
+                key={dest.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
               >
-                <span className="text-2xl group-hover:scale-110 transition-transform">{cat.icon}</span>
-                <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground whitespace-nowrap">
-                  {cat.label}
-                </span>
-              </Link>
+                <Link
+                  to={`/explore?destination=${encodeURIComponent(dest.filter)}`}
+                  className="group block rounded-2xl overflow-hidden relative aspect-[3/4] hover:shadow-[var(--shadow-card-hover)] transition-shadow"
+                >
+                  <img src={dest.image} alt={dest.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h3 className="font-display font-bold text-background text-lg">{dest.name}</h3>
+                    <p className="text-background/80 text-sm">{dest.count} logements · à partir de {dest.avgPrice} F</p>
+                  </div>
+                </Link>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -105,19 +104,17 @@ const Index = () => {
 
       {/* Published Listings from DB */}
       {isLoading ? (
-        <section className="py-16 bg-warm-gray">
+        <section className="py-16 bg-secondary">
           <div className="container mx-auto px-4 flex justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-accent" />
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         </section>
       ) : dbListings && dbListings.length > 0 ? (
-        <section className="py-16 bg-warm-gray">
+        <section className="py-16 bg-secondary">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                  Logements récemment publiés
-                </h2>
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Logements récemment publiés</h2>
                 <p className="text-muted-foreground mt-1">Les derniers logements ajoutés par nos hôtes</p>
               </div>
               <Link to="/explore">
@@ -134,41 +131,24 @@ const Index = () => {
       ) : null}
 
       {/* Popular Villas */}
-      <PropertySection
-        title="Villas populaires"
-        subtitle="Les plus belles villas du Sénégal"
-        items={villas.slice(0, 5)}
-      />
+      <PropertySection title="Villas populaires" subtitle="Les plus belles villas du Sénégal" items={villas.slice(0, 5)} />
 
-      {/* Apartments in Dakar */}
+      {/* Apartments */}
       {apartments.length > 0 && (
-        <PropertySection
-          title="Appartements à Dakar"
-          subtitle="Studios, lofts et appartements urbains"
-          items={apartments.slice(0, 5)}
-          bg
-        />
+        <PropertySection title="Appartements à Dakar" subtitle="Studios, lofts et appartements urbains" items={apartments.slice(0, 5)} bg />
       )}
 
-      {/* Beach Houses */}
+      {/* Beach */}
       {beachProperties.length > 0 && (
-        <PropertySection
-          title="Maisons en bord de mer"
-          subtitle="Profitez de la côte sénégalaise"
-          items={beachProperties.slice(0, 5)}
-        />
+        <PropertySection title="Maisons en bord de mer" subtitle="Profitez de la côte sénégalaise" items={beachProperties.slice(0, 5)} />
       )}
 
       {/* Trust Section */}
-      <section className="py-16 bg-warm-gray">
+      <section className="py-16 bg-secondary">
         <div className="container mx-auto px-4">
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground text-center mb-3">
-            Réservez en toute confiance
-          </h2>
-          <p className="text-center text-muted-foreground mb-10 max-w-lg mx-auto">
-            TerangaSéjour garantit une expérience sécurisée à chaque étape.
-          </p>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground text-center mb-3">Réservez en toute confiance</h2>
+          <p className="text-center text-muted-foreground mb-10 max-w-lg mx-auto">TerangaSéjour garantit une expérience sécurisée à chaque étape.</p>
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {trustPoints.map((tp, i) => (
               <motion.div
                 key={i}
@@ -178,8 +158,8 @@ const Index = () => {
                 transition={{ delay: i * 0.1 }}
                 className="text-center p-6 rounded-2xl bg-card border border-border"
               >
-                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-                  <tp.icon className="w-6 h-6 text-accent" />
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <tp.icon className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="font-display font-semibold text-foreground mb-2">{tp.title}</h3>
                 <p className="text-sm text-muted-foreground">{tp.desc}</p>
@@ -189,31 +169,25 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground text-center mb-10">
-            Partagez votre espace
-          </h2>
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground text-center mb-10">Partagez votre espace</h2>
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             <Link to="/create-listing" className="rounded-2xl border border-border bg-card p-6 hover:shadow-[var(--shadow-card-hover)] transition-shadow block">
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
-                <Home className="w-5 h-5 text-accent" />
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                <Home className="w-5 h-5 text-primary" />
               </div>
               <h3 className="font-display font-semibold text-lg text-foreground mb-2">Publiez votre logement</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Mettez votre propriété en ligne et commencez à recevoir des réservations.
-              </p>
-              <Button variant="outline" size="sm" className="rounded-full">Commencer</Button>
+              <p className="text-sm text-muted-foreground mb-4">Mettez votre propriété en ligne et commencez à recevoir des réservations.</p>
+              <Button size="sm" className="rounded-full bg-primary text-primary-foreground">Commencer</Button>
             </Link>
             <Link to="/certification" className="rounded-2xl border border-border bg-card p-6 hover:shadow-[var(--shadow-card-hover)] transition-shadow block">
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
-                <Shield className="w-5 h-5 text-accent" />
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                <Shield className="w-5 h-5 text-primary" />
               </div>
               <h3 className="font-display font-semibold text-lg text-foreground mb-2">Obtenez votre certification</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Gagnez la confiance des voyageurs avec notre certification d'hôte.
-              </p>
+              <p className="text-sm text-muted-foreground mb-4">Gagnez la confiance des voyageurs avec notre certification d'hôte.</p>
               <Button variant="outline" size="sm" className="rounded-full">En savoir plus</Button>
             </Link>
           </div>
@@ -226,19 +200,8 @@ const Index = () => {
   );
 };
 
-// Reusable property section component
-const PropertySection = ({
-  title,
-  subtitle,
-  items,
-  bg,
-}: {
-  title: string;
-  subtitle: string;
-  items: typeof properties;
-  bg?: boolean;
-}) => (
-  <section className={`py-16 ${bg ? "bg-warm-gray" : ""}`}>
+const PropertySection = ({ title, subtitle, items, bg }: { title: string; subtitle: string; items: typeof properties; bg?: boolean }) => (
+  <section className={`py-16 ${bg ? "bg-secondary" : ""}`}>
     <div className="container mx-auto px-4">
       <div className="flex items-center justify-between mb-8">
         <div>

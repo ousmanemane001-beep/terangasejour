@@ -4,11 +4,8 @@ import { Menu, X, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,15 +28,13 @@ const Navbar = () => {
     : "U";
 
   return (
-    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md shadow-[var(--shadow-nav)]">
+    <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-            <span className="font-display font-bold text-accent-foreground text-xs">TS</span>
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <span className="font-display font-bold text-primary-foreground text-xs">TS</span>
           </div>
-          <span className="font-display text-xl font-bold text-foreground">
-            TerangaSéjour
-          </span>
+          <span className="font-display text-xl font-bold text-foreground">TerangaSéjour</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-1">
@@ -48,9 +43,7 @@ const Navbar = () => {
               key={link.path}
               to={link.path}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                location.pathname === link.path
-                  ? "text-accent"
-                  : "text-muted-foreground hover:text-foreground"
+                location.pathname === link.path ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {link.label}
@@ -60,31 +53,23 @@ const Navbar = () => {
 
         <div className="hidden md:flex items-center gap-3">
           <Link to="/create-listing">
-            <Button variant="outline" size="sm" className="rounded-full text-sm">
-              Publier mon logement
-            </Button>
+            <Button variant="outline" size="sm" className="rounded-full text-sm">Publier mon logement</Button>
           </Link>
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-accent text-accent-foreground text-xs font-bold">
-                      {initials}
-                    </AvatarFallback>
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">{initials}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem asChild>
-                  <Link to="/dashboard" className="flex items-center gap-2">
-                    <User className="w-4 h-4" /> Mon espace
-                  </Link>
+                  <Link to="/dashboard" className="flex items-center gap-2"><User className="w-4 h-4" /> Mon espace</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/profile" className="flex items-center gap-2">
-                    <User className="w-4 h-4" /> Profil
-                  </Link>
+                  <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut} className="flex items-center gap-2 text-destructive">
@@ -94,9 +79,7 @@ const Navbar = () => {
             </DropdownMenu>
           ) : (
             <Link to="/login">
-              <Button size="sm" className="rounded-full bg-primary text-primary-foreground text-sm">
-                Connexion
-              </Button>
+              <Button size="sm" className="rounded-full bg-primary text-primary-foreground text-sm">Connexion</Button>
             </Link>
           )}
         </div>
@@ -121,9 +104,7 @@ const Navbar = () => {
                   to={link.path}
                   onClick={() => setMobileOpen(false)}
                   className={`block px-3 py-2 rounded-lg text-sm font-medium ${
-                    location.pathname === link.path
-                      ? "text-accent bg-muted"
-                      : "text-muted-foreground"
+                    location.pathname === link.path ? "text-primary bg-muted" : "text-muted-foreground"
                   }`}
                 >
                   {link.label}
@@ -131,31 +112,20 @@ const Navbar = () => {
               ))}
               <div className="pt-3 flex flex-col gap-2">
                 <Link to="/create-listing" onClick={() => setMobileOpen(false)}>
-                  <Button variant="outline" size="sm" className="rounded-full w-full">
-                    Publier mon logement
-                  </Button>
+                  <Button variant="outline" size="sm" className="rounded-full w-full">Publier mon logement</Button>
                 </Link>
                 {user ? (
                   <>
                     <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
-                      <Button size="sm" className="rounded-full bg-primary text-primary-foreground w-full">
-                        Mon espace
-                      </Button>
+                      <Button size="sm" className="rounded-full bg-primary text-primary-foreground w-full">Mon espace</Button>
                     </Link>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="rounded-full text-destructive"
-                      onClick={() => { signOut(); setMobileOpen(false); }}
-                    >
+                    <Button variant="ghost" size="sm" className="rounded-full text-destructive" onClick={() => { signOut(); setMobileOpen(false); }}>
                       Déconnexion
                     </Button>
                   </>
                 ) : (
                   <Link to="/login" onClick={() => setMobileOpen(false)}>
-                    <Button size="sm" className="rounded-full bg-primary text-primary-foreground w-full">
-                      Connexion
-                    </Button>
+                    <Button size="sm" className="rounded-full bg-primary text-primary-foreground w-full">Connexion</Button>
                   </Link>
                 )}
               </div>
