@@ -1,77 +1,107 @@
-import { Heart, MapPin, Users, Bed, Bath, Star } from "lucide-react";
-import { motion } from "framer-motion";
+import { Heart, MapPin, Users, Bed, Bath, Star, ThumbsUp } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import type { DBListing } from "@/hooks/useListings";
 import type { ListingRating } from "@/hooks/useReviews";
 import { forwardRef } from "react";
+
+function getRatingLabel(avg: number): string {
+  if (avg >= 9) return "Exceptionnel";
+  if (avg >= 8) return "Très bien";
+  if (avg >= 7) return "Bien";
+  if (avg >= 6) return "Agréable";
+  return "Note";
+}
 
 const ListingCard = forwardRef<HTMLDivElement, { listing: DBListing; rating?: ListingRating }>(
   ({ listing, rating }, ref) => {
     const coverImage = listing.photos?.[0] || "/placeholder.svg";
 
     return (
-      <motion.div
+      <div
         ref={ref}
-        whileHover={{ y: -6 }}
-        transition={{ duration: 0.25, ease: "easeOut" }}
-        className="group rounded-2xl overflow-hidden bg-card shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-300"
+        className="group rounded-lg overflow-hidden bg-card border border-border hover:border-primary/30 hover:shadow-md transition-all duration-200 flex flex-col h-full"
       >
-        <Link to={`/property/${listing.id}`}>
+        <Link to={`/property/${listing.id}`} className="block">
           <div className="relative aspect-[4/3] overflow-hidden">
             <img
               src={coverImage}
               alt={listing.title}
               loading="lazy"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
-            {/* Gradient overlay for better text readability at bottom */}
-            <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <button
-              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background hover:scale-110 transition-all duration-200"
+              className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background hover:scale-110 transition-all duration-200"
               onClick={(e) => e.preventDefault()}
             >
               <Heart className="w-4 h-4 text-foreground" />
             </button>
-            <div className="absolute top-3 left-3 flex items-center gap-1.5">
-              <span className="px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground capitalize">
-                {listing.property_type}
-              </span>
-              {listing.verified && <VerifiedBadge className="bg-background/80 backdrop-blur-sm" />}
-            </div>
-            {/* Price overlay on image */}
-            <div className="absolute bottom-3 right-3">
-              <span className="px-3 py-1.5 rounded-full bg-background/90 backdrop-blur-sm text-sm font-bold text-foreground shadow-sm">
-                {listing.price_per_night.toLocaleString("fr-FR")} F<span className="font-normal text-muted-foreground text-xs"> /nuit</span>
-              </span>
-            </div>
-          </div>
-        </Link>
-        <div className="p-4 space-y-2.5">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-display font-semibold text-foreground text-[15px] leading-snug line-clamp-1 flex-1">
-              {listing.title}
-            </h3>
-            {rating && rating.avg !== null && (
-              <div className="flex items-center gap-1 shrink-0 bg-primary/5 px-2 py-0.5 rounded-full">
-                <Star className="w-3.5 h-3.5 fill-primary text-primary" />
-                <span className="text-sm font-semibold text-foreground">{rating.avg}</span>
-                <span className="text-[10px] text-muted-foreground">({rating.count})</span>
+            {listing.verified && (
+              <div className="absolute top-2.5 left-2.5">
+                <VerifiedBadge className="bg-background/90 backdrop-blur-sm" />
               </div>
             )}
           </div>
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <MapPin className="w-3.5 h-3.5 text-primary/60" />
-            <span className="text-sm line-clamp-1">{listing.location || "Non précisé"}</span>
+        </Link>
+
+        <div className="p-3 flex flex-col flex-1">
+          {/* Title + Rating row */}
+          <div className="flex items-start justify-between gap-2 mb-1.5">
+            <Link to={`/property/${listing.id}`} className="min-w-0 flex-1">
+              <h3 className="font-display font-bold text-primary text-[15px] leading-snug line-clamp-2 hover:underline">
+                {listing.title}
+              </h3>
+            </Link>
+            {rating && rating.avg !== null && (
+              <div className="flex items-center gap-1.5 shrink-0">
+                <div className="text-right hidden sm:block">
+                  <p className="text-xs font-semibold text-foreground leading-tight">{getRatingLabel(rating.avg * 2)}</p>
+                  <p className="text-[10px] text-muted-foreground">{rating.count} avis</p>
+                </div>
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-tl-lg rounded-tr-lg rounded-br-lg bg-primary text-primary-foreground text-sm font-bold">
+                  {(rating.avg * 2).toFixed(1)}
+                </span>
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-4 text-muted-foreground text-xs pt-1 border-t border-border/50">
-            <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" />{listing.capacity}</span>
-            <span className="flex items-center gap-1.5"><Bed className="w-3.5 h-3.5" />{listing.bedrooms} ch.</span>
-            <span className="flex items-center gap-1.5"><Bath className="w-3.5 h-3.5" />{listing.bathrooms} sdb</span>
+
+          {/* Location */}
+          <div className="flex items-center gap-1 mb-2">
+            <MapPin className="w-3 h-3 text-primary/60 shrink-0" />
+            <span className="text-xs text-primary/80 hover:underline line-clamp-1">{listing.location || "Non précisé"}</span>
           </div>
+
+          {/* Property type badge */}
+          <div className="mb-2">
+            <span className="inline-block px-2 py-0.5 rounded border border-border text-[11px] font-medium text-foreground capitalize">
+              {listing.property_type}
+            </span>
+          </div>
+
+          {/* Amenities row */}
+          <div className="flex items-center gap-3 text-muted-foreground text-xs mb-3">
+            <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{listing.capacity} pers.</span>
+            <span className="flex items-center gap-1"><Bed className="w-3.5 h-3.5" />{listing.bedrooms} ch.</span>
+            <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" />{listing.bathrooms} sdb</span>
+          </div>
+
+          {/* Price section — Booking style */}
+          <div className="mt-auto pt-2 border-t border-border/60 text-right">
+            <p className="text-[11px] text-muted-foreground">Par nuit</p>
+            <p className="text-lg font-bold text-foreground leading-tight">
+              {listing.price_per_night.toLocaleString("fr-FR")} F <span className="text-xs font-normal text-muted-foreground">CFA</span>
+            </p>
+          </div>
+
+          {/* CTA */}
+          <Link
+            to={`/property/${listing.id}`}
+            className="mt-2 w-full inline-flex items-center justify-center gap-1 px-3 py-2 rounded bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+          >
+            Voir les disponibilités
+          </Link>
         </div>
-      </motion.div>
+      </div>
     );
   }
 );
