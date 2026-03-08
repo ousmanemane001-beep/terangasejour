@@ -10,6 +10,7 @@ import { Home, Camera, MapPin, DollarSign, Bed, Bath, Users, CheckCircle, Loader
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 const steps = [
   { icon: Home, title: "Décrivez votre logement", description: "Type de propriété, nombre de chambres, équipements disponibles" },
