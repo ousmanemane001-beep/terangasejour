@@ -262,4 +262,17 @@ const Explore = () => {
   );
 };
 
+/* Sub-component to batch-fetch ratings for DB listings */
+function DBListingsWithRatings({ listings, showMap }: { listings: DBListing[]; showMap: boolean }) {
+  const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
+  return (
+    <div className="mb-8">
+      <p className="text-sm font-semibold text-foreground mb-4">{listings.length} logement{listings.length !== 1 ? "s" : ""} publié{listings.length !== 1 ? "s" : ""}</p>
+      <div className={cn("grid gap-5", showMap ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4")}>
+        {listings.map((listing) => <ListingCard key={listing.id} listing={listing} rating={ratingsMap?.[listing.id]} />)}
+      </div>
+    </div>
+  );
+}
+
 export default Explore;
