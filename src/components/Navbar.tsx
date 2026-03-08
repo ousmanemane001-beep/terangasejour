@@ -1,31 +1,31 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, Heart, Home, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 
-const navLinks = [
-  { label: "Accueil", path: "/" },
-  { label: "Explorer", path: "/explore" },
-  { label: "Carte", path: "/map" },
-  { label: "À propos", path: "/about" },
-  { label: "Contact", path: "/contact" },
-];
-
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, isHost, profile, signOut } = useAuth();
 
-  const initials = user?.user_metadata
+  const initials = profile
+    ? `${(profile.first_name || "")[0] || ""}${(profile.last_name || "")[0] || ""}`.toUpperCase() || "U"
+    : user?.user_metadata
     ? `${(user.user_metadata.first_name || "")[0] || ""}${(user.user_metadata.last_name || "")[0] || ""}`.toUpperCase() || "U"
     : "U";
+
+  const navLinks = [
+    { label: "Accueil", path: "/" },
+    { label: "Explorer", path: "/explore" },
+    { label: "Carte", path: "/map" },
+  ];
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
@@ -39,21 +39,17 @@ const Navbar = () => {
 
         <div className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
+            <Link key={link.path} to={link.path}
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 location.pathname === link.path ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
-            >
-              {link.label}
-            </Link>
+            >{link.label}</Link>
           ))}
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Link to="/create-listing">
-            <Button variant="outline" size="sm" className="rounded-full text-sm">Publier mon logement</Button>
+          <Link to={isHost ? "/create-listing" : "/become-host"}>
+            <Button variant="outline" size="sm" className="rounded-full text-sm">Publier un logement</Button>
           </Link>
           {user ? (
             <DropdownMenu>
@@ -64,13 +60,38 @@ const Navbar = () => {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel className="font-normal">
+                  <p className="text-sm font-medium text-foreground">
+                    {[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Utilisateur"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{isHost ? "Hôte" : "Voyageur"}</p>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/dashboard" className="flex items-center gap-2"><User className="w-4 h-4" /> Mon espace</Link>
+                  <Link to="/dashboard" className="flex items-center gap-2"><Home className="w-4 h-4" /> Mon espace</Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/favorites" className="flex items-center gap-2"><Heart className="w-4 h-4" /> Mes favoris</Link>
+                </DropdownMenuItem>
+                {isHost && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard?tab=listings" className="flex items-center gap-2"><CalendarDays className="w-4 h-4" /> Mes logements</Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                   <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
                 </DropdownMenuItem>
+                {!isHost && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/become-host" className="flex items-center gap-2 text-primary font-medium">
+                        <Home className="w-4 h-4" /> Devenir hôte
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut} className="flex items-center gap-2 text-destructive">
                   <LogOut className="w-4 h-4" /> Déconnexion
@@ -99,20 +120,29 @@ const Navbar = () => {
           >
             <div className="px-4 py-4 space-y-2">
               {navLinks.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setMobileOpen(false)}
+                <Link key={link.path} to={link.path} onClick={() => setMobileOpen(false)}
                   className={`block px-3 py-2 rounded-lg text-sm font-medium ${
                     location.pathname === link.path ? "text-primary bg-muted" : "text-muted-foreground"
                   }`}
-                >
-                  {link.label}
-                </Link>
+                >{link.label}</Link>
               ))}
+              {user && (
+                <>
+                  <Link to="/favorites" onClick={() => setMobileOpen(false)}
+                    className="block px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground">
+                    Mes favoris
+                  </Link>
+                  {isHost && (
+                    <Link to="/dashboard?tab=listings" onClick={() => setMobileOpen(false)}
+                      className="block px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground">
+                      Mes logements
+                    </Link>
+                  )}
+                </>
+              )}
               <div className="pt-3 flex flex-col gap-2">
-                <Link to="/create-listing" onClick={() => setMobileOpen(false)}>
-                  <Button variant="outline" size="sm" className="rounded-full w-full">Publier mon logement</Button>
+                <Link to={isHost ? "/create-listing" : "/become-host"} onClick={() => setMobileOpen(false)}>
+                  <Button variant="outline" size="sm" className="rounded-full w-full">Publier un logement</Button>
                 </Link>
                 {user ? (
                   <>
