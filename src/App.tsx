@@ -21,6 +21,8 @@ import Profile from "./pages/Profile";
 import BecomeHost from "./pages/BecomeHost";
 import Favorites from "./pages/Favorites";
 import AdminVerification from "./pages/AdminVerification";
+import AdminPanel from "./pages/AdminPanel";
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
