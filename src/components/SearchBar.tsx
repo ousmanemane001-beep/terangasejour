@@ -10,16 +10,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { destinations, destinationCategories, Destination } from "@/data/destinations";
 
-const categoryIcons: Record<Destination["category"], string> = {
-  ville: "🏙️",
-  region: "🗺️",
-  plage: "🏖️",
-  lac: "🌊",
-  site_historique: "🏛️",
-  musee: "🎨",
-  hotel: "🏨",
-  commerce: "🛍️",
-  lieu_public: "🌳",
+const categoryLabelsOnly: Record<Destination["category"], string> = {
+  ville: "Villes",
+  region: "Regions",
+  plage: "Plages",
+  lac: "Lacs",
+  site_historique: "Sites historiques",
+  musee: "Musees",
+  hotel: "Hotels",
+  commerce: "Commerces",
+  lieu_public: "Lieux publics",
 };
 
 const SearchBar = () => {
