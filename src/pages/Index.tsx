@@ -80,7 +80,7 @@ const Index = () => {
             Partagez votre espace
           </h2>
           <p className="text-center text-muted-foreground mb-10 max-w-lg mx-auto">
-            Rejoignez Séjour et accueillez les voyageurs en toute facilité et sécurité.
+            Rejoignez VotreSéjour et accueillez les voyageurs en toute facilité et sécurité.
           </p>
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             <div className="rounded-2xl border border-border bg-card p-6 hover:shadow-[var(--shadow-card-hover)] transition-shadow">

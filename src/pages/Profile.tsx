@@ -194,7 +194,7 @@ const Profile = () => {
                         { label: "Nouvelles réservations", desc: "Recevez une alerte pour chaque réservation" },
                         { label: "Messages des voyageurs", desc: "Notifications pour les nouveaux messages" },
                         { label: "Rappels de paiement", desc: "Alertes pour les paiements en attente" },
-                        { label: "Promotions Séjour", desc: "Offres et nouveautés de la plateforme" },
+                        { label: "Promotions VotreSéjour", desc: "Offres et nouveautés de la plateforme" },
                       ].map((notif) => (
                         <div key={notif.label} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
                           <div className="flex items-center gap-3">
