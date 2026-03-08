@@ -74,6 +74,9 @@ const Navbar = () => {
                 <DropdownMenuItem asChild>
                   <Link to="/favorites" className="flex items-center gap-2"><Heart className="w-4 h-4" /> Mes favoris</Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/messages" className="flex items-center gap-2"><MessageCircle className="w-4 h-4" /> Messages</Link>
+                </DropdownMenuItem>
                 {isHost && (
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard?tab=listings" className="flex items-center gap-2"><CalendarDays className="w-4 h-4" /> Mes logements</Link>
