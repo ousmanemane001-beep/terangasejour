@@ -282,6 +282,7 @@ const CreateListing = () => {
               <Button
                 className="rounded-full bg-primary text-primary-foreground gap-1"
                 onClick={() => setStep((s) => Math.min(TOTAL_STEPS, s + 1))}
+                disabled={step === 3 && photos.length < 5}
               >
                 Suivant
                 <ChevronRight className="w-4 h-4" />
