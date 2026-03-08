@@ -113,6 +113,52 @@ const AdminPanel = () => {
     enabled: !!user && isAdmin === true,
   });
 
+  // Computed stats (must be before early returns)
+  const pendingListings = allListings?.filter((l) => l.status === "pending_approval") || [];
+  const totalRevenue = allBookings?.filter((b) => b.status === "confirmed").reduce((s, b) => s + b.total_price, 0) || 0;
+  const platformCommission = Math.round(totalRevenue * 0.15);
+  const unreadNotifs = notifications?.filter((n) => !n.read).length || 0;
+  const hosts = allProfiles?.filter((p) => p.is_host) || [];
+  const guests = allProfiles?.filter((p) => !p.is_host) || [];
+  const avgRating = allReviews && allReviews.length > 0
+    ? (allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length).toFixed(1)
+    : "—";
+  const cities = [...new Set(allListings?.map((l) => l.city).filter(Boolean) || [])];
+
+  const filteredListings = useMemo(() => {
+    let items = allListings || [];
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      items = items.filter((l) => l.title.toLowerCase().includes(q) || l.location?.toLowerCase().includes(q));
+    }
+    if (filterStatus !== "all") items = items.filter((l) => l.status === filterStatus);
+    if (filterLocation !== "all") items = items.filter((l) => l.city === filterLocation);
+    return items;
+  }, [allListings, searchQuery, filterStatus, filterLocation]);
+
+  const filteredBookings = useMemo(() => {
+    let items = allBookings || [];
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      items = items.filter((b) => b.payment_method?.toLowerCase().includes(q) || b.id.includes(q));
+    }
+    if (filterStatus !== "all") items = items.filter((b) => b.status === filterStatus);
+    if (filterPayment !== "all") items = items.filter((b) => b.payment_method === filterPayment);
+    return items;
+  }, [allBookings, searchQuery, filterStatus, filterPayment]);
+
+  const filteredUsers = useMemo(() => {
+    let items = allProfiles || [];
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      items = items.filter((p) => [p.first_name, p.last_name].join(" ").toLowerCase().includes(q) || p.phone?.includes(q));
+    }
+    if (filterStatus === "hosts") items = items.filter((p) => p.is_host);
+    else if (filterStatus === "guests") items = items.filter((p) => !p.is_host);
+    return items;
+  }, [allProfiles, searchQuery, filterStatus]);
+
+  // Early returns AFTER all hooks
   if (authLoading || adminLoading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -137,15 +183,13 @@ const AdminPanel = () => {
       setUpdatingId(null);
       return;
     }
-
     const statusMap = { approve: "published", reject: "rejected", suspend: "suspended" };
     const newStatus = statusMap[action];
     const { error } = await supabase.from("listings").update({ status: newStatus, verified: action === "approve" }).eq("id", id);
     if (error) { toast.error(error.message); setUpdatingId(null); return; }
-
     const listing = allListings?.find((l) => l.id === id);
     if (listing) {
-      const messages: Record<string, string> = {
+      const msgs: Record<string, string> = {
         approve: `Votre logement "${listing.title}" a été approuvé et est maintenant visible.`,
         reject: `Votre logement "${listing.title}" n'a pas été approuvé. Veuillez vérifier les critères.`,
         suspend: `Votre logement "${listing.title}" a été suspendu.`,
@@ -154,11 +198,10 @@ const AdminPanel = () => {
         user_id: listing.user_id,
         type: `listing_${action}`,
         title: action === "approve" ? "Logement approuvé !" : action === "reject" ? "Logement non approuvé" : "Logement suspendu",
-        message: messages[action],
+        message: msgs[action],
         data: { listing_id: id },
       } as any);
     }
-
     toast.success(action === "approve" ? "Logement approuvé" : action === "reject" ? "Logement rejeté" : "Logement suspendu");
     qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
     setUpdatingId(null);
@@ -179,56 +222,6 @@ const AdminPanel = () => {
     toast.success("Avis supprimé");
     qc.invalidateQueries({ queryKey: ["admin-all-reviews"] });
   };
-
-  // Computed stats
-  const pendingListings = allListings?.filter((l) => l.status === "pending_approval") || [];
-  const totalRevenue = allBookings?.filter((b) => b.status === "confirmed").reduce((s, b) => s + b.total_price, 0) || 0;
-  const platformCommission = Math.round(totalRevenue * 0.15);
-  const unreadNotifs = notifications?.filter((n) => !n.read).length || 0;
-  const hosts = allProfiles?.filter((p) => p.is_host) || [];
-  const guests = allProfiles?.filter((p) => !p.is_host) || [];
-  const avgRating = allReviews && allReviews.length > 0
-    ? (allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length).toFixed(1)
-    : "—";
-
-  // Unique cities for filter
-  const cities = [...new Set(allListings?.map((l) => l.city).filter(Boolean) || [])];
-
-  // Filtered listings
-  const filteredListings = useMemo(() => {
-    let items = allListings || [];
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      items = items.filter((l) => l.title.toLowerCase().includes(q) || l.location?.toLowerCase().includes(q));
-    }
-    if (filterStatus !== "all") items = items.filter((l) => l.status === filterStatus);
-    if (filterLocation !== "all") items = items.filter((l) => l.city === filterLocation);
-    return items;
-  }, [allListings, searchQuery, filterStatus, filterLocation]);
-
-  // Filtered bookings
-  const filteredBookings = useMemo(() => {
-    let items = allBookings || [];
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      items = items.filter((b) => b.payment_method?.toLowerCase().includes(q) || b.id.includes(q));
-    }
-    if (filterStatus !== "all") items = items.filter((b) => b.status === filterStatus);
-    if (filterPayment !== "all") items = items.filter((b) => b.payment_method === filterPayment);
-    return items;
-  }, [allBookings, searchQuery, filterStatus, filterPayment]);
-
-  // Filtered users
-  const filteredUsers = useMemo(() => {
-    let items = allProfiles || [];
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      items = items.filter((p) => [p.first_name, p.last_name].join(" ").toLowerCase().includes(q) || p.phone?.includes(q));
-    }
-    if (filterStatus === "hosts") items = items.filter((p) => p.is_host);
-    else if (filterStatus === "guests") items = items.filter((p) => !p.is_host);
-    return items;
-  }, [allProfiles, searchQuery, filterStatus]);
 
   const overviewStats = [
     { label: "Total logements", value: allListings?.length || 0, icon: Home, section: "properties" as AdminSection, color: "bg-blue-500/10 text-blue-600" },
