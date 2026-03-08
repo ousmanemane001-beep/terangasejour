@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Home, CalendarDays, Star, TrendingUp, Plus, Settings,
   CreditCard, MapPin, Loader2, Eye, Trash2,
@@ -41,9 +40,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-accent" />
-        </div>
+        <div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
       </div>
     );
   }
@@ -52,13 +49,11 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center bg-warm-gray">
+        <div className="flex-1 flex items-center justify-center bg-secondary">
           <div className="text-center">
             <h1 className="font-display text-2xl font-bold text-foreground mb-3">Connectez-vous</h1>
             <p className="text-muted-foreground mb-6">Accédez à votre espace pour gérer vos logements et réservations.</p>
-            <Link to="/login">
-              <Button className="rounded-full bg-accent text-accent-foreground">Se connecter</Button>
-            </Link>
+            <Link to="/login"><Button className="rounded-full bg-primary text-primary-foreground">Se connecter</Button></Link>
           </div>
         </div>
         <Footer />
@@ -70,9 +65,7 @@ const Dashboard = () => {
   const displayName = [user.user_metadata?.first_name, user.user_metadata?.last_name].filter(Boolean).join(" ") || "Utilisateur";
 
   const activeListings = listings?.filter((l) => l.status === "published") || [];
-  const totalEarnings = ownerBookings
-    ?.filter((b) => b.status === "confirmed" || b.status === "pending")
-    .reduce((sum, b) => sum + b.total_price, 0) || 0;
+  const totalEarnings = ownerBookings?.filter((b) => b.status === "confirmed" || b.status === "pending").reduce((sum, b) => sum + b.total_price, 0) || 0;
   const thisMonthBookings = ownerBookings?.filter((b) => {
     const d = new Date(b.created_at);
     const now = new Date();
@@ -97,9 +90,8 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex-1 bg-warm-gray">
+      <div className="flex-1 bg-secondary">
         <div className="container mx-auto px-4 py-8">
-          {/* Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-14 w-14">
@@ -112,31 +104,24 @@ const Dashboard = () => {
             </div>
             <div className="flex gap-3">
               <Link to="/create-listing">
-                <Button className="rounded-full bg-accent text-accent-foreground gap-2">
-                  <Plus className="w-4 h-4" /> Nouveau logement
-                </Button>
+                <Button className="rounded-full bg-primary text-primary-foreground gap-2"><Plus className="w-4 h-4" /> Nouveau logement</Button>
               </Link>
               <Link to="/profile">
-                <Button variant="outline" className="rounded-full gap-2">
-                  <Settings className="w-4 h-4" /> Profil
-                </Button>
+                <Button variant="outline" className="rounded-full gap-2"><Settings className="w-4 h-4" /> Profil</Button>
               </Link>
             </div>
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {stats.map((stat, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
                 <Card className="border-none shadow-[var(--shadow-card)]">
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                        <stat.icon className="w-5 h-5 text-accent" />
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <stat.icon className="w-5 h-5 text-primary" />
                       </div>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" /> {stat.trend}
-                      </span>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1"><TrendingUp className="w-3 h-3" /> {stat.trend}</span>
                     </div>
                     <p className="font-display text-2xl font-bold text-foreground">{stat.value}</p>
                     <p className="text-sm text-muted-foreground">{stat.label}</p>
@@ -146,7 +131,6 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Tabs */}
           <Tabs defaultValue="bookings" className="space-y-6">
             <TabsList className="bg-card rounded-xl p-1 shadow-[var(--shadow-card)]">
               <TabsTrigger value="bookings" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
@@ -160,29 +144,22 @@ const Dashboard = () => {
               </TabsTrigger>
             </TabsList>
 
-            {/* Bookings Tab (received as host) */}
             <TabsContent value="bookings">
               <Card className="border-none shadow-[var(--shadow-card)]">
-                <CardHeader>
-                  <CardTitle className="font-display text-lg">Réservations reçues</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle className="font-display text-lg">Réservations reçues</CardTitle></CardHeader>
                 <CardContent>
                   {bookingsLoading ? (
-                    <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-accent" /></div>
+                    <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
                   ) : ownerBookings && ownerBookings.length > 0 ? (
                     <div className="space-y-4">
                       {ownerBookings.map((b) => (
                         <div key={b.id} className="flex items-center justify-between p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
                           <div>
-                            <p className="font-medium text-foreground text-sm">
-                              {format(new Date(b.check_in), "d MMM", { locale: fr })} → {format(new Date(b.check_out), "d MMM yyyy", { locale: fr })}
-                            </p>
+                            <p className="font-medium text-foreground text-sm">{format(new Date(b.check_in), "d MMM", { locale: fr })} → {format(new Date(b.check_out), "d MMM yyyy", { locale: fr })}</p>
                             <p className="text-xs text-muted-foreground">{b.nights} nuit{b.nights > 1 ? "s" : ""} · {b.guests} voyageur{b.guests > 1 ? "s" : ""}</p>
                           </div>
                           <div className="text-right">
-                            <Badge variant={statusMap[b.status]?.variant || "secondary"}>
-                              {statusMap[b.status]?.label || b.status}
-                            </Badge>
+                            <Badge variant={statusMap[b.status]?.variant || "secondary"}>{statusMap[b.status]?.label || b.status}</Badge>
                             <p className="text-sm font-semibold text-foreground mt-1">{b.total_price.toLocaleString("fr-FR")} F</p>
                           </div>
                         </div>
@@ -195,45 +172,36 @@ const Dashboard = () => {
               </Card>
             </TabsContent>
 
-            {/* Listings Tab */}
             <TabsContent value="listings">
               {listingsLoading ? (
-                <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-accent" /></div>
+                <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {listings?.map((listing) => (
                     <Card key={listing.id} className="border-none shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-card-hover)] transition-shadow">
                       <div className="relative">
                         <img src={listing.photos?.[0] || "/placeholder.svg"} alt={listing.title} className="w-full h-48 object-cover" />
-                        <Badge className={`absolute top-3 left-3 ${listing.status === "published" ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground"}`}>
+                        <Badge className={`absolute top-3 left-3 ${listing.status === "published" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
                           {statusMap[listing.status]?.label || listing.status}
                         </Badge>
                       </div>
                       <CardContent className="p-4">
                         <h3 className="font-display font-semibold text-foreground mb-1 line-clamp-1">{listing.title}</h3>
-                        <p className="text-sm text-muted-foreground flex items-center gap-1 mb-3">
-                          <MapPin className="w-3.5 h-3.5" /> {listing.location || "Non précisé"}
-                        </p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1 mb-3"><MapPin className="w-3.5 h-3.5" /> {listing.location || "Non précisé"}</p>
                         <div className="flex items-center justify-between mb-4">
                           <span className="font-semibold text-foreground">{listing.price_per_night.toLocaleString("fr-FR")} F<span className="text-xs text-muted-foreground font-normal"> /nuit</span></span>
                         </div>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="rounded-full flex-1 text-xs gap-1" onClick={() => navigate(`/property/${listing.id}`)}>
-                            <Eye className="w-3 h-3" /> Voir
-                          </Button>
-                          <Button variant="outline" size="sm" className="rounded-full text-xs text-destructive gap-1" onClick={() => handleDeleteListing(listing.id)}>
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
+                          <Button variant="outline" size="sm" className="rounded-full flex-1 text-xs gap-1" onClick={() => navigate(`/property/${listing.id}`)}><Eye className="w-3 h-3" /> Voir</Button>
+                          <Button variant="outline" size="sm" className="rounded-full text-xs text-destructive gap-1" onClick={() => handleDeleteListing(listing.id)}><Trash2 className="w-3 h-3" /></Button>
                         </div>
                       </CardContent>
                     </Card>
                   ))}
                   <Link to="/create-listing" className="flex items-center justify-center">
-                    <Card className="border-2 border-dashed border-border hover:border-accent transition-colors w-full h-full min-h-[300px] flex items-center justify-center cursor-pointer">
+                    <Card className="border-2 border-dashed border-border hover:border-primary transition-colors w-full h-full min-h-[300px] flex items-center justify-center cursor-pointer">
                       <CardContent className="text-center p-6">
-                        <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-                          <Plus className="w-6 h-6 text-accent" />
-                        </div>
+                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4"><Plus className="w-6 h-6 text-primary" /></div>
                         <p className="font-display font-semibold text-foreground">Ajouter un logement</p>
                         <p className="text-sm text-muted-foreground mt-1">Créez une nouvelle annonce</p>
                       </CardContent>
@@ -243,27 +211,20 @@ const Dashboard = () => {
               )}
             </TabsContent>
 
-            {/* My Trips Tab */}
             <TabsContent value="trips">
               <Card className="border-none shadow-[var(--shadow-card)]">
-                <CardHeader>
-                  <CardTitle className="font-display text-lg">Mes réservations</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle className="font-display text-lg">Mes réservations</CardTitle></CardHeader>
                 <CardContent>
                   {guestBookings && guestBookings.length > 0 ? (
                     <div className="space-y-4">
                       {guestBookings.map((b) => (
                         <div key={b.id} className="flex items-center justify-between p-4 rounded-xl bg-muted/50">
                           <div>
-                            <p className="font-medium text-foreground text-sm">
-                              {format(new Date(b.check_in), "d MMM", { locale: fr })} → {format(new Date(b.check_out), "d MMM yyyy", { locale: fr })}
-                            </p>
+                            <p className="font-medium text-foreground text-sm">{format(new Date(b.check_in), "d MMM", { locale: fr })} → {format(new Date(b.check_out), "d MMM yyyy", { locale: fr })}</p>
                             <p className="text-xs text-muted-foreground">{b.nights} nuit{b.nights > 1 ? "s" : ""}</p>
                           </div>
                           <div className="text-right">
-                            <Badge variant={statusMap[b.status]?.variant || "secondary"}>
-                              {statusMap[b.status]?.label || b.status}
-                            </Badge>
+                            <Badge variant={statusMap[b.status]?.variant || "secondary"}>{statusMap[b.status]?.label || b.status}</Badge>
                             <p className="text-sm font-semibold text-foreground mt-1">{b.total_price.toLocaleString("fr-FR")} F</p>
                           </div>
                         </div>
