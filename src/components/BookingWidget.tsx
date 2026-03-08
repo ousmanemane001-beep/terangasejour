@@ -2,22 +2,27 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Users, Loader2, CheckCircle } from "lucide-react";
+import { Calendar, Users, Loader2, CheckCircle, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateBooking } from "@/hooks/useBookings";
 import { useBookedDates, getDisabledDates } from "@/hooks/useAvailability";
+import { useCreateNotification } from "@/hooks/useAdmin";
 import PaymentMethodSelector, { type PaymentMethod } from "@/components/PaymentMethodSelector";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface BookingWidgetProps {
   listingId: string;
   pricePerNight: number;
   maxGuests: number;
+  bookingMode?: string;
+  hostId?: string;
 }
 
 const SERVICE_FEE_RATE = 0.15;
