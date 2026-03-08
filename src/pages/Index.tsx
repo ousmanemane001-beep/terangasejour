@@ -5,9 +5,10 @@ import SearchBar from "@/components/SearchBar";
 import PropertyCard from "@/components/PropertyCard";
 import ListingCard from "@/components/ListingCard";
 import Footer from "@/components/Footer";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import { properties } from "@/data/properties";
 import { useListings } from "@/hooks/useListings";
-import { Home, Shield, Loader2, Building2, Palmtree, Wallet, ShieldCheck, BadgeCheck, CreditCard } from "lucide-react";
+import { Loader2, ShieldCheck, BadgeCheck, CreditCard, Home, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroBg from "@/assets/hero-bg.jpg";
 
@@ -40,6 +41,11 @@ const trustPoints = [
 
 const Index = () => {
   const { data: dbListings, isLoading } = useListings(8);
+
+  const villas = properties.filter((p) => p.type === "Villa");
+  const apartments = properties.filter((p) => p.type === "Appartement" || p.type === "Loft" || p.type === "Studio");
+  const beachProperties = properties.filter((p) => p.amenities.includes("pool") || p.location.toLowerCase().includes("saly") || p.location.toLowerCase().includes("somone") || p.location.toLowerCase().includes("cap"));
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -115,7 +121,7 @@ const Index = () => {
                 <p className="text-muted-foreground mt-1">Les derniers logements ajoutés par nos hôtes</p>
               </div>
               <Link to="/explore">
-                <Button variant="outline" className="hidden md:flex rounded-full">Voir plus de logements</Button>
+                <Button variant="outline" className="hidden md:flex rounded-full">Voir plus</Button>
               </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -123,36 +129,35 @@ const Index = () => {
                 <ListingCard key={listing.id} listing={listing} />
               ))}
             </div>
-            <div className="mt-8 text-center md:hidden">
-              <Link to="/explore">
-                <Button variant="outline" className="rounded-full">Voir plus de logements</Button>
-              </Link>
-            </div>
           </div>
         </section>
       ) : null}
 
-      {/* Static Popular Listings */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                Les logements les plus populaires
-              </h2>
-              <p className="text-muted-foreground mt-1">Découvrez les meilleures adresses au Sénégal</p>
-            </div>
-            <Link to="/explore">
-              <Button variant="outline" className="hidden md:flex rounded-full">Voir tout</Button>
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-            {properties.slice(0, 5).map((property) => (
-              <PropertyCard key={property.id} {...property} />
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Popular Villas */}
+      <PropertySection
+        title="Villas populaires"
+        subtitle="Les plus belles villas du Sénégal"
+        items={villas.slice(0, 5)}
+      />
+
+      {/* Apartments in Dakar */}
+      {apartments.length > 0 && (
+        <PropertySection
+          title="Appartements à Dakar"
+          subtitle="Studios, lofts et appartements urbains"
+          items={apartments.slice(0, 5)}
+          bg
+        />
+      )}
+
+      {/* Beach Houses */}
+      {beachProperties.length > 0 && (
+        <PropertySection
+          title="Maisons en bord de mer"
+          subtitle="Profitez de la côte sénégalaise"
+          items={beachProperties.slice(0, 5)}
+        />
+      )}
 
       {/* Trust Section */}
       <section className="py-16 bg-warm-gray">
@@ -190,9 +195,6 @@ const Index = () => {
           <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground text-center mb-10">
             Partagez votre espace
           </h2>
-          <p className="text-center text-muted-foreground mb-10 max-w-lg mx-auto">
-            Rejoignez TerangaSéjour et accueillez les voyageurs en toute facilité et sécurité.
-          </p>
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             <Link to="/create-listing" className="rounded-2xl border border-border bg-card p-6 hover:shadow-[var(--shadow-card-hover)] transition-shadow block">
               <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center mb-4">
@@ -200,7 +202,7 @@ const Index = () => {
               </div>
               <h3 className="font-display font-semibold text-lg text-foreground mb-2">Publiez votre logement</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Mettez votre propriété en ligne en quelques étapes et commencez à recevoir des réservations rapidement.
+                Mettez votre propriété en ligne et commencez à recevoir des réservations.
               </p>
               <Button variant="outline" size="sm" className="rounded-full">Commencer</Button>
             </Link>
@@ -210,7 +212,7 @@ const Index = () => {
               </div>
               <h3 className="font-display font-semibold text-lg text-foreground mb-2">Obtenez votre certification</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Gagnez la confiance des voyageurs avec notre certification d'hôte et maximisez vos réservations.
+                Gagnez la confiance des voyageurs avec notre certification d'hôte.
               </p>
               <Button variant="outline" size="sm" className="rounded-full">En savoir plus</Button>
             </Link>
@@ -219,8 +221,41 @@ const Index = () => {
       </section>
 
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 };
+
+// Reusable property section component
+const PropertySection = ({
+  title,
+  subtitle,
+  items,
+  bg,
+}: {
+  title: string;
+  subtitle: string;
+  items: typeof properties;
+  bg?: boolean;
+}) => (
+  <section className={`py-16 ${bg ? "bg-warm-gray" : ""}`}>
+    <div className="container mx-auto px-4">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">{title}</h2>
+          <p className="text-muted-foreground mt-1">{subtitle}</p>
+        </div>
+        <Link to="/explore">
+          <Button variant="outline" className="hidden md:flex rounded-full">Voir tout</Button>
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+        {items.map((property) => (
+          <PropertyCard key={property.id} {...property} />
+        ))}
+      </div>
+    </div>
+  </section>
+);
 
 export default Index;
