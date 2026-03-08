@@ -3,12 +3,39 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error("Veuillez remplir tous les champs");
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message === "Invalid login credentials"
+        ? "Email ou mot de passe incorrect"
+        : error.message === "Email not confirmed"
+        ? "Veuillez confirmer votre email avant de vous connecter"
+        : error.message);
+    } else {
+      toast.success("Connexion réussie !");
+      navigate("/dashboard");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -30,13 +57,15 @@ const Login = () => {
               </p>
             </div>
 
-            <form className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   type="email"
                   placeholder="Adresse email"
                   className="pl-10 rounded-xl h-12"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="relative">
@@ -45,6 +74,8 @@ const Login = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="Mot de passe"
                   className="pl-10 pr-10 rounded-xl h-12"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -55,18 +86,18 @@ const Login = () => {
                 </button>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 text-muted-foreground">
-                  <input type="checkbox" className="rounded" />
-                  Se souvenir de moi
-                </label>
+              <div className="flex items-center justify-end text-sm">
                 <Link to="/forgot-password" className="text-accent hover:underline">
                   Mot de passe oublié ?
                 </Link>
               </div>
 
-              <Button className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium">
-                Se connecter
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Se connecter"}
               </Button>
             </form>
 
