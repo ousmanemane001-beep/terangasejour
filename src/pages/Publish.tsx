@@ -102,6 +102,8 @@ const Publish = () => {
       });
 
       if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ["listings"] });
+      queryClient.invalidateQueries({ queryKey: ["owner-listings"] });
       toast.success("Logement publié avec succès !");
       navigate("/dashboard");
     } catch (err: any) {
