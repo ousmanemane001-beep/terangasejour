@@ -252,8 +252,21 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
         </div>
       )}
 
-      {/* Payment method + Confirmation form */}
-      {showConfirmForm && nights > 0 && (
+      {/* Request mode: message to host */}
+      {isRequestMode && nights > 0 && (
+        <div className="space-y-3 mb-6">
+          <Textarea
+            placeholder="Message à l'hôte (optionnel)..."
+            className="rounded-xl"
+            rows={3}
+            value={requestMessage}
+            onChange={(e) => setRequestMessage(e.target.value)}
+          />
+        </div>
+      )}
+
+      {/* Payment method + Confirmation form (instant mode only) */}
+      {!isRequestMode && showConfirmForm && nights > 0 && (
         <div className="space-y-4 mb-6">
           <PaymentMethodSelector selected={paymentMethod} onSelect={setPaymentMethod} />
           
@@ -271,21 +284,38 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
         </div>
       )}
 
-      <Button
-        onClick={handleBook}
-        disabled={!nights || createBooking.isPending}
-        className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
-      >
-        {createBooking.isPending ? (
-          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Réservation en cours...</>
-        ) : showConfirmForm ? (
-          `Confirmer la réservation`
-        ) : nights > 0 ? (
-          `Réserver · ${total.toLocaleString("fr-FR")} F`
-        ) : (
-          "Sélectionnez vos dates"
-        )}
-      </Button>
+      {isRequestMode ? (
+        <Button
+          onClick={handleRequestAvailability}
+          disabled={!nights}
+          className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
+        >
+          <MessageCircle className="w-4 h-4 mr-2" />
+          {nights > 0 ? "Demander la disponibilité" : "Sélectionnez vos dates"}
+        </Button>
+      ) : (
+        <Button
+          onClick={handleBook}
+          disabled={!nights || createBooking.isPending}
+          className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
+        >
+          {createBooking.isPending ? (
+            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Réservation en cours...</>
+          ) : showConfirmForm ? (
+            `Confirmer la réservation`
+          ) : nights > 0 ? (
+            `Réserver · ${total.toLocaleString("fr-FR")} F`
+          ) : (
+            "Sélectionnez vos dates"
+          )}
+        </Button>
+      )}
+
+      {isRequestMode && (
+        <p className="text-xs text-center text-muted-foreground mt-3">
+          📩 L'hôte doit approuver votre demande avant la réservation.
+        </p>
+      )}
     </div>
   );
 };
