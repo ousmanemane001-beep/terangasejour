@@ -76,7 +76,7 @@ const SearchBar = () => {
       <div className="bg-background rounded-2xl shadow-[var(--shadow-card)] border border-border p-2 flex flex-col md:flex-row items-stretch gap-2">
         {/* Destination */}
         <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted transition-colors relative">
-          <MapPin className="w-4 h-4 text-accent shrink-0" />
+          <MapPin className="w-4 h-4 text-primary shrink-0" />
           <div className="flex-1">
             <p className="text-xs text-muted-foreground font-medium">Destination</p>
             <Input
