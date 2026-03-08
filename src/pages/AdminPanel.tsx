@@ -953,7 +953,7 @@ const AdminPanel = () => {
       <Footer />
     </div>
   );
-  );
 };
 
+export default AdminPanel;
 export default AdminPanel;
