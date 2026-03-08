@@ -64,6 +64,10 @@ const Publish = () => {
       toast.error("Veuillez remplir le titre et le prix");
       return;
     }
+    if (photoFiles.length < 5) {
+      toast.error("Vous devez ajouter au moins 5 photos pour publier ce logement.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -221,7 +225,12 @@ const Publish = () => {
                 >
                   <Camera className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">Cliquez ou glissez vos photos ici</p>
-                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG • Max 10 photos • 5 Mo par photo</p>
+                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG • Min 5, max 10 photos • 5 Mo par photo</p>
+                  {photoFiles.length > 0 && photoFiles.length < 5 && (
+                    <p className="text-xs text-destructive mt-2 font-medium">
+                      Vous devez ajouter au moins 5 photos pour publier ce logement. ({photoFiles.length}/5)
+                    </p>
+                  )}
                 </div>
                 {photoPreviews.length > 0 && (
                   <div className="grid grid-cols-5 gap-2 mt-4">

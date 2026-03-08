@@ -4,9 +4,17 @@ import property3 from "@/assets/property-3.jpg";
 import property4 from "@/assets/property-4.jpg";
 import property5 from "@/assets/property-5.jpg";
 
+// Villa Saly images (public folder)
+const villaSaly1 = "/images/villa-saly-1.jpg";
+const villaSaly2 = "/images/villa-saly-2.jfif";
+const villaSaly3 = "/images/villa-saly-3.jfif";
+const villaSaly4 = "/images/villa-saly-4.jfif";
+const villaSaly5 = "/images/villa-saly-5.jfif";
+
 export interface Property {
   id: number;
   image: string;
+  images?: string[];
   title: string;
   location: string;
   price: number;
@@ -14,8 +22,10 @@ export interface Property {
   reviewCount: number;
   type: string;
   bedrooms: number;
+  bathrooms?: number;
   guests: number;
   amenities: string[];
+  description?: string;
   lat: number;
   lng: number;
 }
@@ -140,5 +150,23 @@ export const properties: Property[] = [
     amenities: ["wifi", "pool", "parking", "ac", "kitchen", "garden"],
     lat: 14.4860,
     lng: -17.0768,
+  },
+  {
+    id: 9,
+    image: villaSaly1,
+    images: [villaSaly1, villaSaly2, villaSaly3, villaSaly4, villaSaly5],
+    title: "Villa moderne avec piscine à Saly",
+    location: "Saly, Mbour",
+    price: 50000,
+    rating: 4.8,
+    reviewCount: 12,
+    type: "Villa",
+    bedrooms: 3,
+    bathrooms: 2,
+    guests: 5,
+    amenities: ["pool", "ac", "wifi", "kitchen", "parking"],
+    description: "Belle villa moderne située à Saly Mbour, idéale pour les vacances en famille ou entre amis. La villa dispose d'une piscine privée, d'un salon spacieux, d'une cuisine équipée et d'une terrasse. Située à quelques minutes de la plage et des restaurants.",
+    lat: 14.4474,
+    lng: -17.0174,
   },
 ];
