@@ -257,40 +257,44 @@ const Dashboard = () => {
               {listingsLoading ? (
                 <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
               ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {listings?.map((listing) => (
-                    <Card key={listing.id} className="border-none shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-card-hover)] hover:scale-[1.01] transition-all duration-200">
-                      <div className="relative cursor-pointer" onClick={() => navigate(`/property/${listing.id}`)}>
-                        <img src={listing.photos?.[0] || "/placeholder.svg"} alt={listing.title} className="w-full h-48 object-cover" />
-                        <Badge className={`absolute top-3 left-3 ${listing.status === "published" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                          {statusMap[listing.status]?.label || listing.status}
-                        </Badge>
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-display font-semibold text-foreground mb-1 line-clamp-1">{listing.title}</h3>
-                        <p className="text-sm text-muted-foreground flex items-center gap-1 mb-3"><MapPin className="w-3.5 h-3.5" /> {listing.location || "Non précisé"}</p>
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="font-semibold text-foreground">{listing.price_per_night.toLocaleString("fr-FR")} F<span className="text-xs text-muted-foreground font-normal"> /nuit</span></span>
-                          {ratingsMap?.[listing.id] && (
-                            <span className="flex items-center gap-1 text-sm">
-                              <Star className="w-3.5 h-3.5 fill-primary text-primary" />
-                              <span className="font-medium text-foreground">{ratingsMap[listing.id].avg}</span>
-                              <span className="text-muted-foreground text-xs">({ratingsMap[listing.id].count})</span>
-                            </span>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {listings?.map((listing, i) => (
+                    <motion.div key={listing.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                      <Card className="border-none shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-card-hover)] hover:scale-[1.01] transition-all duration-300 group">
+                        <div className="relative cursor-pointer" onClick={() => navigate(`/property/${listing.id}`)}>
+                          <img src={listing.photos?.[0] || "/placeholder.svg"} alt={listing.title} className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <Badge className={`absolute top-3 left-3 ${listing.status === "published" ? "bg-primary text-primary-foreground" : listing.status === "pending_approval" ? "bg-amber-500/90 text-white" : "bg-muted text-muted-foreground"}`}>
+                            {statusMap[listing.status]?.label || listing.status}
+                          </Badge>
+                          {listing.verified && (
+                            <div className="absolute top-3 right-3"><VerifiedBadge className="bg-background/80 backdrop-blur-sm" /></div>
                           )}
                         </div>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="rounded-full flex-1 text-xs gap-1 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate(`/property/${listing.id}`)}><Eye className="w-3 h-3" /> Voir</Button>
-                          <Button variant="outline" size="sm" className="rounded-full text-xs text-destructive gap-1 cursor-pointer hover:scale-105 transition-transform" onClick={() => handleDeleteListing(listing.id)}><Trash2 className="w-3 h-3" /></Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        <CardContent className="p-4 space-y-2.5">
+                          <h3 className="font-display font-semibold text-foreground line-clamp-1">{listing.title}</h3>
+                          <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-primary/60" /> {listing.location || "Non précisé"}</p>
+                          <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                            <span className="font-bold text-foreground">{listing.price_per_night.toLocaleString("fr-FR")} F<span className="text-xs text-muted-foreground font-normal"> /nuit</span></span>
+                            {ratingsMap?.[listing.id] && (
+                              <span className="flex items-center gap-1 text-sm bg-primary/5 px-2 py-0.5 rounded-full">
+                                <Star className="w-3.5 h-3.5 fill-primary text-primary" />
+                                <span className="font-semibold text-foreground">{ratingsMap[listing.id].avg}</span>
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex gap-2 pt-1">
+                            <Button variant="outline" size="sm" className="rounded-full flex-1 text-xs gap-1 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate(`/property/${listing.id}`)}><Eye className="w-3 h-3" /> Voir</Button>
+                            <Button variant="outline" size="sm" className="rounded-full text-xs text-destructive gap-1 cursor-pointer hover:scale-105 transition-transform" onClick={() => handleDeleteListing(listing.id)}><Trash2 className="w-3 h-3" /></Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
                   ))}
                   <Link to="/create-listing" className="flex items-center justify-center">
-                    <Card className="border-2 border-dashed border-border hover:border-primary hover:scale-[1.02] transition-all duration-200 w-full h-full min-h-[300px] flex items-center justify-center cursor-pointer">
+                    <Card className="border-2 border-dashed border-border hover:border-primary hover:scale-[1.02] transition-all duration-300 w-full h-full min-h-[320px] flex items-center justify-center cursor-pointer group">
                       <CardContent className="text-center p-6">
-                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4"><Plus className="w-6 h-6 text-primary" /></div>
-                        <p className="font-display font-semibold text-foreground">Ajouter un logement</p>
+                        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform"><Plus className="w-7 h-7 text-primary" /></div>
+                        <p className="font-display font-semibold text-foreground text-lg">Ajouter un logement</p>
                         <p className="text-sm text-muted-foreground mt-1">Créez une nouvelle annonce</p>
                       </CardContent>
                     </Card>
