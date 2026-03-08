@@ -127,10 +127,10 @@ const Dashboard = () => {
   const tabs = [...(isHost ? hostTabs : []), ...commonTabs];
 
   const statCards = [
-    { label: "Logements actifs", value: String(activeListings.length), icon: Home, trend: `${listings?.length || 0} total`, tab: "properties" },
-    { label: "Réservations reçues", value: String(ownerBookings?.length || 0), icon: CalendarDays, trend: `${thisMonthBookings.length} ce mois`, tab: "reservations" },
-    { label: "Revenus totaux", value: `${totalEarnings.toLocaleString("fr-FR")} F`, icon: CreditCard, trend: "FCFA", tab: "revenue" },
-    { label: "Note moyenne", value: avgRating, icon: Star, trend: `${totalReviews} avis`, tab: "reviews" },
+    { label: "Logements actifs", value: String(activeListings.length), icon: Home, trend: `${listings?.length || 0} total`, tab: "properties", color: "bg-blue-500/10 text-blue-600" },
+    { label: "Réservations reçues", value: String(ownerBookings?.length || 0), icon: CalendarDays, trend: `${thisMonthBookings.length} ce mois`, tab: "reservations", color: "bg-green-500/10 text-green-600" },
+    { label: "Revenus totaux", value: `${totalEarnings.toLocaleString("fr-FR")} F`, icon: CreditCard, trend: "FCFA", tab: "revenue", color: "bg-primary/10 text-primary" },
+    { label: "Note moyenne", value: avgRating, icon: Star, trend: `${totalReviews} avis`, tab: "reviews", color: "bg-amber-500/10 text-amber-600" },
   ];
 
   return (
@@ -141,31 +141,31 @@ const Dashboard = () => {
           {/* Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
             <div className="flex items-center gap-4">
-              <Avatar className="h-14 w-14">
+              <Avatar className="h-14 w-14 ring-2 ring-primary/20">
                 <AvatarFallback className="bg-primary text-primary-foreground font-display text-lg">{initials}</AvatarFallback>
               </Avatar>
               <div>
                 <h1 className="font-display text-2xl font-bold text-foreground">Bonjour, {displayName} 👋</h1>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-sm mt-0.5">
                   {isHost ? "Espace hôte · Gérez vos logements et réservations" : "Espace voyageur · Gérez vos réservations et favoris"}
                 </p>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2.5 flex-wrap">
               <Link to="/messages">
-                <Button variant="outline" className="rounded-full gap-2 hover:scale-105 transition-transform"><MessageCircle className="w-4 h-4" /> Messages</Button>
+                <Button variant="outline" size="sm" className="rounded-full gap-2 hover:scale-105 transition-transform"><MessageCircle className="w-4 h-4" /> Messages</Button>
               </Link>
               {isHost ? (
                 <Link to="/create-listing">
-                  <Button className="rounded-full bg-primary text-primary-foreground gap-2 hover:scale-105 transition-transform"><Plus className="w-4 h-4" /> Nouveau logement</Button>
+                  <Button size="sm" className="rounded-full bg-primary text-primary-foreground gap-2 hover:scale-105 transition-transform"><Plus className="w-4 h-4" /> Nouveau logement</Button>
                 </Link>
               ) : (
                 <Link to="/become-host">
-                  <Button className="rounded-full bg-primary text-primary-foreground gap-2 hover:scale-105 transition-transform"><Home className="w-4 h-4" /> Devenir hôte</Button>
+                  <Button size="sm" className="rounded-full bg-primary text-primary-foreground gap-2 hover:scale-105 transition-transform"><Home className="w-4 h-4" /> Devenir hôte</Button>
                 </Link>
               )}
               <Link to="/profile">
-                <Button variant="outline" className="rounded-full gap-2 hover:scale-105 transition-transform"><Settings className="w-4 h-4" /> Profil</Button>
+                <Button variant="outline" size="sm" className="rounded-full gap-2 hover:scale-105 transition-transform"><Settings className="w-4 h-4" /> Profil</Button>
               </Link>
             </div>
           </div>
@@ -174,19 +174,19 @@ const Dashboard = () => {
           {isHost && (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {statCards.map((stat, i) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
+                <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
                   <Card
-                    className="border-none shadow-[var(--shadow-card)] cursor-pointer hover:shadow-[var(--shadow-card-hover)] hover:scale-[1.02] transition-all duration-200"
+                    className="border-none shadow-[var(--shadow-card)] cursor-pointer hover:shadow-[var(--shadow-card-hover)] hover:scale-[1.02] transition-all duration-300 group"
                     onClick={() => navigate(`/dashboard/${stat.tab}`)}
                   >
                     <CardContent className="p-5">
                       <div className="flex items-center justify-between mb-3">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                          <stat.icon className="w-5 h-5 text-primary" />
+                        <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110", stat.color)}>
+                          <stat.icon className="w-5 h-5" />
                         </div>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1"><TrendingUp className="w-3 h-3" /> {stat.trend}</span>
+                        <span className="text-[11px] text-muted-foreground flex items-center gap-1"><TrendingUp className="w-3 h-3" /> {stat.trend}</span>
                       </div>
-                      <p className="font-display text-2xl font-bold text-foreground">{stat.value}</p>
+                      <p className="font-display text-2xl font-bold text-foreground leading-none mb-1">{stat.value}</p>
                       <p className="text-sm text-muted-foreground">{stat.label}</p>
                     </CardContent>
                   </Card>
