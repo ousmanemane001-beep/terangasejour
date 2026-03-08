@@ -98,6 +98,16 @@ const Navbar = () => {
                 <DropdownMenuItem asChild>
                   <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center gap-2 text-primary font-medium">
+                        <Shield className="w-4 h-4" /> Administration
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 {!isHost && (
                   <>
                     <DropdownMenuSeparator />
@@ -114,6 +124,7 @@ const Navbar = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </>
           ) : (
             <Link to="/login">
               <Button size="sm" className="rounded-full bg-primary text-primary-foreground text-sm">Connexion</Button>
