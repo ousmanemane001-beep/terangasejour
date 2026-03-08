@@ -64,6 +64,8 @@ const PropertyDetail = () => {
         guests: staticProperty.guests, images: staticProperty.images || [staticProperty.image],
         coverImage: staticProperty.image, rating: staticProperty.rating,
         reviewCount: staticProperty.reviewCount, isDB: false, verified: false,
+        latitude: null as number | null, longitude: null as number | null,
+        address: null as string | null, city: null as string | null,
       }
     : null;
 
