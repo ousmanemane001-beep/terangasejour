@@ -39,6 +39,7 @@ const amenityOptions = [
 
 const Explore = () => {
   const [searchParams] = useSearchParams();
+  const { data: dbListings } = useListings();
 
   // Search state
   const [destination, setDestination] = useState(searchParams.get("destination") || "");
