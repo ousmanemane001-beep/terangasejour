@@ -432,6 +432,15 @@ const Publish = () => {
                 )}
 
                 {safeStep === 3 && (
+                  <AvailabilityStep
+                    availabilityType={listingDraft.availabilityType}
+                    blockedDates={listingDraft.blockedDates}
+                    onChangeType={setAvailabilityType}
+                    onChangeBlockedDates={setBlockedDates}
+                  />
+                )}
+
+                {safeStep === 4 && (
                   <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
                     <h2 className="font-display text-xl font-bold text-foreground">
                       <CheckCircle className="w-5 h-5 inline mr-2" />Récapitulatif
