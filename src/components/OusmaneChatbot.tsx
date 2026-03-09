@@ -501,8 +501,8 @@ export default function OusmaneChatbot() {
             ))}
             {isLoading && messages[messages.length - 1]?.role === "user" && (
               <div className="flex justify-start">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] mr-1.5 mt-1 shrink-0">
-                  🧑🏾
+                <div className="w-6 h-6 rounded-full overflow-hidden mr-1.5 mt-1 shrink-0">
+                  <img src={ousmaneAvatar} alt="Ousmane" className="w-full h-full object-cover" />
                 </div>
                 <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
                   <div className="flex gap-1">
