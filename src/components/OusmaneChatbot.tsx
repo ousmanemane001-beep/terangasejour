@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Compass, Loader2 } from "lucide-react";
+import { X, Send, Compass, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 
@@ -16,8 +16,10 @@ const WELCOME_MESSAGE: Message = {
 const QUICK_ACTIONS = [
   { label: "🏖️ Plages", message: "Quelles sont les plus belles plages du Sénégal ?" },
   { label: "🏠 Logements", message: "Montre-moi les logements disponibles" },
-  { label: "🗓️ Créer mon séjour", message: "Je veux planifier un séjour de 5 jours au Sénégal" },
+  { label: "🗓️ Planifier mon séjour", message: "Je veux planifier mon séjour au Sénégal. Aide-moi étape par étape." },
   { label: "🌍 Destinations", message: "Quelles sont les destinations populaires au Sénégal ?" },
+  { label: "🏛️ Sites historiques", message: "Quels sont les sites historiques à visiter au Sénégal ?" },
+  { label: "🌳 Parcs naturels", message: "Quels parcs naturels peut-on visiter au Sénégal ?" },
 ];
 
 export default function OusmaneChatbot() {
@@ -113,26 +115,37 @@ export default function OusmaneChatbot() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
+          className="fixed bottom-6 right-6 z-50 group"
           aria-label="Ouvrir le guide touristique"
         >
-          <Compass className="w-6 h-6" />
+          <div className="relative">
+            <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-110 transition-transform">
+              <Compass className="w-6 h-6" />
+            </div>
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background animate-pulse" />
+          </div>
+          <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-card border border-border rounded-lg shadow-md text-xs font-medium text-foreground whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+            💬 Demandez à Ousmane !
+          </div>
         </button>
       )}
 
       {/* Chat window */}
       {open && (
-        <div className="fixed bottom-4 right-4 z-50 w-[360px] max-w-[calc(100vw-2rem)] h-[520px] max-h-[calc(100vh-2rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
+        <div className="fixed bottom-4 right-4 z-50 w-[380px] max-w-[calc(100vw-2rem)] h-[560px] max-h-[calc(100vh-2rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 bg-primary text-primary-foreground rounded-t-2xl">
-            <div className="w-9 h-9 rounded-full bg-primary-foreground/20 flex items-center justify-center text-lg font-bold">
-              O
+          <div className="flex items-center gap-3 px-4 py-3 bg-primary text-primary-foreground">
+            <div className="relative">
+              <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center text-lg font-bold">
+                🧑🏾
+              </div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-primary" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm leading-tight">Ousmane</p>
-              <p className="text-xs opacity-80">Guide touristique</p>
+              <p className="text-xs opacity-80">Guide touristique • En ligne</p>
             </div>
-            <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-primary-foreground/20 transition-colors">
+            <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg hover:bg-primary-foreground/20 transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -141,15 +154,20 @@ export default function OusmaneChatbot() {
           <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                {m.role === "assistant" && (
+                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
+                    🧑🏾
+                  </div>
+                )}
                 <div
-                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                  className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                     m.role === "user"
                       ? "bg-primary text-primary-foreground rounded-br-md"
                       : "bg-muted text-foreground rounded-bl-md"
                   }`}
                 >
                   {m.role === "assistant" ? (
-                    <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1 [&>ul]:my-1">
+                    <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1 [&>ul]:my-1 [&>ol]:my-1">
                       <ReactMarkdown>{m.content}</ReactMarkdown>
                     </div>
                   ) : (
@@ -160,22 +178,29 @@ export default function OusmaneChatbot() {
             ))}
             {isLoading && messages[messages.length - 1]?.role === "user" && (
               <div className="flex justify-start">
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
+                  🧑🏾
+                </div>
                 <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:0ms]" />
+                    <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:150ms]" />
+                    <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:300ms]" />
+                  </div>
                 </div>
               </div>
             )}
             <div ref={bottomRef} />
           </div>
 
-          {/* Quick actions (show only at start) */}
+          {/* Quick actions */}
           {messages.length <= 1 && (
             <div className="px-3 pb-2 flex flex-wrap gap-1.5">
               {QUICK_ACTIONS.map((a) => (
                 <button
                   key={a.label}
                   onClick={() => sendMessage(a.message)}
-                  className="text-xs px-3 py-1.5 rounded-full bg-accent text-accent-foreground hover:bg-accent/80 transition-colors"
+                  className="text-xs px-3 py-1.5 rounded-full bg-accent text-accent-foreground hover:bg-accent/80 transition-colors border border-border"
                 >
                   {a.label}
                 </button>
@@ -186,7 +211,7 @@ export default function OusmaneChatbot() {
           {/* Input */}
           <form
             onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}
-            className="flex items-center gap-2 px-3 py-2.5 border-t border-border"
+            className="flex items-center gap-2 px-3 py-2.5 border-t border-border bg-card"
           >
             <input
               ref={inputRef}
@@ -196,7 +221,7 @@ export default function OusmaneChatbot() {
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               disabled={isLoading}
             />
-            <Button type="submit" size="icon" variant="ghost" disabled={!input.trim() || isLoading} className="shrink-0">
+            <Button type="submit" size="icon" variant="ghost" disabled={!input.trim() || isLoading} className="shrink-0 h-8 w-8">
               <Send className="w-4 h-4" />
             </Button>
           </form>
