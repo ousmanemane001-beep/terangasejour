@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUnreadCount } from "@/hooks/useAdmin";
-import { Badge } from "@/components/ui/badge";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
