@@ -89,12 +89,22 @@ const WELCOME_MESSAGE: Message = {
 };
 
 const QUICK_ACTIONS = [
-  { label: "⚡ Voyageur pressé", message: "Je suis pressé, trouve-moi un logement rapidement" },
-  { label: "🗺️ Carte de voyage", message: "Je veux créer ma carte de voyage personnalisée" },
+  { label: "🌍 Destinations populaires", message: "Quelles sont les destinations les plus populaires du Sénégal ?" },
+  { label: "🏠 Trouver un logement", message: "Aide-moi à trouver un logement au Sénégal" },
+  { label: "🗺️ Planifier mon séjour", message: "Je veux planifier mon séjour au Sénégal" },
+  { label: "⚡ Logement rapide", message: "Je suis pressé, trouve-moi un logement rapidement" },
+  { label: "🏛️ Histoire du Sénégal", message: "Parle-moi de l'histoire et des sites historiques du Sénégal" },
+];
+
+// Contextual follow-up suggestions after assistant responses
+const FOLLOWUP_SUGGESTIONS: Array<{ label: string; message: string }> = [
   { label: "🏖️ Plages", message: "Quelles plages me recommandes-tu ?" },
-  { label: "🏠 Logements", message: "Montre-moi des logements" },
-  { label: "🌍 Destinations", message: "Quelles sont les meilleures destinations ?" },
+  { label: "🌍 Destinations", message: "Quelles sont les destinations les plus populaires ?" },
+  { label: "🏠 Logements", message: "Montre-moi des logements disponibles" },
+  { label: "🗺️ Planifier", message: "Je veux planifier mon séjour" },
   { label: "🏛️ Histoire", message: "Des sites historiques à visiter ?" },
+  { label: "🍽️ Gastronomie", message: "Parle-moi de la cuisine sénégalaise" },
+  { label: "🌳 Nature", message: "Quels parcs naturels visiter ?" },
 ];
 
 type ParsedPart =
