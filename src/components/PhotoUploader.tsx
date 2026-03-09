@@ -1,74 +1,145 @@
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import { Camera, Upload, X, Star, GripVertical, AlertCircle, Loader2 } from "lucide-react";
 
 const MAX_PHOTOS = 10;
 const MIN_PHOTOS = 5;
 const MAX_SIZE_MB = 8;
+const MIN_WIDTH = 800;
+const MIN_HEIGHT = 600;
 const ACCEPTED_MIME = ["image/jpeg", "image/png", "image/webp"];
+const ACCEPTED_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
 
-interface PhotoItem {
+export interface PhotoItem {
   id: string;
   file: File;
   preview: string;
+  error?: string | null;
+  validated?: boolean;
 }
 
 interface PhotoUploaderProps {
   photos: PhotoItem[];
   onChange: (photos: PhotoItem[]) => void;
+  onValidityChange?: (allValid: boolean) => void;
+}
+
+function getExtension(name: string): string {
+  return (name.toLowerCase().split(".").pop() || "");
 }
 
 function isAcceptedFormat(file: File): boolean {
   if (ACCEPTED_MIME.includes(file.type)) return true;
-  // Fallback: check extension (some mobile browsers report empty mime)
-  const ext = file.name.toLowerCase().split(".").pop();
-  return ["jpg", "jpeg", "png", "webp"].includes(ext || "");
+  return ACCEPTED_EXTENSIONS.includes(getExtension(file.name));
 }
 
-const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
+/** Load image into canvas to validate dimensions and fix EXIF orientation.
+ *  Modern browsers auto-correct EXIF in <img> and canvas drawImage. */
+function validateImageDimensions(file: File): Promise<{ width: number; height: number; preview: string }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      // Draw through canvas to flatten EXIF orientation
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        URL.revokeObjectURL(url);
+        resolve({ width: img.naturalWidth, height: img.naturalHeight, preview: url });
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+
+      // Create a corrected blob URL for preview
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(url);
+          if (blob) {
+            const correctedUrl = URL.createObjectURL(blob);
+            resolve({ width: img.naturalWidth, height: img.naturalHeight, preview: correctedUrl });
+          } else {
+            // Fallback to original URL
+            resolve({ width: img.naturalWidth, height: img.naturalHeight, preview: URL.createObjectURL(file) });
+          }
+        },
+        "image/jpeg",
+        0.92
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Impossible de lire cette image."));
+    };
+    img.src = url;
+  });
+}
+
+const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [globalErrors, setGlobalErrors] = useState<string[]>([]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [processing, setProcessing] = useState(false);
 
+  // Notify parent of validity changes
+  useEffect(() => {
+    if (!onValidityChange) return;
+    const allValid = photos.length >= MIN_PHOTOS && photos.every((p) => p.validated && !p.error);
+    onValidityChange(allValid);
+  }, [photos, onValidityChange]);
+
   const handleFiles = useCallback(
-    (files: FileList | File[]) => {
+    async (files: FileList | File[]) => {
       const fileArray = Array.from(files);
       const remaining = MAX_PHOTOS - photos.length;
       if (remaining <= 0) {
-        setErrors(["Vous avez atteint le maximum de 10 photos."]);
+        setGlobalErrors(["Vous avez atteint le maximum de 10 photos."]);
         return;
       }
 
       setProcessing(true);
       const newErrors: string[] = [];
-      const validPhotos: PhotoItem[] = [];
+      const newPhotos: PhotoItem[] = [];
       const filesToProcess = fileArray.slice(0, remaining);
 
       for (const file of filesToProcess) {
+        // Format check
         if (!isAcceptedFormat(file)) {
-          newErrors.push(`"${file.name}" : format non accepté. Utilisez JPG, JPEG, PNG ou WEBP.`);
+          newErrors.push(`"${file.name}" : format non supporté. Utilisez JPG, PNG ou WEBP.`);
           continue;
         }
 
+        // Size check
         if (file.size > MAX_SIZE_MB * 1024 * 1024) {
           const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-          newErrors.push(`"${file.name}" (${sizeMB} Mo) : taille trop grande. Maximum ${MAX_SIZE_MB} Mo par photo.`);
+          newErrors.push(`"${file.name}" (${sizeMB} Mo) : image trop lourde. Maximum ${MAX_SIZE_MB} Mo.`);
           continue;
         }
 
-        // Use objectURL for instant preview (faster & more reliable on mobile than FileReader)
-        const preview = URL.createObjectURL(file);
+        // Dimension check + EXIF correction
+        try {
+          const { width, height, preview } = await validateImageDimensions(file);
 
-        validPhotos.push({
-          id: crypto.randomUUID(),
-          file,
-          preview,
-        });
+          let error: string | null = null;
+          if (width < MIN_WIDTH || height < MIN_HEIGHT) {
+            error = `Dimensions trop petites (${width}×${height}). Minimum ${MIN_WIDTH}×${MIN_HEIGHT} px.`;
+          }
+
+          newPhotos.push({
+            id: crypto.randomUUID(),
+            file,
+            preview,
+            error,
+            validated: true,
+          });
+        } catch {
+          newErrors.push(`"${file.name}" : impossible de lire cette image.`);
+        }
       }
 
-      setErrors(newErrors);
-      if (validPhotos.length > 0) {
-        onChange([...photos, ...validPhotos]);
+      setGlobalErrors(newErrors);
+      if (newPhotos.length > 0) {
+        onChange([...photos, ...newPhotos]);
       }
       setProcessing(false);
     },
@@ -105,13 +176,13 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
 
   const removePhoto = (index: number) => {
     const removed = photos[index];
-    // Revoke objectURL to free memory
     if (removed.preview.startsWith("blob:")) {
       URL.revokeObjectURL(removed.preview);
     }
     onChange(photos.filter((_, i) => i !== index));
   };
 
+  const hasInvalidPhotos = photos.some((p) => !!p.error);
   const emptySlots = Math.max(0, MIN_PHOTOS - photos.length);
 
   return (
@@ -130,7 +201,7 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
         {processing ? (
           <>
             <Loader2 className="w-10 h-10 text-accent mx-auto mb-3 animate-spin" />
-            <p className="font-medium text-foreground mb-1">Traitement en cours…</p>
+            <p className="font-medium text-foreground mb-1">Validation des images…</p>
           </>
         ) : (
           <>
@@ -140,11 +211,11 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
           </>
         )}
         <p className="text-xs text-muted-foreground mt-2">
-          JPG, JPEG, PNG, WEBP • Min {MIN_PHOTOS}, max {MAX_PHOTOS} photos • {MAX_SIZE_MB} Mo max par photo
+          JPG, PNG, WEBP • Min {MIN_WIDTH}×{MIN_HEIGHT} px • Min {MIN_PHOTOS}, max {MAX_PHOTOS} photos • {MAX_SIZE_MB} Mo max
         </p>
       </div>
 
-      {/* Hidden file input — accept image/* for full mobile compatibility */}
+      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -156,15 +227,14 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
           if (e.target.files && e.target.files.length > 0) {
             handleFiles(e.target.files);
           }
-          // Reset so same file can be re-selected
           e.target.value = "";
         }}
       />
 
-      {/* Errors */}
-      {errors.length > 0 && (
+      {/* Global errors */}
+      {globalErrors.length > 0 && (
         <div className="space-y-1">
-          {errors.map((err, i) => (
+          {globalErrors.map((err, i) => (
             <p key={i} className="text-xs text-destructive flex items-start gap-1">
               <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
               {err}
@@ -173,7 +243,7 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
         </div>
       )}
 
-      {/* Counter */}
+      {/* Counter + invalid warning */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <p className="text-sm font-medium text-foreground">
           Photos ajoutées :{" "}
@@ -190,6 +260,16 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
         )}
       </div>
 
+      {/* Invalid photos warning */}
+      {hasInvalidPhotos && (
+        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-3 flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+          <p className="text-sm text-destructive font-medium">
+            Veuillez remplacer les images non conformes avant de continuer.
+          </p>
+        </div>
+      )}
+
       {/* Photo grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {photos.map((photo, index) => (
@@ -199,9 +279,9 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
             onDragStart={() => handlePhotoDragStart(index)}
             onDragOver={(e) => handlePhotoDragOver(e, index)}
             onDragEnd={handlePhotoDragEnd}
-            className={`relative rounded-xl overflow-hidden group border-2 border-border ${
-              dragIndex === index ? "opacity-50" : ""
-            }`}
+            className={`relative rounded-xl overflow-hidden group border-2 ${
+              photo.error ? "border-destructive" : "border-border"
+            } ${dragIndex === index ? "opacity-50" : ""}`}
             style={{ aspectRatio: "4/3" }}
           >
             <img
@@ -209,10 +289,18 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
               alt={`Photo ${index + 1}`}
               className="w-full h-full object-cover"
             />
+            {/* Per-photo error overlay */}
+            {photo.error && (
+              <div className="absolute inset-0 bg-destructive/20 flex items-end">
+                <p className="w-full text-[9px] leading-tight text-destructive-foreground bg-destructive/90 px-1.5 py-1 font-medium">
+                  {photo.error}
+                </p>
+              </div>
+            )}
             <div className="absolute top-1 left-1 w-7 h-7 bg-background/80 backdrop-blur-sm rounded-lg flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
               <GripVertical className="w-3.5 h-3.5 text-foreground" />
             </div>
-            {index === 0 && (
+            {index === 0 && !photo.error && (
               <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-md flex items-center gap-1">
                 <Star className="w-2.5 h-2.5" />
                 Principale

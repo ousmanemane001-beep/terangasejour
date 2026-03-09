@@ -35,11 +35,7 @@ const STEP_LABELS = [
 
 const DEFAULT_CURRENCY = "XOF";
 
-interface PhotoItem {
-  id: string;
-  file: File;
-  preview: string;
-}
+import type { PhotoItem } from "@/components/PhotoUploader";
 
 interface ListingDraft {
   title: string;
@@ -142,6 +138,9 @@ const Publish = () => {
         if (listingDraft.photos.length < 5) {
           return `Ajoutez au moins 5 photos (${listingDraft.photos.length}/5).`;
         }
+        if (listingDraft.photos.some((p) => !!p.error)) {
+          return "Veuillez remplacer les images non conformes avant de continuer.";
+        }
         return null;
       case 2: {
         const parsedPrice = Number.parseInt(listingDraft.price || "0", 10);
@@ -189,7 +188,8 @@ const Publish = () => {
     setLoading(true);
     try {
       const photoUrls: string[] = [];
-      for (const photo of listingDraft.photos) {
+      const validPhotos = listingDraft.photos.filter((p) => !p.error);
+      for (const photo of validPhotos) {
         const ext = photo.file.name.split(".").pop() || "jpg";
         const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage.from("listing-photos").upload(path, photo.file);
