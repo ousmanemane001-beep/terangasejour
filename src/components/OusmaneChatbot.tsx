@@ -480,8 +480,8 @@ export default function OusmaneChatbot() {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "assistant" && (
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] mr-1.5 mt-1 shrink-0">
-                    🧑🏾
+                  <div className="w-6 h-6 rounded-full overflow-hidden mr-1.5 mt-1 shrink-0">
+                    <img src={ousmaneAvatar} alt="Ousmane" className="w-full h-full object-cover" />
                   </div>
                 )}
                 <div
