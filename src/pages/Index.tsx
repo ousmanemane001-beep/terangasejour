@@ -77,7 +77,7 @@ const Index = () => {
         </div>
 
         {/* Floating search card */}
-        <div className="absolute left-1/2 -translate-x-1/2 -bottom-[160px] md:-bottom-[40px] w-[92%] max-w-[1100px] md:w-full md:px-4" style={{ zIndex: 20 }}>
+        <div className="absolute left-1/2 -translate-x-1/2 -bottom-[320px] md:-bottom-[40px] w-[92%] max-w-[1100px] md:w-full md:px-4" style={{ zIndex: 20 }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -90,7 +90,7 @@ const Index = () => {
       </section>
 
       {/* Spacer for floating search card */}
-      <div className="h-[180px] md:h-[60px]" />
+      <div className="h-[340px] md:h-[60px]" />
 
       {/* Published Listings from DB — right after search */}
       {isLoading ? (
