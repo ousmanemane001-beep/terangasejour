@@ -4,7 +4,7 @@ import { Camera, Upload, X, Star, GripVertical, AlertCircle } from "lucide-react
 const MAX_PHOTOS = 10;
 const MIN_PHOTOS = 5;
 const MAX_SIZE_MB = 5;
-const ACCEPTED_TYPES = ["image/jpeg", "image/png"];
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
 interface PhotoItem {
   id: string;
