@@ -6,6 +6,7 @@ import { Property } from "@/data/properties";
 interface ExploreMapProps {
   properties: Property[];
   hoveredProperty: number | null;
+  center?: { lat: number; lng: number };
 }
 
 const ExploreMap = ({ properties, hoveredProperty }: ExploreMapProps) => {
