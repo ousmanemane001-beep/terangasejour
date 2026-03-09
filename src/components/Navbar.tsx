@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, User, LogOut, Heart, Home, CalendarDays, MessageCircle, Shield } from "lucide-react";
+import { Menu, X, User, LogOut, Heart, Home, CalendarDays, MessageCircle, Shield, MapPin, PlusCircle, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import NotificationDropdown from "@/components/NotificationDropdown";
 
@@ -15,7 +15,15 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const { user, isHost, isAdmin, profile, signOut } = useAuth();
-  
+
+  // Close mobile menu on route change
+  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
+  // Lock body scroll when menu open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
 
   const initials = profile
     ? `${(profile.first_name || "")[0] || ""}${(profile.last_name || "")[0] || ""}`.toUpperCase() || "U"
@@ -34,203 +42,259 @@ const Navbar = () => {
   const roleLabel = isAdmin ? "Super Admin" : isHost ? "Hôte" : "Voyageur";
   const dashboardPath = isAdmin ? "/admin" : "/dashboard";
 
+  const close = () => setMobileOpen(false);
+
+  // Mobile menu items with icons — Booking.com style
+  const mobileMenuItems = [
+    { label: "Accueil", path: "/", icon: Home },
+    { label: "Destinations", path: "/explore", icon: MapPin },
+    { label: "Publier un logement", path: isHost ? "/create-listing" : "/become-host", icon: PlusCircle },
+    ...(user ? [{ label: "Mes réservations", path: "/dashboard", icon: CalendarDays }] : []),
+  ];
+
   return (
-    <nav className="sticky top-0 z-50 bg-primary shadow-[var(--shadow-nav)]">
-      <div className="container mx-auto flex items-center justify-between h-14 px-4">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <span className="font-display text-lg font-bold text-primary-foreground">TerangaSéjour</span>
-        </Link>
+    <>
+      <nav className="sticky top-0 z-50 bg-primary shadow-[var(--shadow-nav)]">
+        <div className="container mx-auto flex items-center justify-between h-14 px-4">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <span className="font-display text-lg font-bold text-primary-foreground">TerangaSéjour</span>
+          </Link>
 
-        {/* Desktop nav links */}
-        <div className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => (
-            <Link key={link.path} to={link.path}
-              className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
-                location.pathname === link.path
-                  ? "text-primary-foreground bg-white/15"
-                  : "text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10"
-              }`}
-            >{link.label}</Link>
-          ))}
-        </div>
+          {/* Desktop nav links */}
+          <div className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <Link key={link.path} to={link.path}
+                className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
+                  location.pathname === link.path
+                    ? "text-primary-foreground bg-white/15"
+                    : "text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10"
+                }`}
+              >{link.label}</Link>
+            ))}
+          </div>
 
-        {/* Desktop right actions */}
-        <div className="hidden md:flex items-center gap-2">
-          {!isAdmin && (
-            <Link to={isHost ? "/create-listing" : "/become-host"}>
-              <Button variant="outline" size="sm" className="rounded text-sm border-primary-foreground/30 text-primary-foreground bg-transparent hover:bg-white/10 hover:text-primary-foreground">
-                Ajouter mon logement
-              </Button>
-            </Link>
-          )}
-          {user ? (
-            <>
-              <NotificationDropdown />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded text-primary-foreground hover:bg-white/10">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className={`${isAdmin ? "bg-destructive" : "bg-white/20"} text-primary-foreground text-xs font-bold`}>{initials}</AvatarFallback>
-                  </Avatar>
+          {/* Desktop right actions */}
+          <div className="hidden md:flex items-center gap-2">
+            {!isAdmin && (
+              <Link to={isHost ? "/create-listing" : "/become-host"}>
+                <Button variant="outline" size="sm" className="rounded text-sm border-primary-foreground/30 text-primary-foreground bg-transparent hover:bg-white/10 hover:text-primary-foreground">
+                  Ajouter mon logement
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuLabel className="font-normal">
-                  <p className="text-sm font-medium text-foreground">
-                    {[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Utilisateur"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{roleLabel}</p>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
+              </Link>
+            )}
+            {user ? (
+              <>
+                <NotificationDropdown />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded text-primary-foreground hover:bg-white/10">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className={`${isAdmin ? "bg-destructive" : "bg-white/20"} text-primary-foreground text-xs font-bold`}>{initials}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuLabel className="font-normal">
+                    <p className="text-sm font-medium text-foreground">
+                      {[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Utilisateur"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{roleLabel}</p>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
 
-                {isAdmin ? (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin" className="flex items-center gap-2 text-primary font-medium">
-                        <Shield className="w-4 h-4" /> Panel Admin
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link to="/dashboard" className="flex items-center gap-2"><Home className="w-4 h-4" /> Mon espace</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/favorites" className="flex items-center gap-2"><Heart className="w-4 h-4" /> Mes favoris</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/messages" className="flex items-center gap-2"><MessageCircle className="w-4 h-4" /> Messages</Link>
-                    </DropdownMenuItem>
-                    {isHost && (
+                  {isAdmin ? (
+                    <>
                       <DropdownMenuItem asChild>
-                        <Link to="/dashboard?tab=listings" className="flex items-center gap-2"><CalendarDays className="w-4 h-4" /> Mes logements</Link>
+                        <Link to="/admin" className="flex items-center gap-2 text-primary font-medium">
+                          <Shield className="w-4 h-4" /> Panel Admin
+                        </Link>
                       </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
-                    </DropdownMenuItem>
-                    {!isHost && (
-                      <>
-                        <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/dashboard" className="flex items-center gap-2"><Home className="w-4 h-4" /> Mon espace</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/favorites" className="flex items-center gap-2"><Heart className="w-4 h-4" /> Mes favoris</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/messages" className="flex items-center gap-2"><MessageCircle className="w-4 h-4" /> Messages</Link>
+                      </DropdownMenuItem>
+                      {isHost && (
                         <DropdownMenuItem asChild>
-                          <Link to="/become-host" className="flex items-center gap-2 text-primary font-medium">
-                            <Home className="w-4 h-4" /> Devenir hôte
-                          </Link>
+                          <Link to="/dashboard?tab=listings" className="flex items-center gap-2"><CalendarDays className="w-4 h-4" /> Mes logements</Link>
                         </DropdownMenuItem>
-                      </>
-                    )}
-                  </>
-                )}
+                      )}
+                      <DropdownMenuItem asChild>
+                        <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
+                      </DropdownMenuItem>
+                      {!isHost && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <Link to="/become-host" className="flex items-center gap-2 text-primary font-medium">
+                              <Home className="w-4 h-4" /> Devenir hôte
+                            </Link>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </>
+                  )}
 
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="flex items-center gap-2 text-destructive">
-                  <LogOut className="w-4 h-4" /> Déconnexion
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            </>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link to="/signup">
-                <Button variant="outline" size="sm" className="rounded text-sm border-primary-foreground/30 text-primary-foreground bg-transparent hover:bg-white/10 hover:text-primary-foreground">
-                  S'inscrire
-                </Button>
-              </Link>
-              <Link to="/login">
-                <Button variant="outline" size="sm" className="rounded text-sm border-primary-foreground/30 text-primary-foreground bg-transparent hover:bg-white/10 hover:text-primary-foreground">
-                  Se connecter
-                </Button>
-              </Link>
-            </div>
-          )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="flex items-center gap-2 text-destructive">
+                    <LogOut className="w-4 h-4" /> Déconnexion
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link to="/signup">
+                  <Button variant="outline" size="sm" className="rounded text-sm border-primary-foreground/30 text-primary-foreground bg-transparent hover:bg-white/10 hover:text-primary-foreground">
+                    S'inscrire
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button variant="outline" size="sm" className="rounded text-sm border-primary-foreground/30 text-primary-foreground bg-transparent hover:bg-white/10 hover:text-primary-foreground">
+                    Se connecter
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <button className="md:hidden p-2 text-primary-foreground" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
+            <Menu className="w-5 h-5" />
+          </button>
         </div>
+      </nav>
 
-        {/* Mobile menu button */}
-        <button className="md:hidden p-2 text-primary-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-      </div>
-
+      {/* Mobile slide-in panel — Booking.com style */}
       <AnimatePresence>
         {mobileOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="md:hidden overflow-hidden bg-primary border-t border-white/10"
-          >
-            <div className="px-4 py-4 space-y-1">
-              {navLinks.map((link) => (
-                <Link key={link.path} to={link.path} onClick={() => setMobileOpen(false)}
-                  className={`block px-3 py-2 rounded text-sm font-medium ${
-                    location.pathname === link.path ? "text-primary-foreground bg-white/15" : "text-primary-foreground/80"
-                  }`}
-                >{link.label}</Link>
-              ))}
-              {user && !isAdmin && (
-                <>
-                  <Link to="/favorites" onClick={() => setMobileOpen(false)}
-                    className="block px-3 py-2 rounded text-sm font-medium text-primary-foreground/80">
-                    Mes favoris
-                  </Link>
-                  {isHost && (
-                    <Link to="/dashboard?tab=listings" onClick={() => setMobileOpen(false)}
-                      className="block px-3 py-2 rounded text-sm font-medium text-primary-foreground/80">
-                      Mes logements
-                    </Link>
-                  )}
-                </>
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/50 z-[60] md:hidden"
+              onClick={close}
+            />
+
+            {/* Panel */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.25 }}
+              className="fixed top-0 left-0 bottom-0 w-[80%] max-w-[320px] bg-background z-[70] md:hidden flex flex-col shadow-xl"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                <span className="font-display text-lg font-bold text-foreground">TerangaSéjour</span>
+                <button onClick={close} className="p-1 rounded-full hover:bg-muted transition-colors" aria-label="Fermer">
+                  <X className="w-5 h-5 text-muted-foreground" />
+                </button>
+              </div>
+
+              {/* User info if logged in */}
+              {user && (
+                <div className="px-5 py-4 border-b border-border flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">{initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      {[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Utilisateur"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{roleLabel}</p>
+                  </div>
+                </div>
               )}
-              {user && isAdmin && (
-                <Link to="/admin" onClick={() => setMobileOpen(false)}
-                  className="block px-3 py-2 rounded text-sm font-medium text-primary-foreground">
-                  <Shield className="w-4 h-4 inline mr-1" /> Panel Admin
-                </Link>
-              )}
-              <div className="pt-3 flex flex-col gap-2">
-                {!isAdmin && (
-                  <Link to={isHost ? "/create-listing" : "/become-host"} onClick={() => setMobileOpen(false)}>
-                    <Button variant="outline" size="sm" className="rounded w-full border-primary-foreground/30 text-primary-foreground bg-transparent hover:bg-white/10">
-                      Ajouter mon logement
-                    </Button>
+
+              {/* Navigation items */}
+              <div className="flex-1 overflow-y-auto py-2">
+                {mobileMenuItems.map((item) => (
+                  <Link
+                    key={item.path + item.label}
+                    to={item.path}
+                    onClick={close}
+                    className={`flex items-center gap-4 px-5 py-[14px] text-sm font-medium transition-colors ${
+                      location.pathname === item.path
+                        ? "text-primary bg-primary/5"
+                        : "text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <item.icon className="w-5 h-5 shrink-0" />
+                    <span>{item.label}</span>
                   </Link>
-                )}
+                ))}
+
+                <div className="my-2 mx-5 border-t border-border" />
+
                 {user ? (
                   <>
-                    <Link to={dashboardPath} onClick={() => setMobileOpen(false)}>
-                      <Button size="sm" className="rounded bg-accent text-accent-foreground w-full hover:bg-accent/90">
-                        {isAdmin ? "Panel Admin" : "Mon espace"}
-                      </Button>
+                    <Link to="/favorites" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
+                      <Heart className="w-5 h-5 shrink-0" /> Mes favoris
                     </Link>
-                    <Button variant="ghost" size="sm" className="rounded text-primary-foreground/80" onClick={() => { signOut(); setMobileOpen(false); }}>
-                      Déconnexion
-                    </Button>
+                    <Link to="/messages" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
+                      <MessageCircle className="w-5 h-5 shrink-0" /> Messages
+                    </Link>
+                    <Link to="/profile" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
+                      <User className="w-5 h-5 shrink-0" /> Mon profil
+                    </Link>
+                    {isAdmin && (
+                      <Link to="/admin" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-primary hover:bg-muted">
+                        <Shield className="w-5 h-5 shrink-0" /> Panel Admin
+                      </Link>
+                    )}
+
+                    <div className="my-2 mx-5 border-t border-border" />
+
+                    <button
+                      onClick={() => { signOut(); close(); }}
+                      className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-destructive hover:bg-muted w-full text-left"
+                    >
+                      <LogOut className="w-5 h-5 shrink-0" /> Déconnexion
+                    </button>
                   </>
                 ) : (
-                  <div className="flex gap-2">
-                    <Link to="/signup" onClick={() => setMobileOpen(false)} className="flex-1">
-                      <Button variant="outline" size="sm" className="rounded w-full border-primary-foreground/30 text-primary-foreground bg-transparent">
-                        S'inscrire
-                      </Button>
+                  <>
+                    <Link to="/login" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
+                      <LogIn className="w-5 h-5 shrink-0" /> Connexion
                     </Link>
-                    <Link to="/login" onClick={() => setMobileOpen(false)} className="flex-1">
-                      <Button variant="outline" size="sm" className="rounded w-full border-primary-foreground/30 text-primary-foreground bg-transparent">
-                        Se connecter
-                      </Button>
+                    <Link to="/signup" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
+                      <User className="w-5 h-5 shrink-0" /> Créer un compte
                     </Link>
-                  </div>
+                  </>
                 )}
               </div>
-            </div>
-          </motion.div>
+
+              {/* CTA bottom */}
+              {!isAdmin && (
+                <div className="px-5 py-4 border-t border-border">
+                  <Link to={isHost ? "/create-listing" : "/become-host"} onClick={close}>
+                    <Button className="w-full rounded-lg font-semibold text-sm" style={{ backgroundColor: 'hsl(var(--search-highlight))', color: '#fff' }}>
+                      <PlusCircle className="w-4 h-4 mr-2" />
+                      Publier mon logement
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
-    </nav>
+    </>
   );
 };
 
