@@ -141,10 +141,16 @@ const Publish = () => {
 
   const validateStep = (s: number): string | null => {
     switch (s) {
-      case 0:
+      case 0: {
         if (!listingDraft.title.trim()) return "Veuillez saisir un titre pour votre annonce.";
         if (!listingDraft.location.trim()) return "Veuillez indiquer la localisation.";
+        // Check for blocked personal contact info
+        const titleCheck = validateListingText(listingDraft.title);
+        if (titleCheck) return titleCheck;
+        const descCheck = validateListingText(listingDraft.description);
+        if (descCheck) return descCheck;
         return null;
+      }
       case 1:
         if (listingDraft.photos.length < 5) {
           return `Ajoutez au moins 5 photos (${listingDraft.photos.length}/5).`;
