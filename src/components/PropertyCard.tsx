@@ -35,7 +35,7 @@ const PropertyCard = ({ id, image, title, location, price, rating, reviewCount, 
       style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.08)' }}
     >
       <Link to={`/property/${id}`} className="block">
-        <div className="relative overflow-hidden" style={{ height: 240 }}>
+        <div className="relative overflow-hidden" style={{ height: 280 }}>
           <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
           <FavoriteButton listingId={String(id)} className="absolute top-2.5 right-2.5" />
         </div>

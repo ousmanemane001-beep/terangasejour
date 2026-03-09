@@ -25,7 +25,7 @@ const DestinationCard = ({ name, image, count, index }: DestinationCardProps) =>
           src={image}
           alt={name}
           className="w-full object-cover"
-          style={{ height: 240 }}
+          style={{ height: 280 }}
           loading="lazy"
         />
         <div className="px-3 py-2.5">
