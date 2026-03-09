@@ -7,7 +7,6 @@ import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
 import ListingCard from "@/components/ListingCard";
 import ExploreMap from "@/components/ExploreMap";
-import ExploreHero from "@/components/explore/ExploreHero";
 import ExploreFilters from "@/components/explore/ExploreFilters";
 import HostCTA from "@/components/explore/HostCTA";
 import { properties } from "@/data/properties";
@@ -20,14 +19,6 @@ const Explore = () => {
   const { data: dbListings } = useListings();
 
   const [destination, setDestination] = useState(searchParams.get("destination") || "");
-  const [checkIn, setCheckIn] = useState<Date | undefined>(
-    searchParams.get("checkIn") ? new Date(searchParams.get("checkIn")!) : undefined
-  );
-  const [checkOut, setCheckOut] = useState<Date | undefined>(
-    searchParams.get("checkOut") ? new Date(searchParams.get("checkOut")!) : undefined
-  );
-  const [guestCount, setGuestCount] = useState(Number(searchParams.get("guests")) || 1);
-
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 150000]);
   const [bedroomFilter, setBedroomFilter] = useState(0);
@@ -73,15 +64,19 @@ const Explore = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
-      {/* Hero with integrated search — sejour.sn style */}
-      <ExploreHero
-        destination={destination} setDestination={setDestination}
-        checkIn={checkIn} setCheckIn={setCheckIn}
-        checkOut={checkOut} setCheckOut={setCheckOut}
-        guestCount={guestCount} setGuestCount={setGuestCount}
-      />
+      {/* Simple header */}
+      <section className="bg-background pt-10 pb-4 md:pt-14 md:pb-6">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
+            Explorer les logements
+          </h1>
+          <p className="text-muted-foreground text-sm md:text-base">
+            Découvrez tous les logements disponibles au Sénégal.
+          </p>
+        </div>
+      </section>
 
-      {/* Results header + Carte/Filtrer + filters */}
+      {/* Filters */}
       <ExploreFilters
         showFilters={showFilters} setShowFilters={setShowFilters}
         showMap={showMap} setShowMap={setShowMap}
@@ -117,7 +112,7 @@ const Explore = () => {
               <div className="text-center py-20">
                 <Search className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
                 <h3 className="font-display text-lg font-semibold text-foreground mb-2">Aucun logement disponible</h3>
-                <p className="text-sm text-muted-foreground mb-4">Essayez de modifier vos filtres ou votre recherche.</p>
+                <p className="text-sm text-muted-foreground mb-4">Essayez de modifier vos filtres.</p>
                 <Button variant="outline" className="rounded-full" onClick={clearFilters}>Effacer les filtres</Button>
               </div>
             )}
@@ -130,9 +125,7 @@ const Explore = () => {
         )}
       </div>
 
-      {/* Host CTA Section */}
       <HostCTA />
-
       <Footer />
     </div>
   );
