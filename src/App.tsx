@@ -22,6 +22,7 @@ import BecomeHost from "./pages/BecomeHost";
 import Favorites from "./pages/Favorites";
 import AdminVerification from "./pages/AdminVerification";
 import AdminPanel from "./pages/AdminPanel";
+import EditListing from "./pages/EditListing";
 import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
