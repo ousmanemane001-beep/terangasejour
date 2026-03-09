@@ -464,20 +464,53 @@ const AdminPanel = () => {
           )}
 
           {/* ============ APPROVALS ============ */}
-          {activeSection === "approvals" && (
+          {activeSection === "approvals" && (() => {
+            const approvalFilter = filterStatus;
+            const approvalListings = (allListings || []).filter((l) => {
+              if (approvalFilter === "all") return true;
+              return l.status === approvalFilter;
+            }).filter((l) => {
+              if (!searchQuery) return true;
+              const q = searchQuery.toLowerCase();
+              return l.title.toLowerCase().includes(q) || l.location?.toLowerCase().includes(q);
+            });
+            return (
             <div>
               <h1 className="font-display text-2xl font-bold text-foreground mb-1">Approbation des logements</h1>
-              <p className="text-muted-foreground text-sm mb-6">{pendingListings.length} logement{pendingListings.length > 1 ? "s" : ""} en attente de validation</p>
+              <p className="text-muted-foreground text-sm mb-6">{approvalListings.length} logement{approvalListings.length > 1 ? "s" : ""}</p>
 
-              {pendingListings.length > 0 ? (
+              {renderSearchBar("Rechercher un logement...")}
+              <div className="flex gap-2 mb-6 flex-wrap">
+                {[
+                  { value: "all", label: "Tous" },
+                  { value: "pending_approval", label: `En attente (${(allListings || []).filter(l => l.status === "pending_approval").length})` },
+                  { value: "published", label: `Approuvés (${(allListings || []).filter(l => l.status === "published").length})` },
+                  { value: "rejected", label: `Rejetés (${(allListings || []).filter(l => l.status === "rejected").length})` },
+                  { value: "suspended", label: `Suspendus (${(allListings || []).filter(l => l.status === "suspended").length})` },
+                  { value: "needs_modification", label: `Modification (${(allListings || []).filter(l => l.status === "needs_modification").length})` },
+                ].map((tab) => (
+                  <Button
+                    key={tab.value}
+                    variant={filterStatus === tab.value ? "default" : "outline"}
+                    size="sm"
+                    className="rounded-full text-xs"
+                    onClick={() => setFilterStatus(tab.value)}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </div>
+
+              {approvalListings.length > 0 ? (
                 <div className="space-y-4">
-                  {pendingListings.map((listing) => {
+                  {approvalListings.map((listing) => {
                     const photoCount = listing.photos?.length || 0;
                     const hasEnoughPhotos = photoCount >= 5;
                     const hasDesc = listing.description && listing.description.length >= 20;
                     const hasLocation = !!listing.location || !!listing.city;
                     const canApprove = hasEnoughPhotos && hasDesc && hasLocation;
                     const ownerProfile = allProfiles?.find((p) => p.id === listing.user_id);
+                    const st = statusLabels[listing.status] || { label: listing.status, color: "bg-muted text-muted-foreground" };
 
                     return (
                       <Card key={listing.id} className="border-none shadow-[var(--shadow-card)] overflow-hidden">
@@ -499,9 +532,12 @@ const AdminPanel = () => {
                                   <h3 className="font-display font-bold text-foreground text-lg">{listing.title}</h3>
                                   <p className="text-sm text-muted-foreground">{listing.location || listing.city || "Non précisé"} · {listing.price_per_night.toLocaleString("fr-FR")} F/nuit</p>
                                 </div>
-                                <Badge className={(listing as any).booking_mode === "request" ? "bg-blue-500/10 text-blue-600 border-none" : "bg-green-500/10 text-green-600 border-none"}>
-                                  {(listing as any).booking_mode === "request" ? "📩 Sur demande" : "⚡ Instantané"}
-                                </Badge>
+                                <div className="flex items-center gap-2">
+                                  <Badge className={cn("border-none text-xs", st.color)}>{st.label}</Badge>
+                                  <Badge className={(listing as any).booking_mode === "request" ? "bg-blue-500/10 text-blue-600 border-none" : "bg-green-500/10 text-green-600 border-none"}>
+                                    {(listing as any).booking_mode === "request" ? "📩 Sur demande" : "⚡ Instantané"}
+                                  </Badge>
+                                </div>
                               </div>
 
                               {listing.description && (
@@ -545,24 +581,42 @@ const AdminPanel = () => {
                               </div>
 
                               {/* Actions */}
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 flex-wrap">
                                 <Link to={`/property/${listing.id}`}>
-                                  <Button variant="outline" size="sm" className="rounded-full text-xs gap-1"><Eye className="w-3 h-3" /> Voir le détail</Button>
+                                  <Button variant="outline" size="sm" className="rounded-full text-xs gap-1"><Eye className="w-3 h-3" /> Voir</Button>
                                 </Link>
-                                <Button size="sm" className="rounded-full bg-green-600 hover:bg-green-700 text-white text-xs gap-1"
-                                  disabled={!canApprove || updatingId === listing.id}
-                                  onClick={() => handleListingAction(listing.id, "approve")}>
-                                  {updatingId === listing.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Approuver
-                                </Button>
+                                {listing.status !== "published" && (
+                                  <Button size="sm" className="rounded-full bg-green-600 hover:bg-green-700 text-white text-xs gap-1"
+                                    disabled={!canApprove || updatingId === listing.id}
+                                    onClick={() => handleListingAction(listing.id, "approve")}>
+                                    {updatingId === listing.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Approuver
+                                  </Button>
+                                )}
+                                {listing.status !== "rejected" && listing.status !== "suspended" && (
+                                  <Button size="sm" variant="outline" className="rounded-full text-xs text-destructive gap-1"
+                                    disabled={updatingId === listing.id}
+                                    onClick={() => handleListingAction(listing.id, "reject")}>
+                                    <X className="w-3 h-3" /> Rejeter
+                                  </Button>
+                                )}
+                                {listing.status === "published" && (
+                                  <Button size="sm" variant="outline" className="rounded-full text-xs gap-1 text-orange-600"
+                                    disabled={updatingId === listing.id}
+                                    onClick={() => handleListingAction(listing.id, "suspend")}>
+                                    <Ban className="w-3 h-3" /> Suspendre
+                                  </Button>
+                                )}
+                                {listing.status !== "published" && listing.status !== "pending_approval" && (
+                                  <Button size="sm" variant="outline" className="rounded-full text-xs gap-1"
+                                    disabled={updatingId === listing.id}
+                                    onClick={() => { setRemarkListingId(listing.id); setRemarkDialogOpen(true); }}>
+                                    <Pencil className="w-3 h-3" /> Modifier remarque
+                                  </Button>
+                                )}
                                 <Button size="sm" variant="outline" className="rounded-full text-xs text-destructive gap-1"
                                   disabled={updatingId === listing.id}
-                                  onClick={() => handleListingAction(listing.id, "reject")}>
-                                  <X className="w-3 h-3" /> Rejeter
-                                </Button>
-                                <Button size="sm" variant="outline" className="rounded-full text-xs gap-1 text-orange-600"
-                                  disabled={updatingId === listing.id}
-                                  onClick={() => { setRemarkListingId(listing.id); setRemarkDialogOpen(true); }}>
-                                  <Pencil className="w-3 h-3" /> Demander modification
+                                  onClick={() => handleListingAction(listing.id, "delete")}>
+                                  <Trash2 className="w-3 h-3" /> Supprimer
                                 </Button>
                               </div>
                             </div>
@@ -576,13 +630,14 @@ const AdminPanel = () => {
                 <Card className="border-none shadow-[var(--shadow-card)]">
                   <CardContent className="py-16 text-center">
                     <Check className="w-12 h-12 text-green-500 mx-auto mb-4" />
-                    <p className="font-display font-semibold text-foreground text-lg">Tout est à jour !</p>
-                    <p className="text-muted-foreground text-sm mt-1">Aucun logement en attente d'approbation.</p>
+                    <p className="font-display font-semibold text-foreground text-lg">Aucun logement trouvé</p>
+                    <p className="text-muted-foreground text-sm mt-1">Essayez un autre filtre.</p>
                   </CardContent>
                 </Card>
               )}
             </div>
-          )}
+            );
+          })()}
 
           {/* ============ PROPERTIES ============ */}
           {activeSection === "properties" && (
