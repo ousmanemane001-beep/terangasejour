@@ -90,7 +90,7 @@ const Index = () => {
       </section>
 
       {/* Spacer for floating search card */}
-      <div className="h-[232px] md:h-[60px]" />
+      <div className="h-[218px] md:h-[60px]" />
 
       {/* Published Listings from DB — right after search */}
       {isLoading ? (
