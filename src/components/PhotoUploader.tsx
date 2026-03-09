@@ -35,8 +35,8 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
       const validFiles: File[] = [];
 
       fileArray.slice(0, remaining).forEach((file) => {
-        if (!ACCEPTED_TYPES.includes(file.type)) {
-          newErrors.push(`"${file.name}" : format non accepté (JPG ou PNG uniquement)`);
+        if (!file.type.startsWith("image/")) {
+          newErrors.push(`"${file.name}" : format non accepté (images uniquement)`);
         } else if (file.size > MAX_SIZE_MB * 1024 * 1024) {
           newErrors.push(`"${file.name}" : taille trop grande (max ${MAX_SIZE_MB} Mo)`);
         } else {
