@@ -31,7 +31,6 @@ const Explore = () => {
   const mapCenter = searchParams.get("lat") && searchParams.get("lng")
     ? { lat: parseFloat(searchParams.get("lat")!), lng: parseFloat(searchParams.get("lng")!) }
     : undefined;
-  const [hoveredProperty, setHoveredProperty] = useState<number | null>(null);
 
   const toggleType = (type: string) => setSelectedTypes((prev) => prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]);
   const toggleAmenity = (id: string) => setSelectedAmenities((prev) => prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]);
