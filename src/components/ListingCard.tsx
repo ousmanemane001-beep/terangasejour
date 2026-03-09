@@ -31,11 +31,6 @@ const ListingCard = forwardRef<HTMLDivElement, { listing: DBListing; rating?: Li
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
             <FavoriteButton listingId={listing.id} className="absolute top-2.5 right-2.5" />
-            {listing.verified && (
-              <div className="absolute top-2.5 left-2.5">
-                <VerifiedBadge className="bg-background/90 backdrop-blur-sm" />
-              </div>
-            )}
           </div>
         </Link>
 

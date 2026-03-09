@@ -35,11 +35,6 @@ const PropertyCard = ({ id, image, title, location, price, rating, reviewCount, 
         <div className="relative aspect-[4/3] overflow-hidden">
           <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
           <FavoriteButton listingId={String(id)} className="absolute top-2.5 right-2.5" />
-          {verified && (
-            <div className="absolute top-2.5 left-2.5">
-              <span className="px-2 py-0.5 rounded bg-primary text-primary-foreground text-xs font-medium">Vérifié</span>
-            </div>
-          )}
         </div>
       </Link>
 
