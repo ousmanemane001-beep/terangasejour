@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
-import { Home, Camera, MapPin, DollarSign, Bed, Bath, Users, CheckCircle, Loader2, X } from "lucide-react";
+import { Home, Camera, MapPin, DollarSign, Bed, Bath, Users, CheckCircle, Loader2 } from "lucide-react";
+import PhotoUploader from "@/components/PhotoUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -19,11 +20,16 @@ const steps = [
   { icon: CheckCircle, title: "Publiez et recevez", description: "Votre annonce est en ligne, les réservations arrivent !" },
 ];
 
+interface PhotoItem {
+  id: string;
+  file: File;
+  preview: string;
+}
+
 const Publish = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -33,26 +39,8 @@ const Publish = () => {
   const [bathrooms, setBathrooms] = useState(1);
   const [capacity, setCapacity] = useState(2);
   const [price, setPrice] = useState("");
-  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
-  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState(false);
-
-  const handlePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const remaining = 10 - photoFiles.length;
-    const newFiles = files.slice(0, remaining);
-    setPhotoFiles((prev) => [...prev, ...newFiles]);
-    newFiles.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => setPhotoPreviews((prev) => [...prev, ev.target?.result as string]);
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const removePhoto = (index: number) => {
-    setPhotoFiles((prev) => prev.filter((_, i) => i !== index));
-    setPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +54,7 @@ const Publish = () => {
       toast.error("Veuillez remplir le titre et le prix");
       return;
     }
-    if (photoFiles.length < 5) {
+    if (photos.length < 5) {
       toast.error("Vous devez ajouter au moins 5 photos pour publier ce logement.");
       return;
     }
@@ -75,12 +63,12 @@ const Publish = () => {
     try {
       // Upload photos
       const photoUrls: string[] = [];
-      for (const file of photoFiles) {
-        const ext = file.name.split(".").pop();
+      for (const photo of photos) {
+        const ext = photo.file.name.split(".").pop();
         const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from("listing-photos")
-          .upload(path, file);
+          .upload(path, photo.file);
         if (uploadError) throw uploadError;
         const { data: urlData } = supabase.storage.from("listing-photos").getPublicUrl(path);
         photoUrls.push(urlData.publicUrl);
@@ -218,43 +206,15 @@ const Publish = () => {
                 <Input type="number" placeholder="Ex: 45000" className="rounded-xl h-12" value={price} onChange={(e) => setPrice(e.target.value)} />
               </div>
 
+              {/* Photos — using PhotoUploader component */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">
                   <Camera className="w-3.5 h-3.5 inline mr-1" />Photos
                 </label>
-                <input type="file" ref={fileInputRef} accept="image/jpeg,image/png" multiple className="hidden" onChange={handlePhotos} />
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-accent transition-colors cursor-pointer"
-                >
-                  <Camera className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">Cliquez ou glissez vos photos ici</p>
-                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG • Min 5, max 10 photos • 5 Mo par photo</p>
-                  {photoFiles.length > 0 && photoFiles.length < 5 && (
-                    <p className="text-xs text-destructive mt-2 font-medium">
-                      Vous devez ajouter au moins 5 photos pour publier ce logement. ({photoFiles.length}/5)
-                    </p>
-                  )}
-                </div>
-                {photoPreviews.length > 0 && (
-                  <div className="grid grid-cols-5 gap-2 mt-4">
-                    {photoPreviews.map((src, i) => (
-                      <div key={i} className="relative aspect-square rounded-lg overflow-hidden group">
-                        <img src={src} alt="" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removePhoto(i)}
-                          className="absolute top-1 right-1 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <PhotoUploader photos={photos} onChange={setPhotos} />
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium">
+              <Button type="submit" disabled={loading || photos.length < 5} className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium">
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Publier mon logement"}
               </Button>
             </form>
