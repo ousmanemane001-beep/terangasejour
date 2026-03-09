@@ -231,11 +231,10 @@ const SearchBar = () => {
         </Popover>
       </div>
 
-      {/* Search button */}
-      <div className="flex justify-center mt-5">
+        {/* Search button — inline on desktop, full-width on mobile */}
         <button
           onClick={handleSearch}
-          className="w-full md:w-[180px] h-[52px] bg-[#1a2b49] hover:bg-[#152240] text-white rounded-[28px] font-semibold text-base flex items-center justify-center gap-2 transition-colors"
+          className="w-full h-[60px] md:h-[60px] md:w-[140px] bg-[#0d9488] hover:bg-[#0f766e] text-white rounded-lg font-semibold text-base flex items-center justify-center gap-2 transition-colors"
         >
           <Search className="w-5 h-5" />
           Rechercher
