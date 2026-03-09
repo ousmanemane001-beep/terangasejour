@@ -22,6 +22,8 @@ import {
   Clock,
 } from "lucide-react";
 import PhotoUploader from "@/components/PhotoUploader";
+import AvailabilityStep, { type AvailabilityType } from "@/components/publish/AvailabilityStep";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
