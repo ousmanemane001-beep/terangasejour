@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Home, TrendingUp, Shield, Star, Loader2 } from "lucide-react";
+import { Home, TrendingUp, Shield, Star, Loader2, CheckCircle, PlusCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ const BecomeHost = () => {
   const { user, isHost, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [justBecameHost, setJustBecameHost] = useState(false);
 
   const handleBecomeHost = async () => {
     if (!user) {
@@ -39,14 +40,53 @@ const BecomeHost = () => {
       toast.error(error.message);
     } else {
       await refreshProfile();
+      setJustBecameHost(true);
       toast.success("Félicitations ! Vous êtes maintenant hôte sur TerangaSéjour.");
-      navigate("/create-listing");
     }
   };
 
-  if (isHost) {
-    navigate("/create-listing");
-    return null;
+  // Show welcome screen after becoming host or if already host
+  if (isHost || justBecameHost) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <section className="flex-1 bg-secondary flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-center max-w-lg mx-auto px-4 py-16"
+          >
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-10 h-10 text-primary" />
+            </div>
+            <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Bienvenue parmi nos hôtes ! 🎉
+            </h1>
+            <p className="text-muted-foreground text-lg mb-8">
+              Votre compte hôte est activé. Vous pouvez maintenant publier votre premier logement et commencer à recevoir des réservations.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                onClick={() => navigate("/create-listing")}
+                className="rounded-full bg-primary text-primary-foreground px-8 h-12 text-base font-semibold gap-2"
+              >
+                <PlusCircle className="w-5 h-5" />
+                Publier un logement
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/dashboard")}
+                className="rounded-full px-8 h-12 text-base font-semibold"
+              >
+                Mon tableau de bord
+              </Button>
+            </div>
+          </motion.div>
+        </section>
+        <Footer />
+      </div>
+    );
   }
 
   return (
