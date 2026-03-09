@@ -556,6 +556,11 @@ const AdminPanel = () => {
                                   onClick={() => handleListingAction(listing.id, "reject")}>
                                   <X className="w-3 h-3" /> Rejeter
                                 </Button>
+                                <Button size="sm" variant="outline" className="rounded-full text-xs gap-1 text-orange-600"
+                                  disabled={updatingId === listing.id}
+                                  onClick={() => { setRemarkListingId(listing.id); setRemarkDialogOpen(true); }}>
+                                  <Pencil className="w-3 h-3" /> Demander modification
+                                </Button>
                               </div>
                             </div>
                           </div>
