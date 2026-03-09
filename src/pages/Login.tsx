@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
@@ -64,6 +65,11 @@ const Login = () => {
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Se connecter"}
               </Button>
             </form>
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
+              <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">ou</span></div>
+            </div>
+            <SocialLoginButtons />
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">Pas encore de compte ? <Link to="/signup" className="text-primary font-medium hover:underline">S'inscrire</Link></p>
             </div>

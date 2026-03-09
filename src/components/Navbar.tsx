@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, User, LogOut, Heart, Home, CalendarDays, MessageCircle, Shield, MapPin, PlusCircle, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel,
@@ -25,6 +25,7 @@ const Navbar = () => {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
+  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
   const initials = profile
     ? `${(profile.first_name || "")[0] || ""}${(profile.last_name || "")[0] || ""}`.toUpperCase() || "U"
     : user?.user_metadata
@@ -90,6 +91,7 @@ const Navbar = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded text-primary-foreground hover:bg-white/10">
                     <Avatar className="h-8 w-8">
+                      {avatarUrl && <AvatarImage src={avatarUrl} alt="Avatar" />}
                       <AvatarFallback className={`${isAdmin ? "bg-destructive" : "bg-white/20"} text-primary-foreground text-xs font-bold`}>{initials}</AvatarFallback>
                     </Avatar>
                   </Button>
@@ -210,6 +212,7 @@ const Navbar = () => {
               {user && (
                 <div className="px-5 py-4 border-b border-border flex items-center gap-3">
                   <Avatar className="h-10 w-10">
+                    {avatarUrl && <AvatarImage src={avatarUrl} alt="Avatar" />}
                     <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">{initials}</AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
