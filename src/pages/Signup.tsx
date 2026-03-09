@@ -175,6 +175,8 @@ const Signup = () => {
           </div>
         </div>
       </motion.div>
+      </div>
+      <Footer />
     </div>
   );
 };
