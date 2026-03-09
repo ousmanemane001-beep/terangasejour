@@ -35,11 +35,7 @@ const STEP_LABELS = [
 
 const DEFAULT_CURRENCY = "XOF";
 
-interface PhotoItem {
-  id: string;
-  file: File;
-  preview: string;
-}
+import type { PhotoItem } from "@/components/PhotoUploader";
 
 interface ListingDraft {
   title: string;
