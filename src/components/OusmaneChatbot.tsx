@@ -519,7 +519,6 @@ export default function OusmaneChatbot() {
             className="flex items-center gap-2 px-3 py-2.5 border-t border-border bg-card shrink-0"
             style={{ paddingBottom: "max(0.625rem, env(safe-area-inset-bottom))" }}
           >
-          >
             <input
               ref={inputRef}
               value={input}
