@@ -25,8 +25,12 @@ const Explore = () => {
   const [guestFilter, setGuestFilter] = useState(0);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [showMap, setShowMap] = useState(false);
+  const [showMap, setShowMap] = useState(!!searchParams.get("lat"));
   const [hoveredProperty, setHoveredProperty] = useState<number | null>(null);
+
+  const mapCenter = searchParams.get("lat") && searchParams.get("lng")
+    ? { lat: parseFloat(searchParams.get("lat")!), lng: parseFloat(searchParams.get("lng")!) }
+    : undefined;
 
   const toggleType = (type: string) => setSelectedTypes((prev) => prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]);
   const toggleAmenity = (id: string) => setSelectedAmenities((prev) => prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]);
@@ -120,7 +124,7 @@ const Explore = () => {
         </div>
         {showMap && (
           <div className="hidden lg:block lg:w-[45%] sticky top-16 h-[calc(100vh-4rem)]">
-            <ExploreMap properties={filteredProperties} hoveredProperty={hoveredProperty} />
+            <ExploreMap properties={filteredProperties} hoveredProperty={hoveredProperty} center={mapCenter} />
           </div>
         )}
       </div>

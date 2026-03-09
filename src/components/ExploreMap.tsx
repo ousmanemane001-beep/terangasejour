@@ -6,9 +6,10 @@ import { Property } from "@/data/properties";
 interface ExploreMapProps {
   properties: Property[];
   hoveredProperty: number | null;
+  center?: { lat: number; lng: number };
 }
 
-const ExploreMap = ({ properties, hoveredProperty }: ExploreMapProps) => {
+const ExploreMap = ({ properties, hoveredProperty, center }: ExploreMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<number, L.Marker>>(new Map());
@@ -18,8 +19,8 @@ const ExploreMap = ({ properties, hoveredProperty }: ExploreMapProps) => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
     const map = L.map(mapRef.current, {
-      center: [14.6928, -17.4467],
-      zoom: 7,
+      center: center ? [center.lat, center.lng] : [14.6928, -17.4467],
+      zoom: center ? 11 : 7,
       zoomControl: true,
     });
 
