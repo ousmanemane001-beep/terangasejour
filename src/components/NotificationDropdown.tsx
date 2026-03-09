@@ -59,17 +59,27 @@ export default function NotificationDropdown() {
   const [open, setOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const handleMarkRead = (id: string) => {
-    markAsRead.mutate(id);
+  const handleMarkRead = async (id: string) => {
+    const notif = notifications.find((n) => n.id === id);
+    if (notif?.type === "message") {
+      await supabase.from("notifications").delete().eq("id", id);
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+    } else {
+      markAsRead.mutate(id);
+    }
   };
 
   const handleMarkAllRead = async () => {
     const unread = notifications.filter((n) => !n.read);
     if (unread.length === 0) return;
-    await supabase
-      .from("notifications")
-      .update({ read: true } as any)
-      .in("id", unread.map((n) => n.id));
+    const messageIds = unread.filter((n) => n.type === "message").map((n) => n.id);
+    const otherIds = unread.filter((n) => n.type !== "message").map((n) => n.id);
+    if (messageIds.length > 0) {
+      await supabase.from("notifications").delete().in("id", messageIds);
+    }
+    if (otherIds.length > 0) {
+      await supabase.from("notifications").update({ read: true } as any).in("id", otherIds);
+    }
     qc.invalidateQueries({ queryKey: ["notifications"] });
   };
 
