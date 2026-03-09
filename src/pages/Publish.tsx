@@ -5,19 +5,22 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { motion } from "framer-motion";
-import { Home, Camera, MapPin, DollarSign, Bed, Bath, Users, CheckCircle, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Home, Camera, MapPin, DollarSign, Bed, Bath, Users,
+  CheckCircle, Loader2, ChevronLeft, ChevronRight, AlertCircle,
+} from "lucide-react";
 import PhotoUploader from "@/components/PhotoUploader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
-const steps = [
-  { icon: Home, title: "Décrivez votre logement", description: "Type de propriété, nombre de chambres, équipements disponibles" },
-  { icon: Camera, title: "Ajoutez des photos", description: "Des photos de qualité attirent plus de voyageurs" },
-  { icon: DollarSign, title: "Fixez votre prix", description: "Définissez un tarif compétitif par nuit" },
-  { icon: CheckCircle, title: "Publiez et recevez", description: "Votre annonce est en ligne, les réservations arrivent !" },
+const STEP_LABELS = [
+  { icon: Home, title: "Description" },
+  { icon: Camera, title: "Photos" },
+  { icon: DollarSign, title: "Tarif" },
+  { icon: CheckCircle, title: "Publier" },
 ];
 
 interface PhotoItem {
@@ -31,6 +34,7 @@ const Publish = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const [step, setStep] = useState(0);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [propertyType, setPropertyType] = useState("villa");
@@ -42,29 +46,56 @@ const Publish = () => {
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const validateStep = (s: number): string | null => {
+    switch (s) {
+      case 0:
+        if (!title.trim()) return "Veuillez saisir un titre pour votre annonce.";
+        if (!location.trim()) return "Veuillez indiquer la localisation.";
+        return null;
+      case 1:
+        if (photos.length < 5) return `Ajoutez au moins 5 photos (${photos.length}/5).`;
+        return null;
+      case 2:
+        if (!price || parseInt(price) <= 0) return "Veuillez indiquer un prix valide.";
+        return null;
+      default:
+        return null;
+    }
+  };
 
+  const goNext = () => {
+    const error = validateStep(step);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setStep((s) => Math.min(s + 1, 3));
+  };
+
+  const goBack = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setStep((s) => Math.max(s - 1, 0));
+  };
+
+  const handleSubmit = async () => {
     if (!user) {
       toast.error("Veuillez vous connecter pour publier un logement");
       navigate("/login");
       return;
     }
-    if (!title || !price) {
-      toast.error("Veuillez remplir le titre et le prix");
-      return;
-    }
-    if (photos.length < 5) {
-      toast.error("Vous devez ajouter au moins 5 photos pour publier ce logement.");
+
+    const error = validateStep(0) || validateStep(1) || validateStep(2);
+    if (error) {
+      toast.error(error);
       return;
     }
 
     setLoading(true);
     try {
-      // Upload photos
       const photoUrls: string[] = [];
       for (const photo of photos) {
-        const ext = photo.file.name.split(".").pop();
+        const ext = photo.file.name.split(".").pop() || "jpg";
         const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from("listing-photos")
@@ -74,13 +105,12 @@ const Publish = () => {
         photoUrls.push(urlData.publicUrl);
       }
 
-      // Insert listing
-      const { error } = await supabase.from("listings").insert({
+      const { error: insertError } = await supabase.from("listings").insert({
         user_id: user.id,
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim() || null,
         property_type: propertyType,
-        location,
+        location: location.trim(),
         bedrooms,
         bathrooms,
         capacity,
@@ -89,138 +119,321 @@ const Publish = () => {
         status: "published",
       });
 
-      if (error) throw error;
+      if (insertError) throw insertError;
       queryClient.invalidateQueries({ queryKey: ["listings"] });
       queryClient.invalidateQueries({ queryKey: ["owner-listings"] });
       toast.success("Logement publié avec succès !");
       navigate("/dashboard");
     } catch (err: any) {
-      toast.error(err.message || "Une erreur est survenue");
+      toast.error(err.message || "Une erreur est survenue lors de la publication.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
-      {/* Hero */}
-      <section className="py-16 bg-warm-gray">
-        <div className="container mx-auto px-4 text-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4"
-          >
-            Publiez votre logement
-          </motion.h1>
-          <p className="text-muted-foreground max-w-lg mx-auto">
-            Mettez votre propriété en ligne en quelques étapes et commencez à recevoir des réservations rapidement.
-          </p>
-        </div>
-      </section>
-
-      {/* Steps */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="font-display text-2xl font-bold text-foreground text-center mb-10">Comment ça marche</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto mb-16">
-            {steps.map((step, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="text-center">
-                <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-                  <step.icon className="w-6 h-6 text-accent" />
+      {/* Progress bar */}
+      <div className="sticky top-0 z-30 bg-card border-b border-border">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between max-w-2xl mx-auto">
+            {STEP_LABELS.map((s, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                    i < step
+                      ? "bg-accent text-accent-foreground"
+                      : i === step
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {i < step ? <CheckCircle className="w-4 h-4" /> : i + 1}
                 </div>
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center mx-auto mb-3">
-                  <span className="text-primary-foreground text-sm font-bold">{i + 1}</span>
-                </div>
-                <h3 className="font-display font-semibold text-foreground mb-1">{step.title}</h3>
-                <p className="text-sm text-muted-foreground">{step.description}</p>
-              </motion.div>
+                <span className={`text-xs font-medium hidden sm:inline ${
+                  i === step ? "text-foreground" : "text-muted-foreground"
+                }`}>
+                  {s.title}
+                </span>
+                {i < STEP_LABELS.length - 1 && (
+                  <div className={`w-6 sm:w-12 h-0.5 mx-1 ${
+                    i < step ? "bg-accent" : "bg-border"
+                  }`} />
+                )}
+              </div>
             ))}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Form */}
-      <section className="py-16 bg-warm-gray">
+      {/* Step content */}
+      <div className="flex-1 py-6 sm:py-10">
         <div className="container mx-auto px-4 max-w-2xl">
-          <h2 className="font-display text-2xl font-bold text-foreground text-center mb-8">Informations sur votre logement</h2>
-          <div className="bg-card rounded-2xl shadow-[var(--shadow-card)] p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Titre de l'annonce</label>
-                <Input placeholder="Ex: Belle villa avec piscine à Saly" className="rounded-xl h-12" value={title} onChange={(e) => setTitle(e.target.value)} />
-              </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Step 0: Description */}
+              {step === 0 && (
+                <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
+                  <h2 className="font-display text-xl font-bold text-foreground">
+                    Décrivez votre logement
+                  </h2>
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Description</label>
-                <Textarea placeholder="Décrivez votre logement en détail..." rows={4} className="rounded-xl" value={description} onChange={(e) => setDescription(e.target.value)} />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Titre de l'annonce *
+                    </label>
+                    <Input
+                      placeholder="Ex: Belle villa avec piscine à Saly"
+                      className="rounded-xl h-12"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                    />
+                  </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">Type de logement</label>
-                  <select className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm" value={propertyType} onChange={(e) => setPropertyType(e.target.value)}>
-                    <option value="villa">Villa</option>
-                    <option value="appartement">Appartement</option>
-                    <option value="maison">Maison d'hôtes</option>
-                    <option value="lodge">Lodge</option>
-                    <option value="loft">Loft</option>
-                    <option value="studio">Studio</option>
-                  </select>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Description
+                    </label>
+                    <Textarea
+                      placeholder="Décrivez votre logement en détail..."
+                      rows={4}
+                      className="rounded-xl"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">
+                        Type de logement
+                      </label>
+                      <select
+                        className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm"
+                        value={propertyType}
+                        onChange={(e) => setPropertyType(e.target.value)}
+                      >
+                        <option value="villa">Villa</option>
+                        <option value="appartement">Appartement</option>
+                        <option value="maison">Maison d'hôtes</option>
+                        <option value="lodge">Lodge</option>
+                        <option value="loft">Loft</option>
+                        <option value="studio">Studio</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">
+                        <MapPin className="w-3.5 h-3.5 inline mr-1" />
+                        Localisation *
+                      </label>
+                      <Input
+                        placeholder="Ville, quartier"
+                        className="rounded-xl h-12"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">
+                        <Bed className="w-3.5 h-3.5 inline mr-1" />
+                        Chambres
+                      </label>
+                      <Input
+                        type="number"
+                        min={1}
+                        className="rounded-xl h-12"
+                        value={bedrooms}
+                        onChange={(e) => setBedrooms(Number(e.target.value) || 1)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">
+                        <Bath className="w-3.5 h-3.5 inline mr-1" />
+                        Salles de bain
+                      </label>
+                      <Input
+                        type="number"
+                        min={1}
+                        className="rounded-xl h-12"
+                        value={bathrooms}
+                        onChange={(e) => setBathrooms(Number(e.target.value) || 1)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">
+                        <Users className="w-3.5 h-3.5 inline mr-1" />
+                        Capacité
+                      </label>
+                      <Input
+                        type="number"
+                        min={1}
+                        className="rounded-xl h-12"
+                        value={capacity}
+                        onChange={(e) => setCapacity(Number(e.target.value) || 1)}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">
-                    <MapPin className="w-3.5 h-3.5 inline mr-1" />Localisation
-                  </label>
-                  <Input placeholder="Ville, quartier" className="rounded-xl h-12" value={location} onChange={(e) => setLocation(e.target.value)} />
-                </div>
-              </div>
+              )}
 
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">
-                    <Bed className="w-3.5 h-3.5 inline mr-1" />Chambres
-                  </label>
-                  <Input type="number" min={1} className="rounded-xl h-12" value={bedrooms} onChange={(e) => setBedrooms(Number(e.target.value))} />
+              {/* Step 1: Photos */}
+              {step === 1 && (
+                <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
+                  <h2 className="font-display text-xl font-bold text-foreground">
+                    <Camera className="w-5 h-5 inline mr-2" />
+                    Ajoutez des photos
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Des photos de qualité attirent plus de voyageurs. Ajoutez au moins 5 photos.
+                  </p>
+                  <PhotoUploader photos={photos} onChange={setPhotos} />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">
-                    <Bath className="w-3.5 h-3.5 inline mr-1" />Salles de bain
-                  </label>
-                  <Input type="number" min={1} className="rounded-xl h-12" value={bathrooms} onChange={(e) => setBathrooms(Number(e.target.value))} />
+              )}
+
+              {/* Step 2: Price */}
+              {step === 2 && (
+                <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
+                  <h2 className="font-display text-xl font-bold text-foreground">
+                    <DollarSign className="w-5 h-5 inline mr-2" />
+                    Fixez votre prix
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Définissez un tarif compétitif par nuit en FCFA.
+                  </p>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">
+                      Prix par nuit (FCFA) *
+                    </label>
+                    <Input
+                      type="number"
+                      placeholder="Ex: 45000"
+                      className="rounded-xl h-14 text-lg font-semibold"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                    />
+                  </div>
+                  {price && parseInt(price) > 0 && (
+                    <div className="bg-muted rounded-xl p-4 text-sm text-muted-foreground">
+                      <p>
+                        Tarif affiché : <strong className="text-foreground">{parseInt(price).toLocaleString("fr-FR")} FCFA / nuit</strong>
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">
-                    <Users className="w-3.5 h-3.5 inline mr-1" />Capacité
-                  </label>
-                  <Input type="number" min={1} className="rounded-xl h-12" value={capacity} onChange={(e) => setCapacity(Number(e.target.value))} />
+              )}
+
+              {/* Step 3: Review & Publish */}
+              {step === 3 && (
+                <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
+                  <h2 className="font-display text-xl font-bold text-foreground">
+                    <CheckCircle className="w-5 h-5 inline mr-2" />
+                    Récapitulatif
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Vérifiez les informations avant de publier votre logement.
+                  </p>
+
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span className="text-muted-foreground">Titre</span>
+                      <span className="font-medium text-foreground text-right max-w-[60%]">{title || "—"}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span className="text-muted-foreground">Type</span>
+                      <span className="font-medium text-foreground capitalize">{propertyType}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span className="text-muted-foreground">Localisation</span>
+                      <span className="font-medium text-foreground">{location || "—"}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span className="text-muted-foreground">Chambres / SdB / Capacité</span>
+                      <span className="font-medium text-foreground">{bedrooms} / {bathrooms} / {capacity}</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span className="text-muted-foreground">Prix par nuit</span>
+                      <span className="font-bold text-foreground">{price ? parseInt(price).toLocaleString("fr-FR") : "—"} FCFA</span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span className="text-muted-foreground">Photos</span>
+                      <span className="font-medium text-foreground">{photos.length} photo(s)</span>
+                    </div>
+                  </div>
+
+                  {/* Photo thumbnails */}
+                  {photos.length > 0 && (
+                    <div className="grid grid-cols-5 gap-2">
+                      {photos.slice(0, 5).map((p, i) => (
+                        <img
+                          key={p.id}
+                          src={p.preview}
+                          alt={`Photo ${i + 1}`}
+                          className="w-full aspect-[4/3] object-cover rounded-lg border border-border"
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  <DollarSign className="w-3.5 h-3.5 inline mr-1" />Prix par nuit (FCFA)
-                </label>
-                <Input type="number" placeholder="Ex: 45000" className="rounded-xl h-12" value={price} onChange={(e) => setPrice(e.target.value)} />
-              </div>
-
-              {/* Photos — using PhotoUploader component */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  <Camera className="w-3.5 h-3.5 inline mr-1" />Photos
-                </label>
-                <PhotoUploader photos={photos} onChange={setPhotos} />
-              </div>
-
-              <Button type="submit" disabled={loading || photos.length < 5} className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium">
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Publier mon logement"}
+          {/* Navigation buttons */}
+          <div className="flex items-center justify-between mt-6 gap-3">
+            {step > 0 ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={goBack}
+                className="rounded-xl h-12 px-6"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Précédent
               </Button>
-            </form>
+            ) : (
+              <div />
+            )}
+
+            {step < 3 ? (
+              <Button
+                type="button"
+                onClick={goNext}
+                className="rounded-xl h-12 px-6 bg-primary text-primary-foreground"
+              >
+                Suivant
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={loading}
+                className="rounded-xl h-12 px-8 bg-primary text-primary-foreground font-medium"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Publication en cours…
+                  </>
+                ) : (
+                  "Publier mon logement"
+                )}
+              </Button>
+            )}
           </div>
         </div>
-      </section>
+      </div>
 
       <Footer />
     </div>
