@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { X, Send, Compass, Loader2, MapPin, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
