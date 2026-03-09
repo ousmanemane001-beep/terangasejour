@@ -123,8 +123,10 @@ const Publish = () => {
       photos: Array.isArray(photos)
         ? photos.filter((p) => !!p?.id && !!p?.file && !!p?.preview)
         : [],
+      availabilityType: availabilityType ?? "always",
+      blockedDates: Array.isArray(blockedDates) ? blockedDates : [],
     }),
-    [title, description, propertyType, location, bedrooms, bathrooms, capacity, price, photos]
+    [title, description, propertyType, location, bedrooms, bathrooms, capacity, price, photos, availabilityType, blockedDates]
   );
 
   const safeStep = useMemo(() => {
