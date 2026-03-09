@@ -1,10 +1,13 @@
 import { useRef, useCallback, useState } from "react";
-import { Camera, Upload, X, Star, GripVertical, AlertCircle } from "lucide-react";
+import { Camera, Upload, X, Star, GripVertical, AlertCircle, Loader2 } from "lucide-react";
 
 const MAX_PHOTOS = 10;
 const MIN_PHOTOS = 5;
-const MAX_SIZE_MB = 5;
-const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+const MAX_SIZE_MB = 2;
+const ACCEPTED_EXTENSIONS = [".jpg", ".jpeg", ".png"];
+const ACCEPTED_MIME = ["image/jpeg", "image/png"];
+const REQUIRED_RATIO = 4 / 3; // 4:3 landscape
+const RATIO_TOLERANCE = 0.08; // ~8% tolerance
 
 interface PhotoItem {
   id: string;
@@ -17,13 +20,35 @@ interface PhotoUploaderProps {
   onChange: (photos: PhotoItem[]) => void;
 }
 
+function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(img.src);
+      reject(new Error("Impossible de lire l'image"));
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+function isAcceptedFormat(file: File): boolean {
+  if (ACCEPTED_MIME.includes(file.type)) return true;
+  const ext = file.name.toLowerCase().split(".").pop();
+  return ext ? ACCEPTED_EXTENSIONS.includes(`.${ext}`) : false;
+}
+
 const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [validating, setValidating] = useState(false);
 
   const handleFiles = useCallback(
-    (files: FileList | File[]) => {
+    async (files: FileList | File[]) => {
       const fileArray = Array.from(files);
       const remaining = MAX_PHOTOS - photos.length;
       if (remaining <= 0) {
@@ -31,40 +56,64 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
         return;
       }
 
+      setValidating(true);
       const newErrors: string[] = [];
-      const validFiles: File[] = [];
+      const validPhotos: PhotoItem[] = [];
 
-      fileArray.slice(0, remaining).forEach((file) => {
-        if (!file.type.startsWith("image/")) {
-          newErrors.push(`"${file.name}" : format non accepté (images uniquement)`);
-        } else if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-          newErrors.push(`"${file.name}" : taille trop grande (max ${MAX_SIZE_MB} Mo)`);
-        } else {
-          validFiles.push(file);
+      const filesToProcess = fileArray.slice(0, remaining);
+
+      for (const file of filesToProcess) {
+        // Check format
+        if (!isAcceptedFormat(file)) {
+          newErrors.push(`"${file.name}" : format non accepté (JPG ou PNG uniquement)`);
+          continue;
         }
-      });
 
-      setErrors(newErrors);
-      if (validFiles.length === 0) return;
+        // Check size
+        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+          newErrors.push(`"${file.name}" : taille trop grande (max ${MAX_SIZE_MB} Mo)`);
+          continue;
+        }
 
-      const newPhotos: PhotoItem[] = [];
-      let loaded = 0;
+        // Check ratio
+        try {
+          const { width, height } = await getImageDimensions(file);
+          const ratio = width / height;
 
-      validFiles.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          newPhotos.push({
+          if (ratio < 1) {
+            newErrors.push(`"${file.name}" : veuillez utiliser une image au format paysage (4:3).`);
+            continue;
+          }
+
+          if (Math.abs(ratio - REQUIRED_RATIO) > RATIO_TOLERANCE) {
+            newErrors.push(
+              `"${file.name}" : ratio ${ratio.toFixed(2)} incorrect. Veuillez utiliser une image au format paysage (4:3). Dimensions recommandées : 1600×1200 ou 1200×900.`
+            );
+            continue;
+          }
+
+          // Generate preview
+          const preview = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => resolve(ev.target?.result as string);
+            reader.readAsDataURL(file);
+          });
+
+          validPhotos.push({
             id: crypto.randomUUID(),
             file,
-            preview: ev.target?.result as string,
+            preview,
           });
-          loaded++;
-          if (loaded === validFiles.length) {
-            onChange([...photos, ...newPhotos]);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+        } catch {
+          newErrors.push(`"${file.name}" : impossible de lire l'image.`);
+        }
+      }
+
+      setErrors(newErrors);
+      if (validPhotos.length > 0) {
+        onChange([...photos, ...validPhotos]);
+      }
+      setValidating(false);
     },
     [photos, onChange]
   );
@@ -105,25 +154,39 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
     <div className="space-y-4">
       {/* Drop zone */}
       <div
-        onClick={() => photos.length < MAX_PHOTOS && fileInputRef.current?.click()}
+        onClick={() => !validating && photos.length < MAX_PHOTOS && fileInputRef.current?.click()}
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
         className={`border-2 border-dashed rounded-2xl p-10 text-center transition-colors ${
-          photos.length >= MAX_PHOTOS
+          photos.length >= MAX_PHOTOS || validating
             ? "border-muted cursor-not-allowed opacity-50"
             : "border-border hover:border-accent cursor-pointer"
         }`}
       >
-        <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-        <p className="font-medium text-foreground mb-1">Appuyez pour ajouter des photos</p>
-        <p className="text-sm text-muted-foreground">depuis votre galerie ou appareil photo</p>
-        <p className="text-xs text-muted-foreground mt-2">Min 5, max 10 photos • 5 Mo par photo</p>
+        {validating ? (
+          <>
+            <Loader2 className="w-10 h-10 text-accent mx-auto mb-3 animate-spin" />
+            <p className="font-medium text-foreground mb-1">Vérification des images…</p>
+          </>
+        ) : (
+          <>
+            <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="font-medium text-foreground mb-1">Appuyez pour ajouter des photos</p>
+            <p className="text-sm text-muted-foreground">depuis votre galerie ou appareil photo</p>
+          </>
+        )}
+        <p className="text-xs text-muted-foreground mt-2">
+          JPG, PNG • Format paysage 4:3 • Min 5, max 10 photos • {MAX_SIZE_MB} Mo max par photo
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Dimensions recommandées : 1600×1200 (principale) ou 1200×900 (galerie)
+        </p>
       </div>
 
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
         multiple
         className="hidden"
         onChange={(e) => {
@@ -136,8 +199,8 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
       {errors.length > 0 && (
         <div className="space-y-1">
           {errors.map((err, i) => (
-            <p key={i} className="text-xs text-destructive flex items-center gap-1">
-              <AlertCircle className="w-3 h-3 shrink-0" />
+            <p key={i} className="text-xs text-destructive flex items-start gap-1">
+              <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
               {err}
             </p>
           ))}
@@ -145,7 +208,7 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
       )}
 
       {/* Counter */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <p className="text-sm font-medium text-foreground">
           Photos ajoutées : <span className={photos.length < MIN_PHOTOS ? "text-destructive" : "text-accent"}>{photos.length}</span> / {MAX_PHOTOS}
         </p>
@@ -157,8 +220,8 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
         )}
       </div>
 
-      {/* Photo grid with native drag & drop */}
-      <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+      {/* Photo grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {photos.map((photo, index) => (
           <div
             key={photo.id}
@@ -166,7 +229,8 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
             onDragStart={() => handlePhotoDragStart(index)}
             onDragOver={(e) => handlePhotoDragOver(e, index)}
             onDragEnd={handlePhotoDragEnd}
-            className={`relative aspect-square rounded-xl overflow-hidden group border-2 border-border ${dragIndex === index ? "opacity-50" : ""}`}
+            className={`relative rounded-xl overflow-hidden group border-2 border-border ${dragIndex === index ? "opacity-50" : ""}`}
+            style={{ aspectRatio: "4/3" }}
           >
             <img src={photo.preview} alt="" className="w-full h-full object-cover" />
             <div className="absolute top-1 left-1 w-7 h-7 bg-background/80 backdrop-blur-sm rounded-lg flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
@@ -191,7 +255,8 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
           <div
             key={`empty-${i}`}
             onClick={() => fileInputRef.current?.click()}
-            className="aspect-square rounded-xl bg-muted border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 transition-colors"
+            className="rounded-xl bg-muted border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 transition-colors"
+            style={{ aspectRatio: "4/3" }}
           >
             <Camera className="w-5 h-5 text-muted-foreground/40 mb-1" />
             <span className="text-[10px] text-muted-foreground/40">{photos.length + i + 1}</span>
