@@ -136,7 +136,7 @@ const Publish = () => {
     setLoading(true);
     try {
       const photoUrls: string[] = [];
-      for (const photo of photos) {
+      for (const photo of listingDraft.photos) {
         const ext = photo.file.name.split(".").pop() || "jpg";
         const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
