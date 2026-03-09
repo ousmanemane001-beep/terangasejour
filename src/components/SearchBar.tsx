@@ -187,7 +187,7 @@ const SearchBar = () => {
       </div>
 
       {/* Mobile: stacked 4 rows */}
-      <div className="flex flex-col gap-4 md:hidden">
+      <div className="flex flex-col gap-3 md:hidden">
         {/* Row 1: Destination */}
         <div className="relative" style={{ zIndex: 1000 }}>
           <div className="flex items-center gap-1.5 mb-1.5">
