@@ -524,20 +524,6 @@ export default function OusmaneChatbot() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Quick actions */}
-          {messages.length <= 1 && (
-            <div className="px-3 pb-2 flex flex-wrap gap-1.5">
-              {QUICK_ACTIONS.map((a) => (
-                <button
-                  key={a.label}
-                  onClick={() => sendMessage(a.message)}
-                  className="text-[11px] px-2.5 py-1.5 rounded-full bg-accent text-accent-foreground hover:bg-accent/80 transition-colors border border-border"
-                >
-                  {a.label}
-                </button>
-              ))}
-            </div>
-          )}
 
           {/* Input */}
           <form
