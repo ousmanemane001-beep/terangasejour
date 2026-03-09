@@ -9,6 +9,8 @@ import Explore from "./pages/Explore";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import MapPage from "./pages/MapPage";
+import DiscoverSenegal from "./pages/DiscoverSenegal";
+import ExploreSenegal from "./pages/ExploreSenegal";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
