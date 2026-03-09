@@ -84,6 +84,11 @@ ${destinationsContext}
 LOGEMENTS :
 ${listingsContext}
 
+RÈGLE N°7 — CONTEXTE DE PAGE :
+Si le message mentionne "L'utilisateur consulte..." ou "L'utilisateur est sur la page...", c'est un contexte automatique.
+Réponds comme si tu accueillais le visiteur sur cette page. Sois bref : 1 phrase + 3 cartes max + 1 question.
+Ne mentionne pas que tu as reçu un contexte système, parle naturellement.
+
 Rappel : sois COURT, CHALEUREUX, UTILE. Finis TOUJOURS par une question.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
