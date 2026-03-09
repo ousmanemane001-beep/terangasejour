@@ -212,6 +212,7 @@ const AdminPanel = () => {
     }
     toast.success(action === "approve" ? "Logement approuvé" : action === "reject" ? "Logement rejeté" : "Logement suspendu");
     qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
+    qc.invalidateQueries({ queryKey: ["listings"] });
     setUpdatingId(null);
   };
 
