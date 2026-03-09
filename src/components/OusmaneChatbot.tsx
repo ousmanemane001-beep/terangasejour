@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { X, Send, Compass, Loader2, MapPin, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
@@ -199,8 +199,11 @@ export default function OusmaneChatbot() {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [contextSent, setContextSent] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -209,6 +212,98 @@ export default function OusmaneChatbot() {
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
+
+  // Detect page context and auto-send contextual message when chat opens
+  const getPageContext = useCallback((): string | null => {
+    const path = location.pathname;
+    const dest = searchParams.get("destination");
+
+    // Explore page with destination
+    if (path === "/explore" && dest) {
+      return `L'utilisateur consulte les logements près de "${dest}". Recommande-lui 3 logements populaires de cette zone avec [LISTING_CARD]. Sois bref et naturel.`;
+    }
+    // Discover page
+    if (path === "/discover") {
+      return `L'utilisateur est sur la page Découvrir le Sénégal. Suggère-lui 3 destinations incontournables avec [DEST_CARD]. Sois bref.`;
+    }
+    // Map page
+    if (path === "/explore-senegal" || path === "/map") {
+      return `L'utilisateur explore la carte du Sénégal. Propose-lui des destinations intéressantes avec [DEST_CARD]. Sois bref.`;
+    }
+    // Property detail page
+    if (path.startsWith("/property/")) {
+      return `L'utilisateur consulte un logement. Propose-lui des activités et destinations à proximité avec [DEST_CARD]. Sois bref.`;
+    }
+    return null;
+  }, [location.pathname, searchParams]);
+
+  // Auto-send context when opening chat on a relevant page
+  useEffect(() => {
+    if (!open) return;
+    const ctx = getPageContext();
+    if (!ctx || ctx === contextSent) return;
+
+    setContextSent(ctx);
+    // Send as a system-level context (hidden from UI, sent to AI)
+    const contextMsg: Message = { role: "user", content: ctx };
+    const history = [contextMsg];
+
+    setIsLoading(true);
+    let assistantSoFar = "";
+
+    fetch(CHAT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({ messages: history }),
+    })
+      .then(async (resp) => {
+        if (!resp.ok || !resp.body) return;
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let idx: number;
+          while ((idx = buffer.indexOf("\n")) !== -1) {
+            let line = buffer.slice(0, idx);
+            buffer = buffer.slice(idx + 1);
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (!line.startsWith("data: ")) continue;
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === "[DONE]") break;
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content;
+              if (content) {
+                assistantSoFar += content;
+                setMessages(prev => {
+                  const last = prev[prev.length - 1];
+                  if (last?.role === "assistant" && last !== WELCOME_MESSAGE) {
+                    return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
+                  }
+                  return [...prev, { role: "assistant", content: assistantSoFar }];
+                });
+              }
+            } catch {
+              buffer = line + "\n" + buffer;
+              break;
+            }
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, [open, getPageContext, contextSent]);
+
+  // Reset context when navigating to a new page
+  useEffect(() => {
+    setContextSent(null);
+  }, [location.pathname, searchParams.get("destination")]);
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
