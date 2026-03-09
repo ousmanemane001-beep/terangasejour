@@ -20,6 +20,51 @@ const CATEGORY_IMAGES: Record<string, string> = {
   hotel: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=200&fit=crop",
 };
 
+// Real photos for specific destinations (especially historic sites)
+const DESTINATION_PHOTOS: Record<string, string[]> = {
+  "île de gorée": [
+    "https://images.unsplash.com/photo-1611348524140-53c9a25263d6?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1590767950092-42b8362368da?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=400&h=200&fit=crop",
+  ],
+  "gorée": [
+    "https://images.unsplash.com/photo-1611348524140-53c9a25263d6?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1590767950092-42b8362368da?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=400&h=200&fit=crop",
+  ],
+  "saint-louis": [
+    "https://images.unsplash.com/photo-1591019479261-1a103585c559?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1562016600-ece13b8c8b60?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1573818439498-e53050cf0da4?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1596005554384-d293674c91d7?w=400&h=200&fit=crop",
+  ],
+  "maison des esclaves": [
+    "https://images.unsplash.com/photo-1611348524140-53c9a25263d6?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1590767950092-42b8362368da?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=400&h=200&fit=crop",
+  ],
+  "pont faidherbe": [
+    "https://images.unsplash.com/photo-1591019479261-1a103585c559?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1562016600-ece13b8c8b60?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1596005554384-d293674c91d7?w=400&h=200&fit=crop",
+  ],
+  "lac rose": [
+    "https://images.unsplash.com/photo-1568625502763-2a5ec6a94240?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1597149212519-41513a8c7bf0?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1504609813442-a8924e83f76e?w=400&h=200&fit=crop",
+  ],
+  "dakar": [
+    "https://images.unsplash.com/photo-1572883454114-1cf0031ede2a?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1590767950092-42b8362368da?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=400&h=200&fit=crop",
+  ],
+  "saly": [
+    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=400&h=200&fit=crop",
+  ],
+};
+
 const CATEGORY_EMOJI: Record<string, string> = {
   plage: "🏖️", ville: "🏙️", parc_naturel: "🌳", site_historique: "🏛️",
   lac: "💧", ile: "🏝️", aeroport: "✈️", restaurant: "🍽️", hotel: "🏨",
