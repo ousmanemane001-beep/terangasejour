@@ -19,8 +19,8 @@ const ExploreMap = ({ properties, hoveredProperty, center }: ExploreMapProps) =>
     if (!mapRef.current || mapInstanceRef.current) return;
 
     const map = L.map(mapRef.current, {
-      center: [14.6928, -17.4467],
-      zoom: 7,
+      center: center ? [center.lat, center.lng] : [14.6928, -17.4467],
+      zoom: center ? 11 : 7,
       zoomControl: true,
     });
 
