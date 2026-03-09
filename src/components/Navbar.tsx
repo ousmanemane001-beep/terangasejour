@@ -92,7 +92,7 @@ const Navbar = () => {
                   <Button variant="ghost" size="icon" className="rounded text-[#333] hover:bg-[#f5f5f5]">
                     <Avatar className="h-8 w-8">
                       {avatarUrl && <AvatarImage src={avatarUrl} alt="Avatar" />}
-                      <AvatarFallback className={`${isAdmin ? "bg-destructive" : "bg-white/20"} text-primary-foreground text-xs font-bold`}>{initials}</AvatarFallback>
+                      <AvatarFallback className={`${isAdmin ? "bg-destructive text-white" : "bg-[#0d9488] text-white"} text-xs font-bold`}>{initials}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
