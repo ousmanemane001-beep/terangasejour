@@ -69,7 +69,7 @@ const SearchBar = () => {
     navigate(`/explore?${params.toString()}`);
   };
 
-  const fieldStyle = "bg-[#fafafa] border border-[#e5e5e5] rounded-[10px] h-[52px] md:h-[56px] px-4 flex items-center cursor-pointer hover:border-[#ccc] transition-colors";
+  const fieldStyle = "bg-[#fafafa] border border-[#e5e5e5] rounded-[10px] h-[46px] md:h-[56px] px-4 flex items-center cursor-pointer hover:border-[#ccc] transition-colors";
 
   return (
     <div className="w-full" style={{ zIndex: 1000 }}>
@@ -284,7 +284,7 @@ const SearchBar = () => {
         </div>
 
         {/* Row 4: Bouton Rechercher */}
-        <button onClick={handleSearch} className="w-full h-[56px] bg-[#0d9488] hover:bg-[#0f766e] text-white rounded-[28px] font-semibold text-base flex items-center justify-center gap-2 transition-colors">
+        <button onClick={handleSearch} className="w-full h-[50px] md:h-[56px] bg-[#0d9488] hover:bg-[#0f766e] text-white rounded-[28px] font-semibold text-base flex items-center justify-center gap-2 transition-colors">
           <Search className="w-5 h-5" />
           Rechercher
         </button>
