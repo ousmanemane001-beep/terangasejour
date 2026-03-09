@@ -19,7 +19,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const [{ data: destinations }, { data: listings }] = await Promise.all([
-      supabase.from("destinations").select("name, category, region, latitude, longitude, description").limit(200),
+      supabase.from("destinations").select("name, category, region, latitude, longitude, description, image1, image2, image3, image4").limit(200),
       supabase.from("listings").select("id, title, city, location, price_per_night, bedrooms, bathrooms, capacity, latitude, longitude, property_type, photos").eq("status", "published").limit(100),
     ]);
 
