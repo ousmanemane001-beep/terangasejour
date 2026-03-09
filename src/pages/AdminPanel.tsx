@@ -214,7 +214,37 @@ const AdminPanel = () => {
     setUpdatingId(null);
   };
 
-  const handleCancelBooking = async (id: string) => {
+  const handleRequestModification = async () => {
+    if (!remarkListingId || !remarkText.trim()) {
+      toast.error("Veuillez entrer une remarque.");
+      return;
+    }
+    setUpdatingId(remarkListingId);
+    const { error } = await supabase
+      .from("listings")
+      .update({ status: "needs_modification", admin_remark: remarkText.trim() } as any)
+      .eq("id", remarkListingId);
+    if (error) { toast.error(error.message); setUpdatingId(null); return; }
+
+    const listing = allListings?.find((l) => l.id === remarkListingId);
+    if (listing) {
+      await supabase.from("notifications").insert({
+        user_id: listing.user_id,
+        type: "listing_modification_requested",
+        title: "Modification demandée",
+        message: `Votre logement "${listing.title}" nécessite des modifications : ${remarkText.trim()}`,
+        data: { listing_id: remarkListingId },
+      } as any);
+    }
+
+    toast.success("Demande de modification envoyée");
+    qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
+    setUpdatingId(null);
+    setRemarkDialogOpen(false);
+    setRemarkText("");
+    setRemarkListingId(null);
+  };
+
     if (!confirm("Annuler cette réservation ?")) return;
     const { error } = await supabase.from("bookings").update({ status: "cancelled" } as any).eq("id", id);
     if (error) { toast.error(error.message); return; }
