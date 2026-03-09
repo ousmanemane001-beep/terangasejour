@@ -59,23 +59,6 @@ const Login = () => {
 
           {/* Social buttons + Create account */}
           <div className="flex flex-col gap-8 mx-auto max-w-[500px] w-full">
-            <div className="flex justify-center md:justify-between gap-4 flex-wrap w-full items-center">
-              <SocialLoginButtons variant="google-only" />
-              <Link
-                to="/signup"
-                className="text-sm font-medium text-foreground hover:underline"
-              >
-                Créer un compte
-              </Link>
-            </div>
-
-            {/* Separator */}
-            <div className="text-center">
-              <p className="text-sm font-semibold text-foreground">
-                ou se connecter avec email et mot de passe
-              </p>
-            </div>
-
             {/* Email / Password form */}
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <Input
@@ -115,7 +98,16 @@ const Login = () => {
                 </Button>
               </div>
             </form>
-          </div>
+
+            {/* Separator */}
+            <div className="text-center">
+              <p className="text-sm font-semibold text-foreground">
+                ou choisissez l'une de ces options
+              </p>
+            </div>
+
+            {/* Social icon buttons */}
+            <SocialLoginButtons variant="icon-only" />
         </div>
       </motion.div>
     </div>
