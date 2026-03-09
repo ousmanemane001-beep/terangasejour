@@ -36,10 +36,9 @@ const DESTINATION_PHOTOS: Record<string, string[]> = {
     "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/goree/goree-aerienne.png",
   ],
   "saint-louis": [
-    "https://images.unsplash.com/photo-1591019479261-1a103585c559?w=400&h=200&fit=crop",
-    "https://images.unsplash.com/photo-1562016600-ece13b8c8b60?w=400&h=200&fit=crop",
-    "https://images.unsplash.com/photo-1573818439498-e53050cf0da4?w=400&h=200&fit=crop",
-    "https://images.unsplash.com/photo-1596005554384-d293674c91d7?w=400&h=200&fit=crop",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/saint-louis/saint-louis-pont.png",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/saint-louis/saint-louis-aerienne.png",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/saint-louis/saint-louis-colonial.png",
   ],
   "maison des esclaves": [
     "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/goree/maison-esclaves-escaliers.png",
@@ -47,9 +46,9 @@ const DESTINATION_PHOTOS: Record<string, string[]> = {
     "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/goree/maison-esclaves-porte.png",
   ],
   "pont faidherbe": [
-    "https://images.unsplash.com/photo-1591019479261-1a103585c559?w=400&h=200&fit=crop",
-    "https://images.unsplash.com/photo-1562016600-ece13b8c8b60?w=400&h=200&fit=crop",
-    "https://images.unsplash.com/photo-1596005554384-d293674c91d7?w=400&h=200&fit=crop",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/saint-louis/saint-louis-pont.png",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/saint-louis/saint-louis-aerienne.png",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/saint-louis/saint-louis-colonial.png",
   ],
   "lac rose": [
     "https://images.unsplash.com/photo-1568625502763-2a5ec6a94240?w=400&h=200&fit=crop",
