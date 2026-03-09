@@ -77,7 +77,7 @@ const Index = () => {
         </div>
 
         {/* Floating search card */}
-        <div className="absolute left-1/2 -translate-x-1/2 -bottom-[231px] md:-bottom-[40px] w-[85%] max-w-[1100px] md:w-full md:px-4" style={{ zIndex: 20 }}>
+        <div className="absolute left-1/2 -translate-x-1/2 -bottom-[224px] md:-bottom-[40px] w-[85%] max-w-[1100px] md:w-full md:px-4" style={{ zIndex: 20 }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
