@@ -444,8 +444,8 @@ export default function OusmaneChatbot() {
           aria-label="Ouvrir le guide touristique"
         >
           <div className="relative">
-            <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-110 transition-transform">
-              <Compass className="w-6 h-6" />
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg flex items-center justify-center hover:scale-110 transition-transform overflow-hidden border-2 border-white">
+              <img src={ousmaneAvatar} alt="Ousmane" className="w-full h-full object-cover" />
             </div>
             <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background animate-pulse" />
           </div>
