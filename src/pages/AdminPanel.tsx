@@ -18,7 +18,7 @@ import {
   Users, Home, CalendarDays, CreditCard, Star, ShieldCheck, X, Check,
   Loader2, TrendingUp, Eye, Bell, Clock, Ban, LayoutDashboard,
   Search, Filter, Trash2, AlertTriangle, DollarSign, Settings,
-  ChevronRight, MessageCircle, Flag, UserCheck, UserX,
+  ChevronRight, MessageCircle, Flag, UserCheck, UserX, Pencil,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
