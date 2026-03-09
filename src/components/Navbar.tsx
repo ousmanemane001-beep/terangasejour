@@ -25,6 +25,7 @@ const Navbar = () => {
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
+  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || null;
   const initials = profile
     ? `${(profile.first_name || "")[0] || ""}${(profile.last_name || "")[0] || ""}`.toUpperCase() || "U"
     : user?.user_metadata
