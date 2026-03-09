@@ -28,7 +28,7 @@ serve(async (req) => {
     ).join("\n");
 
     const listingsContext = (listings || []).map(l =>
-      `- "${l.title}" à ${l.city || l.location || "Sénégal"} | ${l.price_per_night} FCFA/nuit | ${l.bedrooms} ch. | ${l.capacity} pers. | ${l.property_type} [${l.latitude},${l.longitude}]`
+      `- ID:${l.id} "${l.title}" à ${l.city || l.location || "Sénégal"} | ${l.price_per_night} FCFA/nuit | ${l.bedrooms} ch. | ${l.capacity} pers. | ${l.property_type} | photo:${l.photos?.[0] || ""} [${l.latitude},${l.longitude}]`
     ).join("\n");
 
     const systemPrompt = `Tu es Ousmane, un guide touristique local du Sénégal. Tu travailles pour Teranga Séjour.
