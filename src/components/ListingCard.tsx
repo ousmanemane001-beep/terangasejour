@@ -1,6 +1,5 @@
 import { MapPin, Users, Bed, Bath, Star } from "lucide-react";
 import { Link } from "react-router-dom";
-import VerifiedBadge from "@/components/VerifiedBadge";
 import FavoriteButton from "@/components/FavoriteButton";
 import type { DBListing } from "@/hooks/useListings";
 import type { ListingRating } from "@/hooks/useReviews";
@@ -32,11 +31,6 @@ const ListingCard = forwardRef<HTMLDivElement, { listing: DBListing; rating?: Li
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
             <FavoriteButton listingId={listing.id} className="absolute top-2.5 right-2.5" />
-            {listing.verified && (
-              <div className="absolute top-2.5 left-2.5">
-                <VerifiedBadge className="bg-background/90 backdrop-blur-sm" />
-              </div>
-            )}
           </div>
         </Link>
 
