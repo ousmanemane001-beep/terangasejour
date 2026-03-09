@@ -274,6 +274,15 @@ export default function OusmaneChatbot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+
+  // Lock body scroll when chat is open on mobile
+  useEffect(() => {
+    if (open && isMobile) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [open, isMobile]);
 
   // Fetch destination images from DB
   const { data: dbDestinations } = useQuery({
@@ -430,7 +439,7 @@ export default function OusmaneChatbot() {
 
       {/* Chat window */}
       {open && (
-        <div className="fixed bottom-4 right-4 z-50 w-[380px] max-w-[calc(100vw-2rem)] h-[560px] max-h-[calc(100vh-2rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
+        <div className="fixed z-50 bg-background border border-border shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300 sm:bottom-4 sm:right-4 sm:w-[380px] sm:max-w-[calc(100vw-2rem)] sm:h-[560px] sm:max-h-[calc(100vh-2rem)] sm:rounded-2xl inset-0 sm:inset-auto">
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 bg-primary text-primary-foreground">
             <div className="relative">
@@ -507,7 +516,8 @@ export default function OusmaneChatbot() {
           {/* Input */}
           <form
             onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}
-            className="flex items-center gap-2 px-3 py-2.5 border-t border-border bg-card"
+            className="flex items-center gap-2 px-3 py-2.5 border-t border-border bg-card shrink-0"
+            style={{ paddingBottom: "max(0.625rem, env(safe-area-inset-bottom))" }}
           >
             <input
               ref={inputRef}
