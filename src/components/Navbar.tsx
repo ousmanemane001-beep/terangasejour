@@ -55,7 +55,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-primary shadow-[var(--shadow-nav)]">
+      <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-[#e5e5e5]">
         <div className="container mx-auto flex items-center justify-between h-14 px-4">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
