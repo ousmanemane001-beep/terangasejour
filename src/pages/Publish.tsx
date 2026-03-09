@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import PhotoUploader from "@/components/PhotoUploader";
 import { supabase } from "@/integrations/supabase/client";
