@@ -91,7 +91,8 @@ const SearchBar = () => {
           {showSuggestions && (
             <div
               ref={suggestionsRef}
-              className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-xl shadow-[var(--shadow-elevated)] z-50 max-h-[420px] overflow-y-auto"
+              className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-xl max-h-[420px] overflow-y-auto"
+              style={{ zIndex: 1000, boxShadow: '0 8px 20px rgba(0,0,0,0.15)' }}
             >
               {/* Searching mode */}
               {isSearching ? (
