@@ -267,8 +267,6 @@ const Dashboard = () => {
                           <Badge className={`absolute top-3 left-3 ${listing.status === "published" ? "bg-primary text-primary-foreground" : listing.status === "pending_approval" ? "bg-amber-500/90 text-white" : listing.status === "needs_modification" ? "bg-destructive text-destructive-foreground" : "bg-muted text-muted-foreground"}`}>
                             {statusMap[listing.status]?.label || listing.status}
                           </Badge>
-                            {statusMap[listing.status]?.label || listing.status}
-                          </Badge>
                         </div>
                         <CardContent className="p-4 space-y-2.5">
                           <h3 className="font-display font-semibold text-foreground line-clamp-1">{listing.title}</h3>
