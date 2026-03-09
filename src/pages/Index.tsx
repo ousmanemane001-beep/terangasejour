@@ -57,7 +57,7 @@ const Index = () => {
         />
         <div className="absolute inset-0 bg-black/40" />
 
-        <div className="relative container mx-auto px-4 pt-6 pb-32 md:pt-24 md:pb-40 flex flex-col items-center text-center">
+        <div className="relative container mx-auto px-4 pt-4 pb-32 md:pt-24 md:pb-40 flex flex-col items-center text-center">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
