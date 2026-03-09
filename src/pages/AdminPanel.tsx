@@ -29,6 +29,7 @@ const statusLabels: Record<string, { label: string; color: string }> = {
   pending_approval: { label: "En attente", color: "bg-yellow-500/10 text-yellow-700" },
   published: { label: "Approuvé", color: "bg-green-500/10 text-green-700" },
   rejected: { label: "Rejeté", color: "bg-destructive/10 text-destructive" },
+  needs_modification: { label: "Modification demandée", color: "bg-orange-500/10 text-orange-700" },
   draft: { label: "Brouillon", color: "bg-muted text-muted-foreground" },
   suspended: { label: "Suspendu", color: "bg-orange-500/10 text-orange-700" },
 };
