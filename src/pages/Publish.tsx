@@ -188,7 +188,8 @@ const Publish = () => {
     setLoading(true);
     try {
       const photoUrls: string[] = [];
-      for (const photo of listingDraft.photos) {
+      const validPhotos = listingDraft.photos.filter((p) => !p.error);
+      for (const photo of validPhotos) {
         const ext = photo.file.name.split(".").pop() || "jpg";
         const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage.from("listing-photos").upload(path, photo.file);
