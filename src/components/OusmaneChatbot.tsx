@@ -3,6 +3,7 @@ import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { X, Send, Compass, Loader2, MapPin, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
+import ousmaneAvatar from "@/assets/ousmane-avatar.png";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -443,8 +444,8 @@ export default function OusmaneChatbot() {
           aria-label="Ouvrir le guide touristique"
         >
           <div className="relative">
-            <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-110 transition-transform">
-              <Compass className="w-6 h-6" />
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg flex items-center justify-center hover:scale-110 transition-transform overflow-hidden border-2 border-white">
+              <img src={ousmaneAvatar} alt="Ousmane" className="w-full h-full object-cover" />
             </div>
             <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background animate-pulse" />
           </div>
@@ -460,8 +461,8 @@ export default function OusmaneChatbot() {
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 bg-primary text-primary-foreground">
             <div className="relative">
-              <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center text-lg font-bold">
-                🧑🏾
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-primary-foreground/20">
+                <img src={ousmaneAvatar} alt="Ousmane" className="w-full h-full object-cover" />
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-primary" />
             </div>
@@ -479,8 +480,8 @@ export default function OusmaneChatbot() {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "assistant" && (
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] mr-1.5 mt-1 shrink-0">
-                    🧑🏾
+                  <div className="w-6 h-6 rounded-full overflow-hidden mr-1.5 mt-1 shrink-0">
+                    <img src={ousmaneAvatar} alt="Ousmane" className="w-full h-full object-cover" />
                   </div>
                 )}
                 <div
@@ -500,8 +501,8 @@ export default function OusmaneChatbot() {
             ))}
             {isLoading && messages[messages.length - 1]?.role === "user" && (
               <div className="flex justify-start">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] mr-1.5 mt-1 shrink-0">
-                  🧑🏾
+                <div className="w-6 h-6 rounded-full overflow-hidden mr-1.5 mt-1 shrink-0">
+                  <img src={ousmaneAvatar} alt="Ousmane" className="w-full h-full object-cover" />
                 </div>
                 <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
                   <div className="flex gap-1">
