@@ -222,7 +222,7 @@ const SearchBar = () => {
           <div className="flex gap-3">
             <Popover>
               <PopoverTrigger asChild>
-                <div className={cn(fieldStyle, "flex-1")}>
+                <div className={cn(fieldStyle, "flex-1 !h-[39px] md:!h-[56px]")}>
                   <span className={cn("text-[15px] flex-1", checkIn ? "text-[#333]" : "text-[#aaa]")}>
                     {checkIn ? format(checkIn, "dd/MM/yyyy", { locale: fr }) : "jj/mm/aaaa"}
                   </span>
