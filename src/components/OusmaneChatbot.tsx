@@ -335,8 +335,12 @@ export default function OusmaneChatbot() {
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
+    // Enrich with page context if on a relevant page
+    const ctx = getPageContext();
+    const enrichedText = ctx ? `${text.trim()}\n\n(Contexte: ${ctx})` : text.trim();
     const userMsg: Message = { role: "user", content: text.trim() };
-    const history = [...messages.filter(m => m !== WELCOME_MESSAGE), userMsg];
+    const msgForAI: Message = { role: "user", content: enrichedText };
+    const history = [...messages.filter(m => m !== WELCOME_MESSAGE).map(m => ({ role: m.role, content: m.content })), msgForAI];
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
