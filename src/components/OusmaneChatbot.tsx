@@ -239,7 +239,7 @@ function TravelMapPreview({ coords }: { coords: Array<{ lat: number; lng: number
   );
 }
 
-function MessageContent({ content }: { content: string }) {
+function MessageContent({ content, dbPhotos }: { content: string; dbPhotos?: Record<string, string[]> }) {
   const parts = parseMessageContent(content);
 
   return (
@@ -253,7 +253,7 @@ function MessageContent({ content }: { content: string }) {
               </div>
             );
           case "dest_card":
-            return <DestinationCard key={i} {...part} />;
+            return <DestinationCard key={i} {...part} dbPhotos={dbPhotos} />;
           case "listing_card":
             return <ListingCard key={i} {...part} />;
           case "travel_map":
