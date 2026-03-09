@@ -66,6 +66,9 @@ const AdminPanel = () => {
   const [filterLocation, setFilterLocation] = useState("all");
   const [filterPayment, setFilterPayment] = useState("all");
   const [mobileSidebar, setMobileSidebar] = useState(false);
+  const [remarkDialogOpen, setRemarkDialogOpen] = useState(false);
+  const [remarkListingId, setRemarkListingId] = useState<string | null>(null);
+  const [remarkText, setRemarkText] = useState("");
 
   const { data: allProfiles, isLoading: profilesLoading } = useQuery({
     queryKey: ["admin-profiles"],
