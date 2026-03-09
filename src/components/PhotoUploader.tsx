@@ -115,9 +115,9 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
         }`}
       >
         <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-        <p className="font-medium text-foreground mb-1">Glissez vos photos ici</p>
-        <p className="text-sm text-muted-foreground">ou cliquez pour parcourir</p>
-        <p className="text-xs text-muted-foreground mt-2">JPG, PNG • Min 5, max 10 photos • 5 Mo par photo</p>
+        <p className="font-medium text-foreground mb-1">Appuyez pour ajouter des photos</p>
+        <p className="text-sm text-muted-foreground">depuis votre galerie ou appareil photo</p>
+        <p className="text-xs text-muted-foreground mt-2">Min 5, max 10 photos • 5 Mo par photo</p>
       </div>
 
       <input
