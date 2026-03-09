@@ -169,10 +169,79 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <button className="md:hidden p-2 text-primary-foreground" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
-            <Menu className="w-5 h-5" />
-          </button>
+          {/* Mobile right actions */}
+          <div className="flex md:hidden items-center gap-2">
+            {/* User circle button — Booking.com style */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="relative flex items-center justify-center w-[38px] h-[38px] rounded-full bg-white border border-[hsl(0,0%,90%)] shrink-0"
+                  aria-label="Compte"
+                >
+                  {user ? (
+                    <Avatar className="h-7 w-7">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">{initials}</AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <>
+                      <User className="w-5 h-5 text-muted-foreground" />
+                      {/* Red dot for non-connected */}
+                      <span className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-destructive border-2 border-white" />
+                    </>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                {user ? (
+                  <>
+                    <DropdownMenuLabel className="font-normal">
+                      <p className="text-sm font-medium text-foreground">
+                        {[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Utilisateur"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{roleLabel}</p>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard" className="flex items-center gap-2"><CalendarDays className="w-4 h-4" /> Mes réservations</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Mon profil</Link>
+                    </DropdownMenuItem>
+                    {isHost && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/create-listing" className="flex items-center gap-2"><PlusCircle className="w-4 h-4" /> Publier un logement</Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={signOut} className="flex items-center gap-2 text-destructive">
+                      <LogOut className="w-4 h-4" /> Déconnexion
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to="/login" className="flex items-center gap-2"><LogIn className="w-4 h-4" /> Se connecter</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/signup" className="flex items-center gap-2"><User className="w-4 h-4" /> Créer un compte</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/explore" className="flex items-center gap-2"><CalendarDays className="w-4 h-4" /> Mes réservations</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/become-host" className="flex items-center gap-2"><PlusCircle className="w-4 h-4" /> Publier un logement</Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Hamburger menu button */}
+            <button className="p-2 text-primary-foreground" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </nav>
 
