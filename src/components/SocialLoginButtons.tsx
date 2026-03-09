@@ -78,7 +78,7 @@ const SocialLoginButtons = ({ variant = "full" }: SocialLoginButtonsProps) => {
           type="button"
           onClick={() => handleOAuth("google")}
           disabled={isDisabled}
-          className="w-16 h-16 rounded-lg border border-border bg-card flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-50"
+          className="w-[72px] h-[72px] rounded-[10px] border border-[#e6e6e6] bg-white flex items-center justify-center hover:bg-[#f5f5f5] transition-colors disabled:opacity-50"
           title="Google"
         >
           {loadingGoogle ? <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /> : <GoogleIcon />}
@@ -87,7 +87,7 @@ const SocialLoginButtons = ({ variant = "full" }: SocialLoginButtonsProps) => {
           type="button"
           onClick={() => handleOAuth("apple")}
           disabled={isDisabled}
-          className="w-16 h-16 rounded-lg border border-border bg-card flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-50"
+          className="w-[72px] h-[72px] rounded-[10px] border border-[#e6e6e6] bg-white flex items-center justify-center hover:bg-[#f5f5f5] transition-colors disabled:opacity-50"
           title="Apple"
         >
           {loadingApple ? <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /> : <AppleIcon />}
@@ -96,7 +96,7 @@ const SocialLoginButtons = ({ variant = "full" }: SocialLoginButtonsProps) => {
           type="button"
           onClick={handleFacebook}
           disabled={isDisabled}
-          className="w-16 h-16 rounded-lg border border-border bg-card flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-50"
+          className="w-[72px] h-[72px] rounded-[10px] border border-[#e6e6e6] bg-white flex items-center justify-center hover:bg-[#f5f5f5] transition-colors disabled:opacity-50"
           title="Facebook"
         >
           <FacebookIcon />
