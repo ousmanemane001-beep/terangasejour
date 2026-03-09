@@ -105,6 +105,8 @@ const Publish = () => {
   const [capacity, setCapacity] = useState(2);
   const [price, setPrice] = useState("0");
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  const [availabilityType, setAvailabilityType] = useState<AvailabilityType>("always");
+  const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [loading, setLoading] = useState(false);
 
   const listingDraft = useMemo<ListingDraft>(
