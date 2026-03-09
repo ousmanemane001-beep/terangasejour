@@ -9,7 +9,7 @@ interface ExploreMapProps {
   center?: { lat: number; lng: number };
 }
 
-const ExploreMap = ({ properties, hoveredProperty }: ExploreMapProps) => {
+const ExploreMap = ({ properties, hoveredProperty, center }: ExploreMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Map<number, L.Marker>>(new Map());
