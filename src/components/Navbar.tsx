@@ -171,10 +171,19 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <button className="md:hidden p-2 text-[#333]" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
-            <Menu className="w-5 h-5" />
-          </button>
+          {/* Mobile: Se connecter + menu button */}
+          <div className="md:hidden flex items-center gap-2">
+            {!user && (
+              <Link to="/login">
+                <Button variant="outline" size="sm" className="rounded text-xs border-[#0d9488] text-[#0d9488] bg-transparent hover:bg-[#0d9488]/10 px-3 h-8">
+                  Se connecter
+                </Button>
+              </Link>
+            )}
+            <button className="p-2 text-[#333]" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </nav>
 
