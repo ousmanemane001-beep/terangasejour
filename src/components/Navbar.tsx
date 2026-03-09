@@ -163,7 +163,7 @@ const Navbar = () => {
                   </Button>
                 </Link>
                 <Link to="/login">
-                  <Button variant="outline" size="sm" className="rounded text-sm border-primary-foreground/30 text-primary-foreground bg-transparent hover:bg-white/10 hover:text-primary-foreground">
+                  <Button variant="outline" size="sm" className="rounded text-sm border-[#0d9488] text-[#0d9488] bg-transparent hover:bg-[#0d9488]/10">
                     Se connecter
                   </Button>
                 </Link>
