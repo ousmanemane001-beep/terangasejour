@@ -169,7 +169,7 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
             className={`relative aspect-square rounded-xl overflow-hidden group border-2 border-border ${dragIndex === index ? "opacity-50" : ""}`}
           >
             <img src={photo.preview} alt="" className="w-full h-full object-cover" />
-            <div className="absolute top-1 left-1 w-7 h-7 bg-background/80 backdrop-blur-sm rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
+            <div className="absolute top-1 left-1 w-7 h-7 bg-background/80 backdrop-blur-sm rounded-lg flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
               <GripVertical className="w-3.5 h-3.5 text-foreground" />
             </div>
             {index === 0 && (
