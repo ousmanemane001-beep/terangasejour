@@ -49,12 +49,12 @@ const Index = () => {
       <Navbar />
 
       {/* Hero with background image + search bar — Booking.com style */}
-      <section className="relative bg-primary overflow-hidden">
+      <section className="relative bg-primary" style={{ zIndex: 10 }}>
         {/* Background image */}
-        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20" style={{ backgroundImage: `url(${heroBg})` }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/90 via-primary/80 to-primary" />
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20 overflow-hidden" style={{ backgroundImage: `url(${heroBg})` }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/90 via-primary/80 to-primary overflow-hidden" />
         
-        <div className="relative container mx-auto px-4 pt-10 pb-8 md:pt-14 md:pb-10">
+        <div className="relative container mx-auto px-4 pt-10 pb-8 md:pt-14 md:pb-10" style={{ overflow: 'visible' }}>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
