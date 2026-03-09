@@ -89,12 +89,22 @@ const WELCOME_MESSAGE: Message = {
 };
 
 const QUICK_ACTIONS = [
-  { label: "⚡ Voyageur pressé", message: "Je suis pressé, trouve-moi un logement rapidement" },
-  { label: "🗺️ Carte de voyage", message: "Je veux créer ma carte de voyage personnalisée" },
+  { label: "🌍 Destinations populaires", message: "Quelles sont les destinations les plus populaires du Sénégal ?" },
+  { label: "🏠 Trouver un logement", message: "Aide-moi à trouver un logement au Sénégal" },
+  { label: "🗺️ Planifier mon séjour", message: "Je veux planifier mon séjour au Sénégal" },
+  { label: "⚡ Logement rapide", message: "Je suis pressé, trouve-moi un logement rapidement" },
+  { label: "🏛️ Histoire du Sénégal", message: "Parle-moi de l'histoire et des sites historiques du Sénégal" },
+];
+
+// Contextual follow-up suggestions after assistant responses
+const FOLLOWUP_SUGGESTIONS: Array<{ label: string; message: string }> = [
   { label: "🏖️ Plages", message: "Quelles plages me recommandes-tu ?" },
-  { label: "🏠 Logements", message: "Montre-moi des logements" },
-  { label: "🌍 Destinations", message: "Quelles sont les meilleures destinations ?" },
+  { label: "🌍 Destinations", message: "Quelles sont les destinations les plus populaires ?" },
+  { label: "🏠 Logements", message: "Montre-moi des logements disponibles" },
+  { label: "🗺️ Planifier", message: "Je veux planifier mon séjour" },
   { label: "🏛️ Histoire", message: "Des sites historiques à visiter ?" },
+  { label: "🍽️ Gastronomie", message: "Parle-moi de la cuisine sénégalaise" },
+  { label: "🌳 Nature", message: "Quels parcs naturels visiter ?" },
 ];
 
 type ParsedPart =
@@ -458,27 +468,43 @@ export default function OusmaneChatbot() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
+           <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 overscroll-contain">
             {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                {m.role === "assistant" && (
-                  <div className="w-6 h-6 rounded-full overflow-hidden mr-1.5 mt-1 shrink-0">
-                    <img src={ousmaneAvatar} alt="Ousmane" className="w-full h-full object-cover" />
+              <div key={i}>
+                <div className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                  {m.role === "assistant" && (
+                    <div className="w-6 h-6 rounded-full overflow-hidden mr-1.5 mt-1 shrink-0">
+                      <img src={ousmaneAvatar} alt="Ousmane" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div
+                    className={`max-w-[82%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed ${
+                      m.role === "user"
+                        ? "bg-primary text-primary-foreground rounded-br-md"
+                        : "bg-muted text-foreground rounded-bl-md"
+                    }`}
+                  >
+                    {m.role === "assistant" ? (
+                      <MessageContent content={m.content} dbPhotos={dbPhotos} />
+                    ) : (
+                      m.content
+                    )}
+                  </div>
+                </div>
+                {/* Follow-up suggestion buttons after last assistant message */}
+                {m.role === "assistant" && i === messages.length - 1 && !isLoading && (
+                  <div className="flex flex-wrap gap-1.5 mt-2 ml-8">
+                    {(messages.length <= 1 ? QUICK_ACTIONS : FOLLOWUP_SUGGESTIONS).slice(0, 5).map((a) => (
+                      <button
+                        key={a.label}
+                        onClick={() => sendMessage(a.message)}
+                        className="text-[11px] px-2.5 py-1.5 rounded-full bg-accent text-accent-foreground hover:bg-accent/80 active:scale-95 transition-all border border-border touch-manipulation"
+                      >
+                        {a.label}
+                      </button>
+                    ))}
                   </div>
                 )}
-                <div
-                  className={`max-w-[82%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed ${
-                    m.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-br-md"
-                      : "bg-muted text-foreground rounded-bl-md"
-                  }`}
-                >
-                  {m.role === "assistant" ? (
-                    <MessageContent content={m.content} dbPhotos={dbPhotos} />
-                  ) : (
-                    m.content
-                  )}
-                </div>
               </div>
             ))}
             {isLoading && messages[messages.length - 1]?.role === "user" && (
@@ -498,20 +524,6 @@ export default function OusmaneChatbot() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Quick actions */}
-          {messages.length <= 1 && (
-            <div className="px-3 pb-2 flex flex-wrap gap-1.5">
-              {QUICK_ACTIONS.map((a) => (
-                <button
-                  key={a.label}
-                  onClick={() => sendMessage(a.message)}
-                  className="text-[11px] px-2.5 py-1.5 rounded-full bg-accent text-accent-foreground hover:bg-accent/80 transition-colors border border-border"
-                >
-                  {a.label}
-                </button>
-              ))}
-            </div>
-          )}
 
           {/* Input */}
           <form
