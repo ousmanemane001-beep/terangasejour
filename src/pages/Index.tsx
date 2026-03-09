@@ -129,7 +129,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <h2 className="font-display text-xl md:text-2xl font-bold text-foreground mb-2">Destinations populaires</h2>
           <p className="text-muted-foreground mb-6 text-sm">Les lieux les plus prisés par nos voyageurs</p>
-          <div className="flex md:grid md:grid-cols-4 gap-3 md:gap-4 overflow-x-auto pb-4 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory md:snap-none scrollbar-hide">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {DESTINATIONS.map((dest, i) => (
               <DestinationCard
                 key={dest.name}
