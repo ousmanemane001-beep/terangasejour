@@ -196,7 +196,7 @@ const Index = () => {
       </section>
 
       <Footer />
-      <WhatsAppButton />
+      <OusmaneChatbot />
     </div>
   );
 };

@@ -540,7 +540,7 @@ const Dashboard = () => {
         </div>
       </div>
       <Footer />
-      <WhatsAppButton />
+      <OusmaneChatbot />
     </div>
   );
 };
