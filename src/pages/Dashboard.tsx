@@ -284,8 +284,16 @@ const Dashboard = () => {
                           </div>
                           <div className="flex gap-2 pt-1">
                             <Button variant="outline" size="sm" className="rounded-full flex-1 text-xs gap-1 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate(`/property/${listing.id}`)}><Eye className="w-3 h-3" /> Voir</Button>
+                            <Button variant="outline" size="sm" className="rounded-full flex-1 text-xs gap-1 cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate(`/edit-listing/${listing.id}`)}><Pencil className="w-3 h-3" /> Modifier</Button>
                             <Button variant="outline" size="sm" className="rounded-full text-xs text-destructive gap-1 cursor-pointer hover:scale-105 transition-transform" onClick={() => handleDeleteListing(listing.id)}><Trash2 className="w-3 h-3" /></Button>
                           </div>
+                          {/* Admin remark */}
+                          {(listing as any).admin_remark && (
+                            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-destructive/5 border border-destructive/20 mt-1">
+                              <AlertTriangle className="w-3.5 h-3.5 text-destructive shrink-0 mt-0.5" />
+                              <p className="text-xs text-muted-foreground">{(listing as any).admin_remark}</p>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     </motion.div>
