@@ -52,6 +52,8 @@ interface ListingDraft {
   price: string;
   currency: string;
   photos: PhotoItem[];
+  availabilityType: AvailabilityType;
+  blockedDates: Date[];
 }
 
 class StepRenderBoundary extends Component<
