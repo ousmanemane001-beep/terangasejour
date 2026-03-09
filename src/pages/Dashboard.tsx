@@ -264,7 +264,9 @@ const Dashboard = () => {
                       <Card className="border-none shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-card-hover)] hover:scale-[1.01] transition-all duration-300 group">
                         <div className="relative cursor-pointer" onClick={() => navigate(`/property/${listing.id}`)}>
                           <img src={listing.photos?.[0] || "/placeholder.svg"} alt={listing.title} className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-500" />
-                          <Badge className={`absolute top-3 left-3 ${listing.status === "published" ? "bg-primary text-primary-foreground" : listing.status === "pending_approval" ? "bg-amber-500/90 text-white" : "bg-muted text-muted-foreground"}`}>
+                          <Badge className={`absolute top-3 left-3 ${listing.status === "published" ? "bg-primary text-primary-foreground" : listing.status === "pending_approval" ? "bg-amber-500/90 text-white" : listing.status === "needs_modification" ? "bg-destructive text-destructive-foreground" : "bg-muted text-muted-foreground"}`}>
+                            {statusMap[listing.status]?.label || listing.status}
+                          </Badge>
                             {statusMap[listing.status]?.label || listing.status}
                           </Badge>
                         </div>
