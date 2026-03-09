@@ -150,9 +150,11 @@ function parseMessageContent(content: string): ParsedPart[] {
   return parts;
 }
 
-function DestinationCard({ name, category, region, lat, lng }: { name: string; category: string; region: string; lat: string; lng: string }) {
+function DestinationCard({ name, category, region, lat, lng, dbPhotos }: { name: string; category: string; region: string; lat: string; lng: string; dbPhotos?: Record<string, string[]> }) {
   const nameLower = name.toLowerCase();
-  const photos = DESTINATION_PHOTOS[nameLower];
+  // Priority: DB images > hardcoded DESTINATION_PHOTOS > category fallback
+  const dbImages = dbPhotos?.[nameLower];
+  const photos = dbImages && dbImages.length > 0 ? dbImages : DESTINATION_PHOTOS[nameLower];
   const fallbackImage = CATEGORY_IMAGES[category] || CATEGORY_IMAGES.ville;
   const emoji = CATEGORY_EMOJI[category] || "📍";
   const hasGallery = photos && photos.length > 1;
