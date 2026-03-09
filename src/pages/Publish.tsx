@@ -27,6 +27,7 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { validateListingText } from "@/lib/contentFilter";
 import { useQueryClient } from "@tanstack/react-query";
 
 const STEP_LABELS = [
@@ -140,10 +141,16 @@ const Publish = () => {
 
   const validateStep = (s: number): string | null => {
     switch (s) {
-      case 0:
+      case 0: {
         if (!listingDraft.title.trim()) return "Veuillez saisir un titre pour votre annonce.";
         if (!listingDraft.location.trim()) return "Veuillez indiquer la localisation.";
+        // Check for blocked personal contact info
+        const titleCheck = validateListingText(listingDraft.title);
+        if (titleCheck) return titleCheck;
+        const descCheck = validateListingText(listingDraft.description);
+        if (descCheck) return descCheck;
         return null;
+      }
       case 1:
         if (listingDraft.photos.length < 5) {
           return `Ajoutez au moins 5 photos (${listingDraft.photos.length}/5).`;
@@ -320,6 +327,10 @@ const Publish = () => {
                         value={listingDraft.description}
                         onChange={(e) => setDescription(e.target.value)}
                       />
+                      <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3 shrink-0" />
+                        Ne partagez pas vos coordonnées personnelles. Les échanges avec les voyageurs se feront via la plateforme.
+                      </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
