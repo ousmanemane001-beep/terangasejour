@@ -64,6 +64,16 @@ const DESTINATION_PHOTOS: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=400&h=200&fit=crop",
     "https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=400&h=200&fit=crop",
   ],
+  "île de carabane": [
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/carabane/carabane-ruines.png",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/carabane/carabane-plage.png",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/carabane/carabane-maison.png",
+  ],
+  "carabane": [
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/carabane/carabane-ruines.png",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/carabane/carabane-plage.png",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/carabane/carabane-maison.png",
+  ],
 };
 
 const CATEGORY_EMOJI: Record<string, string> = {
