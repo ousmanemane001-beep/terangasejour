@@ -32,19 +32,25 @@ const WELCOME_MESSAGE: Message = {
 };
 
 const QUICK_ACTIONS = [
+  { label: "⚡ Voyageur pressé", message: "Je suis pressé, trouve-moi un logement rapidement" },
+  { label: "🗺️ Carte de voyage", message: "Je veux créer ma carte de voyage personnalisée" },
   { label: "🏖️ Plages", message: "Quelles plages me recommandes-tu ?" },
   { label: "🏠 Logements", message: "Montre-moi des logements" },
-  { label: "🗓️ Mon séjour", message: "Je veux planifier mon séjour" },
   { label: "🌍 Destinations", message: "Quelles sont les meilleures destinations ?" },
   { label: "🏛️ Histoire", message: "Des sites historiques à visiter ?" },
-  { label: "🌳 Nature", message: "Des parcs naturels à découvrir ?" },
 ];
 
-// Parse destination cards from message content
-function parseMessageContent(content: string) {
-  const parts: Array<{ type: "text"; value: string } | { type: "dest_card"; name: string; category: string; region: string; lat: string; lng: string }> = [];
+type ParsedPart =
+  | { type: "text"; value: string }
+  | { type: "dest_card"; name: string; category: string; region: string; lat: string; lng: string }
+  | { type: "listing_card"; id: string; title: string; price: string; city: string; photo: string }
+  | { type: "travel_map"; coords: Array<{ lat: number; lng: number }> };
+
+function parseMessageContent(content: string): ParsedPart[] {
+  const parts: ParsedPart[] = [];
   
-  const regex = /\[DEST_CARD:([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)\|([^\]]+)\]/g;
+  // Combined regex for all card types
+  const regex = /\[DEST_CARD:([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)\|([^\]]+)\]|\[LISTING_CARD:([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)\|([^\]]*)\]|\[TRAVEL_MAP:([^\]]+)\]/g;
   let lastIndex = 0;
   let match;
 
@@ -52,14 +58,30 @@ function parseMessageContent(content: string) {
     if (match.index > lastIndex) {
       parts.push({ type: "text", value: content.slice(lastIndex, match.index) });
     }
-    parts.push({
-      type: "dest_card",
-      name: match[1].trim(),
-      category: match[2].trim(),
-      region: match[3].trim(),
-      lat: match[4].trim(),
-      lng: match[5].trim(),
-    });
+    
+    if (match[1]) {
+      // DEST_CARD
+      parts.push({
+        type: "dest_card",
+        name: match[1].trim(), category: match[2].trim(), region: match[3].trim(),
+        lat: match[4].trim(), lng: match[5].trim(),
+      });
+    } else if (match[6]) {
+      // LISTING_CARD
+      parts.push({
+        type: "listing_card",
+        id: match[6].trim(), title: match[7].trim(), price: match[8].trim(),
+        city: match[9].trim(), photo: match[10]?.trim() || "",
+      });
+    } else if (match[11]) {
+      // TRAVEL_MAP
+      const coordPairs = match[11].split("|").map(pair => {
+        const [lat, lng] = pair.split(",").map(Number);
+        return { lat, lng };
+      }).filter(c => !isNaN(c.lat) && !isNaN(c.lng));
+      parts.push({ type: "travel_map", coords: coordPairs });
+    }
+    
     lastIndex = regex.lastIndex;
   }
 
@@ -95,20 +117,79 @@ function DestinationCard({ name, category, region, lat, lng }: { name: string; c
   );
 }
 
+function ListingCard({ id, title, price, city, photo }: { id: string; title: string; price: string; city: string; photo: string }) {
+  const imgSrc = photo && photo.length > 5 ? photo : "/placeholder.svg";
+  const priceNum = parseInt(price.replace(/\D/g, ""), 10);
+  const formattedPrice = priceNum ? priceNum.toLocaleString("fr-FR") : price;
+
+  return (
+    <Link
+      to={`/property/${id}`}
+      className="block rounded-xl overflow-hidden border border-border bg-card hover:shadow-md transition-shadow my-2"
+    >
+      <img src={imgSrc} alt={title} className="w-full h-28 object-cover" loading="lazy" />
+      <div className="p-2.5">
+        <p className="text-xs font-bold text-foreground truncate mb-0.5">{title}</p>
+        <p className="text-[10px] text-muted-foreground flex items-center gap-0.5 mb-1.5">
+          <MapPin className="w-2.5 h-2.5" /> {city}
+        </p>
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold text-primary">{formattedPrice} F/nuit</span>
+          <span className="shrink-0 bg-primary text-primary-foreground text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-0.5">
+            Voir <ChevronRight className="w-3 h-3" />
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function TravelMapPreview({ coords }: { coords: Array<{ lat: number; lng: number }> }) {
+  if (coords.length === 0) return null;
+  // Build a static link to the explore-senegal map page with markers
+  const center = coords[0];
+  return (
+    <Link
+      to={`/explore-senegal`}
+      className="block rounded-xl overflow-hidden border border-border bg-card hover:shadow-md transition-shadow my-2"
+    >
+      <div className="bg-gradient-to-br from-primary/20 to-accent/20 p-4 flex items-center justify-center gap-2">
+        <MapPin className="w-5 h-5 text-primary" />
+        <span className="text-xs font-bold text-foreground">🗺️ Voir l'itinéraire sur la carte</span>
+      </div>
+      <div className="px-3 py-2 flex items-center justify-between">
+        <span className="text-[10px] text-muted-foreground">{coords.length} étape{coords.length > 1 ? "s" : ""}</span>
+        <span className="text-[10px] font-semibold text-primary flex items-center gap-0.5">
+          Ouvrir <ChevronRight className="w-3 h-3" />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 function MessageContent({ content }: { content: string }) {
   const parts = parseMessageContent(content);
 
   return (
     <>
-      {parts.map((part, i) =>
-        part.type === "text" ? (
-          <div key={i} className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-0.5 [&>ul]:my-0.5 [&>ol]:my-0.5 [&>p]:text-[13px] [&>ul]:text-[13px]">
-            <ReactMarkdown>{part.value}</ReactMarkdown>
-          </div>
-        ) : (
-          <DestinationCard key={i} {...part} />
-        )
-      )}
+      {parts.map((part, i) => {
+        switch (part.type) {
+          case "text":
+            return (
+              <div key={i} className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-0.5 [&>ul]:my-0.5 [&>ol]:my-0.5 [&>p]:text-[13px] [&>ul]:text-[13px]">
+                <ReactMarkdown>{part.value}</ReactMarkdown>
+              </div>
+            );
+          case "dest_card":
+            return <DestinationCard key={i} {...part} />;
+          case "listing_card":
+            return <ListingCard key={i} {...part} />;
+          case "travel_map":
+            return <TravelMapPreview key={i} coords={part.coords} />;
+          default:
+            return null;
+        }
+      })}
     </>
   );
 }
