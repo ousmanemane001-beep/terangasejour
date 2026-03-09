@@ -8,7 +8,6 @@ import PropertyCard from "@/components/PropertyCard";
 import ListingCard from "@/components/ListingCard";
 import ExploreMap from "@/components/ExploreMap";
 import ExploreFilters from "@/components/explore/ExploreFilters";
-import ExploreFilters from "@/components/explore/ExploreFilters";
 import HostCTA from "@/components/explore/HostCTA";
 import { properties } from "@/data/properties";
 import { useListings, type DBListing } from "@/hooks/useListings";
