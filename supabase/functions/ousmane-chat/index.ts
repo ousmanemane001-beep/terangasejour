@@ -20,7 +20,7 @@ serve(async (req) => {
 
     const [{ data: destinations }, { data: listings }] = await Promise.all([
       supabase.from("destinations").select("name, category, region, latitude, longitude, description").limit(200),
-      supabase.from("listings").select("title, city, location, price_per_night, bedrooms, bathrooms, capacity, latitude, longitude, property_type, photos").eq("status", "published").limit(100),
+      supabase.from("listings").select("id, title, city, location, price_per_night, bedrooms, bathrooms, capacity, latitude, longitude, property_type, photos").eq("status", "published").limit(100),
     ]);
 
     const destinationsContext = (destinations || []).map(d => 
