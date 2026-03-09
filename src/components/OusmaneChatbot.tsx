@@ -331,73 +331,7 @@ export default function OusmaneChatbot() {
     return null;
   }, [location.pathname, searchParams]);
 
-  // Auto-send context when opening chat on a relevant page
-  useEffect(() => {
-    if (!open) return;
-    const ctx = getPageContext();
-    if (!ctx || ctx === contextSent) return;
 
-    setContextSent(ctx);
-    // Send as a system-level context (hidden from UI, sent to AI)
-    const contextMsg: Message = { role: "user", content: ctx };
-    const history = [contextMsg];
-
-    setIsLoading(true);
-    let assistantSoFar = "";
-
-    fetch(CHAT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-      },
-      body: JSON.stringify({ messages: history }),
-    })
-      .then(async (resp) => {
-        if (!resp.ok || !resp.body) return;
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          let idx: number;
-          while ((idx = buffer.indexOf("\n")) !== -1) {
-            let line = buffer.slice(0, idx);
-            buffer = buffer.slice(idx + 1);
-            if (line.endsWith("\r")) line = line.slice(0, -1);
-            if (!line.startsWith("data: ")) continue;
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr === "[DONE]") break;
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.choices?.[0]?.delta?.content;
-              if (content) {
-                assistantSoFar += content;
-                setMessages(prev => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === "assistant" && last !== WELCOME_MESSAGE) {
-                    return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
-                  }
-                  return [...prev, { role: "assistant", content: assistantSoFar }];
-                });
-              }
-            } catch {
-              buffer = line + "\n" + buffer;
-              break;
-            }
-          }
-        }
-      })
-      .catch(() => {})
-      .finally(() => setIsLoading(false));
-  }, [open, getPageContext, contextSent]);
-
-  // Reset context when navigating to a new page
-  useEffect(() => {
-    setContextSent(null);
-  }, [location.pathname, searchParams.get("destination")]);
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isLoading) return;
