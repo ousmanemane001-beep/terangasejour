@@ -73,9 +73,9 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-[900px] relative" style={{ zIndex: 1000 }}>
-      {/* Desktop: horizontal row | Mobile: vertical stack */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-[14px] md:gap-4">
+    <div className="w-full relative" style={{ zIndex: 1000 }}>
+      {/* Desktop: fields + button on one row | Mobile: vertical stack */}
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-[14px] md:gap-3 items-end">
 
         {/* Destination */}
         <div className="relative" style={{ zIndex: 1000 }}>

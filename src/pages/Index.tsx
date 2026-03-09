@@ -48,38 +48,49 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
-      {/* Hero with background image + search bar — Booking.com style */}
-      <section className="relative bg-primary" style={{ zIndex: 10 }}>
-        {/* Background image */}
-        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20 overflow-hidden" style={{ backgroundImage: `url(${heroBg})` }} />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/90 via-primary/80 to-primary overflow-hidden" />
-        
-        <div className="relative container mx-auto px-4 pt-10 pb-8 md:pt-14 md:pb-10" style={{ overflow: 'visible' }}>
+      {/* Hero — VotreSejour.sn style */}
+      <section className="relative" style={{ zIndex: 10 }}>
+        {/* Background image — full bleed */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroBg})` }}
+        />
+        <div className="absolute inset-0 bg-black/40" />
+
+        <div className="relative container mx-auto px-4 pt-16 pb-32 md:pt-24 md:pb-40 flex flex-col items-center text-center">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="font-display text-2xl md:text-4xl lg:text-[2.75rem] font-bold text-primary-foreground mb-2 leading-tight"
+            className="font-display text-3xl md:text-5xl lg:text-[3.25rem] font-bold text-white mb-3 leading-tight"
           >
-            Trouvez votre logement idéal au Sénégal
+            Bienvenue sur TerangaSéjour
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-primary-foreground/80 text-sm md:text-base mb-6 md:mb-8 max-w-xl"
+            className="text-white/80 text-base md:text-lg max-w-xl"
           >
-            Recherchez des offres sur des hébergements indépendants et plus encore
+            Trouvez votre séjour parfait au Sénégal
           </motion.p>
+        </div>
+
+        {/* Floating search card */}
+        <div className="absolute left-1/2 -translate-x-1/2 -bottom-[60px] md:-bottom-[40px] w-full max-w-[960px] px-4" style={{ zIndex: 20 }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-white rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] p-5 md:p-6"
           >
             <SearchBar />
           </motion.div>
         </div>
       </section>
+
+      {/* Spacer for floating search card */}
+      <div className="h-[80px] md:h-[60px]" />
 
       {/* Published Listings from DB — right after search */}
       {isLoading ? (
