@@ -35,7 +35,8 @@ const Navbar = () => {
   const navLinks = [
     { label: "Accueil", path: "/" },
     { label: "Explorer", path: "/explore" },
-    { label: "Carte", path: "/map" },
+    { label: "Découvrir", path: "/discover" },
+    { label: "Carte", path: "/explore-senegal" },
     { label: "À propos", path: "/about" },
     { label: "Contact", path: "/contact" },
   ];
