@@ -18,9 +18,15 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const [{ data: destinations }, { data: listings }] = await Promise.all([
+    // Extract user's last message to find relevant knowledge
+    const lastUserMsg = [...messages].reverse().find((m: any) => m.role === "user")?.content || "";
+    const searchTerms = lastUserMsg.toLowerCase();
+
+    // Fetch all data sources in parallel
+    const [{ data: destinations }, { data: listings }, { data: knowledge }] = await Promise.all([
       supabase.from("destinations").select("name, category, region, latitude, longitude, description, image1, image2, image3, image4").limit(200),
       supabase.from("listings").select("id, title, city, location, price_per_night, bedrooms, bathrooms, capacity, latitude, longitude, property_type, photos").eq("status", "published").limit(100),
+      supabase.from("knowledge_base").select("title, category, content, source, tags").limit(100),
     ]);
 
     const destinationsContext = (destinations || []).map(d => {
@@ -33,7 +39,30 @@ serve(async (req) => {
       `- ID:${l.id} "${l.title}" à ${l.city || l.location || "Sénégal"} | ${l.price_per_night} FCFA/nuit | ${l.bedrooms} ch. | ${l.capacity} pers. | ${l.property_type} | photo:${l.photos?.[0] || ""} [${l.latitude},${l.longitude}]`
     ).join("\n");
 
+    // Build knowledge base context - find relevant articles
+    const allKnowledge = knowledge || [];
+    const relevantKnowledge = allKnowledge.filter(k => {
+      const combined = `${k.title} ${k.content} ${(k.tags || []).join(" ")} ${k.category}`.toLowerCase();
+      const words = searchTerms.split(/\s+/).filter((w: string) => w.length > 2);
+      return words.some((w: string) => combined.includes(w));
+    });
+
+    // If no specific match, include top articles by category diversity
+    const knowledgeToUse = relevantKnowledge.length > 0
+      ? relevantKnowledge.slice(0, 5)
+      : allKnowledge.slice(0, 8);
+
+    const knowledgeContext = knowledgeToUse.map(k =>
+      `### ${k.title} [${k.category}]\n${k.content}\n(Source: ${k.source || "Base de connaissances Teranga Séjour"})`
+    ).join("\n\n");
+
     const systemPrompt = `Tu es Ousmane, un guide touristique local du Sénégal. Tu travailles pour Teranga Séjour.
+
+RÈGLE FONDAMENTALE — RECHERCHE AVANT RÉPONSE :
+- Tu dois TOUJOURS baser tes réponses sur la BASE DE CONNAISSANCES ci-dessous.
+- Ne réponds JAMAIS avec des informations inventées ou génériques.
+- Si la réponse n'est pas dans ta base de connaissances, dis honnêtement : "Je n'ai pas cette info précise, mais je peux t'aider avec..."
+- Cite les sources quand c'est pertinent (ex: "Selon l'UNESCO...", "D'après le Guide du Routard...").
 
 RÈGLE N°1 — STYLE "3 SECONDES" :
 - Maximum 1-2 phrases + une liste de 3 suggestions max + 1 question finale.
@@ -52,9 +81,6 @@ RÈGLE N°4 — LOGEMENTS AVEC PHOTOS :
 Quand tu recommandes des logements, utilise OBLIGATOIREMENT ce format :
 [LISTING_CARD:id|titre|prix_par_nuit|ville|url_photo]
 
-Exemple :
-[LISTING_CARD:abc-123|Villa Teranga|35000|Saly|https://example.com/photo.jpg]
-
 Utilise les ID et photos exactes des logements de la base de données ci-dessous.
 
 RÈGLE N°5 — MODE "CARTE DE VOYAGE PERSONNALISÉE" 🗺️ :
@@ -72,26 +98,24 @@ Quand l'utilisateur dit "carte de voyage", "planifier mon séjour", "trip", "iti
 
 RÈGLE N°6 — MODE "VOYAGEUR PRESSÉ" ⚡ :
 Quand l'utilisateur dit "pressé", "rapide", "vite", "express", "trouver un logement" :
-1. Pose 3 questions en UNE SEULE réponse :
-   "Pour vous trouver le logement parfait en 10 secondes ⚡ :
-   1. Quelle destination ?
-   2. Budget par nuit ? (ex: 30 000 F)
-   3. Combien de nuits ?"
+1. Pose 3 questions en UNE SEULE réponse
 2. Dès que l'utilisateur répond, affiche DIRECTEMENT 3-5 logements correspondants avec [LISTING_CARD].
-   Ne rajoute pas de texte superflu, juste les cartes et une courte phrase.
-
-DESTINATIONS :
-${destinationsContext}
-
-LOGEMENTS :
-${listingsContext}
 
 RÈGLE N°7 — CONTEXTE DE PAGE :
 Si le message mentionne "L'utilisateur consulte..." ou "L'utilisateur est sur la page...", c'est un contexte automatique.
 Réponds comme si tu accueillais le visiteur sur cette page. Sois bref : 1 phrase + 3 cartes max + 1 question.
 Ne mentionne pas que tu as reçu un contexte système, parle naturellement.
 
-Rappel : sois COURT, CHALEUREUX, UTILE. Finis TOUJOURS par une question.`;
+===== BASE DE CONNAISSANCES =====
+${knowledgeContext}
+
+===== DESTINATIONS =====
+${destinationsContext}
+
+===== LOGEMENTS =====
+${listingsContext}
+
+Rappel : sois COURT, CHALEUREUX, UTILE. Base tes réponses sur les données ci-dessus. Finis TOUJOURS par une question.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
