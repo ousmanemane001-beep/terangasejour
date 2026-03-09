@@ -1,47 +1,70 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, MapPin, Calendar, Users, Navigation } from "lucide-react";
+import { Search, MapPin, Calendar, Users, Navigation, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { destinations, Destination } from "@/data/destinations";
+import { useDestinations, usePopularDestinations, type DbDestination } from "@/hooks/useDestinations";
 
-const POPULAR_DESTINATIONS: { name: string; region: string; lat: number; lng: number }[] = [
-  { name: "Dakar", region: "Région de Dakar", lat: 14.6928, lng: -17.4467 },
-  { name: "Saly", region: "Petite Côte", lat: 14.4474, lng: -17.0174 },
-  { name: "Saint-Louis", region: "Nord du Sénégal", lat: 16.0326, lng: -16.4896 },
-  { name: "Cap Skirring", region: "Casamance", lat: 12.3933, lng: -16.7461 },
-  { name: "Somone", region: "Petite Côte", lat: 14.4860, lng: -17.0768 },
-  { name: "Mbour", region: "Petite Côte", lat: 14.4167, lng: -16.9667 },
-];
+const CATEGORY_ICONS: Record<string, string> = {
+  ville: "🏙️",
+  aeroport: "✈️",
+  site_historique: "🏛️",
+  plage: "🏖️",
+  lac: "🌊",
+  restaurant: "🍽️",
+  hotel: "🏨",
+  ile: "🏝️",
+  parc_naturel: "🌿",
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  ville: "Ville",
+  aeroport: "Aéroport",
+  site_historique: "Site historique",
+  plage: "Plage",
+  lac: "Lac",
+  restaurant: "Restaurant",
+  hotel: "Hôtel",
+  ile: "Île",
+  parc_naturel: "Parc naturel",
+};
 
 const SearchBar = () => {
   const navigate = useNavigate();
   const [destination, setDestination] = useState("");
-  const [selectedDest, setSelectedDest] = useState<Destination | null>(null);
+  const [selectedDest, setSelectedDest] = useState<DbDestination | null>(null);
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [guestCount, setGuestCount] = useState(1);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  const isSearching = destination.length > 0;
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(destination), 200);
+    return () => clearTimeout(t);
+  }, [destination]);
 
-  const filteredDestinations = isSearching
-    ? destinations.filter((d) =>
-        d.name.toLowerCase().includes(destination.toLowerCase()) ||
-        d.region.toLowerCase().includes(destination.toLowerCase())
-      ).slice(0, 8)
-    : [];
+  const { data: searchResults, isLoading: searching } = useDestinations(
+    debouncedSearch.length > 0 ? debouncedSearch : undefined
+  );
+  const { data: popularDestinations } = usePopularDestinations();
+
+  const isSearching = destination.length > 0;
+  const filteredDestinations = isSearching ? (searchResults || []).slice(0, 10) : [];
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node) &&
-          inputRef.current && !inputRef.current.contains(e.target as Node)) {
+          inputRef.current && !inputRef.current.contains(e.target as Node) &&
+          mobileInputRef.current && !mobileInputRef.current.contains(e.target as Node)) {
         setShowSuggestions(false);
       }
     };
@@ -49,10 +72,9 @@ const SearchBar = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const selectDestination = (name: string, lat?: number, lng?: number) => {
-    setDestination(name);
-    const found = destinations.find((d) => d.name === name);
-    setSelectedDest(found || (lat && lng ? { name, category: "ville" as const, region: "", lat, lng } : null));
+  const selectDestination = (dest: DbDestination) => {
+    setDestination(dest.name);
+    setSelectedDest(dest);
     setShowSuggestions(false);
   };
 
@@ -62,9 +84,9 @@ const SearchBar = () => {
     if (checkIn) params.set("checkIn", checkIn.toISOString());
     if (checkOut) params.set("checkOut", checkOut.toISOString());
     if (guestCount > 1) params.set("guests", String(guestCount));
-    if (selectedDest) {
-      params.set("lat", String(selectedDest.lat));
-      params.set("lng", String(selectedDest.lng));
+    if (selectedDest?.latitude && selectedDest?.longitude) {
+      params.set("lat", String(selectedDest.latitude));
+      params.set("lng", String(selectedDest.longitude));
     }
     navigate(`/explore?${params.toString()}`);
   };
@@ -73,9 +95,8 @@ const SearchBar = () => {
 
   return (
     <div className="w-full" style={{ zIndex: 1000 }}>
-      {/* Desktop: horizontal row */}
+      {/* Desktop */}
       <div className="hidden md:flex items-end gap-4">
-        {/* Destination */}
         <div className="relative flex-1 min-w-[180px]" style={{ zIndex: 1000 }}>
           <div className="flex items-center gap-1.5 mb-1.5">
             <MapPin className="w-4 h-4 text-[#0d9488]" />
@@ -84,21 +105,25 @@ const SearchBar = () => {
           <div className={fieldStyle} onClick={() => inputRef.current?.focus()}>
             <Input
               ref={inputRef}
-              placeholder="Pays ou zone"
+              placeholder="Ville, plage, site…"
               value={destination}
               onChange={(e) => { setDestination(e.target.value); setSelectedDest(null); setShowSuggestions(true); }}
               onFocus={() => setShowSuggestions(true)}
               className="border-0 bg-transparent h-auto p-0 text-[15px] focus-visible:ring-0 focus-visible:ring-offset-0 text-[#333] font-normal placeholder:text-[#aaa]"
             />
           </div>
-          {showSuggestions && <SuggestionsDropdown
-            isSearching={isSearching}
-            filteredDestinations={filteredDestinations}
-            selectDestination={selectDestination}
-            setShowSuggestions={setShowSuggestions}
-            navigate={navigate}
-            suggestionsRef={suggestionsRef}
-          />}
+          {showSuggestions && (
+            <SuggestionsDropdown
+              isSearching={isSearching}
+              searching={searching}
+              filteredDestinations={filteredDestinations}
+              popularDestinations={popularDestinations || []}
+              selectDestination={selectDestination}
+              setShowSuggestions={setShowSuggestions}
+              navigate={navigate}
+              suggestionsRef={suggestionsRef}
+            />
+          )}
         </div>
 
         {/* Date arrivée */}
@@ -177,7 +202,6 @@ const SearchBar = () => {
           </Popover>
         </div>
 
-        {/* Bouton */}
         <div className="shrink-0 pb-[1px]">
           <div className="mb-1.5 h-5" />
           <button onClick={handleSearch} className="h-[56px] px-8 bg-[#0d9488] hover:bg-[#0f766e] text-white rounded-[28px] font-semibold text-base flex items-center justify-center gap-2 transition-colors whitespace-nowrap">
@@ -186,34 +210,37 @@ const SearchBar = () => {
         </div>
       </div>
 
-      {/* Mobile: stacked 4 rows */}
+      {/* Mobile */}
       <div className="flex flex-col gap-3 md:hidden">
-        {/* Row 1: Destination */}
         <div className="relative" style={{ zIndex: 1000 }}>
           <div className="flex items-center gap-1.5 mb-1.5">
             <MapPin className="w-4 h-4 text-[#0d9488]" />
             <span className="text-sm font-semibold text-[#333]">Destination</span>
           </div>
-          <div className={fieldStyle} onClick={() => inputRef.current?.focus()}>
+          <div className={fieldStyle} onClick={() => mobileInputRef.current?.focus()}>
             <Input
-              placeholder="Pays ou zone"
+              ref={mobileInputRef}
+              placeholder="Ville, plage, site…"
               value={destination}
               onChange={(e) => { setDestination(e.target.value); setSelectedDest(null); setShowSuggestions(true); }}
               onFocus={() => setShowSuggestions(true)}
               className="border-0 bg-transparent h-auto p-0 text-[15px] focus-visible:ring-0 focus-visible:ring-offset-0 text-[#333] font-normal placeholder:text-[#aaa]"
             />
           </div>
-          {showSuggestions && <SuggestionsDropdown
-            isSearching={isSearching}
-            filteredDestinations={filteredDestinations}
-            selectDestination={selectDestination}
-            setShowSuggestions={setShowSuggestions}
-            navigate={navigate}
-            suggestionsRef={suggestionsRef}
-          />}
+          {showSuggestions && (
+            <SuggestionsDropdown
+              isSearching={isSearching}
+              searching={searching}
+              filteredDestinations={filteredDestinations}
+              popularDestinations={popularDestinations || []}
+              selectDestination={selectDestination}
+              setShowSuggestions={setShowSuggestions}
+              navigate={navigate}
+              suggestionsRef={suggestionsRef}
+            />
+          )}
         </div>
 
-        {/* Row 2: Durée du séjour — two dates side by side */}
         <div>
           <div className="flex items-center gap-1.5 mb-1.5">
             <Calendar className="w-4 h-4 text-[#0d9488]" />
@@ -259,7 +286,6 @@ const SearchBar = () => {
           </div>
         </div>
 
-        {/* Row 3: Voyageurs */}
         <div>
           <div className="flex items-center gap-1.5 mb-1.5">
             <Users className="w-4 h-4 text-[#0d9488]" />
@@ -283,7 +309,6 @@ const SearchBar = () => {
           </Popover>
         </div>
 
-        {/* Row 4: Bouton Rechercher */}
         <button onClick={handleSearch} className="w-full h-[38px] md:h-[56px] bg-[#0d9488] hover:bg-[#0f766e] text-white rounded-[28px] font-semibold text-sm flex items-center justify-center gap-2 transition-colors">
           <Search className="w-5 h-5" />
           Rechercher
@@ -293,39 +318,50 @@ const SearchBar = () => {
   );
 };
 
-/* Extracted suggestions dropdown */
+/* Suggestions dropdown using DB destinations */
 interface SuggestionsDropdownProps {
   isSearching: boolean;
-  filteredDestinations: Destination[];
-  selectDestination: (name: string, lat?: number, lng?: number) => void;
+  searching: boolean;
+  filteredDestinations: DbDestination[];
+  popularDestinations: DbDestination[];
+  selectDestination: (dest: DbDestination) => void;
   setShowSuggestions: (v: boolean) => void;
   navigate: ReturnType<typeof useNavigate>;
   suggestionsRef: React.RefObject<HTMLDivElement>;
 }
 
-const SuggestionsDropdown = ({ isSearching, filteredDestinations, selectDestination, setShowSuggestions, navigate, suggestionsRef }: SuggestionsDropdownProps) => (
+const SuggestionsDropdown = ({
+  isSearching, searching, filteredDestinations, popularDestinations,
+  selectDestination, setShowSuggestions, navigate, suggestionsRef,
+}: SuggestionsDropdownProps) => (
   <div
     ref={suggestionsRef}
     className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#e5e5e5] rounded-lg max-h-[400px] overflow-y-auto"
     style={{ zIndex: 1000, boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
   >
     {isSearching ? (
-      filteredDestinations.length === 0 ? (
+      searching ? (
+        <div className="flex justify-center py-6">
+          <Loader2 className="w-5 h-5 animate-spin text-[#0d9488]" />
+        </div>
+      ) : filteredDestinations.length === 0 ? (
         <p className="p-5 text-sm text-[#999] text-center">Aucun résultat trouvé</p>
       ) : (
         <div className="py-1">
           {filteredDestinations.map((d) => (
             <button
-              key={`${d.category}-${d.name}`}
-              onClick={() => selectDestination(d.name)}
+              key={d.id}
+              onClick={() => selectDestination(d)}
               className="w-full text-left px-4 py-3 hover:bg-[#f5f5f5] transition-colors flex items-center gap-3"
             >
-              <div className="w-9 h-9 rounded-lg bg-[#f0f0f0] flex items-center justify-center shrink-0">
-                <MapPin className="w-4 h-4 text-[#555]" />
+              <div className="w-9 h-9 rounded-lg bg-[#f0f0f0] flex items-center justify-center shrink-0 text-base">
+                {CATEGORY_ICONS[d.category] || "📍"}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-[#333] truncate">{d.name}</p>
-                <p className="text-xs text-[#999] truncate">{d.region}, Sénégal</p>
+                <p className="text-xs text-[#999] truncate">
+                  {CATEGORY_LABELS[d.category] || d.category} · {d.region || "Sénégal"}
+                </p>
               </div>
             </button>
           ))}
@@ -336,10 +372,10 @@ const SuggestionsDropdown = ({ isSearching, filteredDestinations, selectDestinat
         <p className="px-4 pt-3 pb-2 text-[11px] font-bold text-[#999] uppercase tracking-wider">
           Destinations populaires
         </p>
-        {POPULAR_DESTINATIONS.map((d) => (
+        {popularDestinations.map((d) => (
           <button
-            key={d.name}
-            onClick={() => selectDestination(d.name, d.lat, d.lng)}
+            key={d.id}
+            onClick={() => selectDestination(d)}
             className="w-full text-left px-4 py-3 hover:bg-[#f5f5f5] transition-colors flex items-center gap-3"
           >
             <div className="w-9 h-9 rounded-lg bg-[#f0f0f0] flex items-center justify-center shrink-0">
@@ -347,7 +383,7 @@ const SuggestionsDropdown = ({ isSearching, filteredDestinations, selectDestinat
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-[#333]">{d.name}</p>
-              <p className="text-xs text-[#999]">{d.region}</p>
+              <p className="text-xs text-[#999]">{d.region || "Sénégal"}</p>
             </div>
           </button>
         ))}

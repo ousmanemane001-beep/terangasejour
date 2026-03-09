@@ -193,6 +193,42 @@ export type Database = {
           },
         ]
       }
+      destinations: {
+        Row: {
+          category: Database["public"]["Enums"]["destination_category"]
+          created_at: string
+          description: string | null
+          google_place_id: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          region: string | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["destination_category"]
+          created_at?: string
+          description?: string | null
+          google_place_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          region?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["destination_category"]
+          created_at?: string
+          description?: string | null
+          google_place_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          region?: string | null
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -482,6 +518,16 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      destination_category:
+        | "ville"
+        | "aeroport"
+        | "site_historique"
+        | "plage"
+        | "lac"
+        | "restaurant"
+        | "hotel"
+        | "ile"
+        | "parc_naturel"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -610,6 +656,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      destination_category: [
+        "ville",
+        "aeroport",
+        "site_historique",
+        "plage",
+        "lac",
+        "restaurant",
+        "hotel",
+        "ile",
+        "parc_naturel",
+      ],
     },
   },
 } as const
