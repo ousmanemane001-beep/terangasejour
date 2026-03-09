@@ -104,6 +104,7 @@
 /* Prevent horizontal overflow globally */
 html, body {
   overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* Smooth scroll */
@@ -115,6 +116,15 @@ html {
 img {
   max-width: 100%;
   height: auto;
+}
+
+/* Prevent any element from causing horizontal overflow */
+*, *::before, *::after {
+  max-width: 100vw;
+}
+
+section, .container {
+  overflow-x: hidden;
 }
 
 /* Prevent text overflow in cards */
