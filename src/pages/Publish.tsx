@@ -27,6 +27,7 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { validateListingText } from "@/lib/contentFilter";
 import { useQueryClient } from "@tanstack/react-query";
 
 const STEP_LABELS = [
