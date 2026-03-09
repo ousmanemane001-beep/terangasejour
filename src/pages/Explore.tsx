@@ -25,7 +25,12 @@ const Explore = () => {
   const [guestFilter, setGuestFilter] = useState(0);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
-  const [showMap, setShowMap] = useState(false);
+  const [showMap, setShowMap] = useState(!!searchParams.get("lat"));
+  const [hoveredProperty, setHoveredProperty] = useState<number | null>(null);
+
+  const mapCenter = searchParams.get("lat") && searchParams.get("lng")
+    ? { lat: parseFloat(searchParams.get("lat")!), lng: parseFloat(searchParams.get("lng")!) }
+    : undefined;
   const [hoveredProperty, setHoveredProperty] = useState<number | null>(null);
 
   const toggleType = (type: string) => setSelectedTypes((prev) => prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]);
