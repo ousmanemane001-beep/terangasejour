@@ -22,6 +22,7 @@ import BecomeHost from "./pages/BecomeHost";
 import Favorites from "./pages/Favorites";
 import AdminVerification from "./pages/AdminVerification";
 import AdminPanel from "./pages/AdminPanel";
+import EditListing from "./pages/EditListing";
 import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/:tab" element={<Dashboard />} />
             <Route path="/create-listing" element={<CreateListing />} />
+            <Route path="/edit-listing/:id" element={<EditListing />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/become-host" element={<BecomeHost />} />
             <Route path="/favorites" element={<Favorites />} />

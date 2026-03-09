@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +18,7 @@ import {
   Users, Home, CalendarDays, CreditCard, Star, ShieldCheck, X, Check,
   Loader2, TrendingUp, Eye, Bell, Clock, Ban, LayoutDashboard,
   Search, Filter, Trash2, AlertTriangle, DollarSign, Settings,
-  ChevronRight, MessageCircle, Flag, UserCheck, UserX,
+  ChevronRight, MessageCircle, Flag, UserCheck, UserX, Pencil,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -27,6 +29,7 @@ const statusLabels: Record<string, { label: string; color: string }> = {
   pending_approval: { label: "En attente", color: "bg-yellow-500/10 text-yellow-700" },
   published: { label: "Approuvé", color: "bg-green-500/10 text-green-700" },
   rejected: { label: "Rejeté", color: "bg-destructive/10 text-destructive" },
+  needs_modification: { label: "Modification demandée", color: "bg-orange-500/10 text-orange-700" },
   draft: { label: "Brouillon", color: "bg-muted text-muted-foreground" },
   suspended: { label: "Suspendu", color: "bg-orange-500/10 text-orange-700" },
 };
@@ -63,6 +66,9 @@ const AdminPanel = () => {
   const [filterLocation, setFilterLocation] = useState("all");
   const [filterPayment, setFilterPayment] = useState("all");
   const [mobileSidebar, setMobileSidebar] = useState(false);
+  const [remarkDialogOpen, setRemarkDialogOpen] = useState(false);
+  const [remarkListingId, setRemarkListingId] = useState<string | null>(null);
+  const [remarkText, setRemarkText] = useState("");
 
   const { data: allProfiles, isLoading: profilesLoading } = useQuery({
     queryKey: ["admin-profiles"],
@@ -206,6 +212,37 @@ const AdminPanel = () => {
     toast.success(action === "approve" ? "Logement approuvé" : action === "reject" ? "Logement rejeté" : "Logement suspendu");
     qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
     setUpdatingId(null);
+  };
+
+  const handleRequestModification = async () => {
+    if (!remarkListingId || !remarkText.trim()) {
+      toast.error("Veuillez entrer une remarque.");
+      return;
+    }
+    setUpdatingId(remarkListingId);
+    const { error } = await supabase
+      .from("listings")
+      .update({ status: "needs_modification", admin_remark: remarkText.trim() } as any)
+      .eq("id", remarkListingId);
+    if (error) { toast.error(error.message); setUpdatingId(null); return; }
+
+    const listing = allListings?.find((l) => l.id === remarkListingId);
+    if (listing) {
+      await supabase.from("notifications").insert({
+        user_id: listing.user_id,
+        type: "listing_modification_requested",
+        title: "Modification demandée",
+        message: `Votre logement "${listing.title}" nécessite des modifications : ${remarkText.trim()}`,
+        data: { listing_id: remarkListingId },
+      } as any);
+    }
+
+    toast.success("Demande de modification envoyée");
+    qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
+    setUpdatingId(null);
+    setRemarkDialogOpen(false);
+    setRemarkText("");
+    setRemarkListingId(null);
   };
 
   const handleCancelBooking = async (id: string) => {
@@ -519,6 +556,11 @@ const AdminPanel = () => {
                                   onClick={() => handleListingAction(listing.id, "reject")}>
                                   <X className="w-3 h-3" /> Rejeter
                                 </Button>
+                                <Button size="sm" variant="outline" className="rounded-full text-xs gap-1 text-orange-600"
+                                  disabled={updatingId === listing.id}
+                                  onClick={() => { setRemarkListingId(listing.id); setRemarkDialogOpen(true); }}>
+                                  <Pencil className="w-3 h-3" /> Demander modification
+                                </Button>
                               </div>
                             </div>
                           </div>
@@ -554,6 +596,7 @@ const AdminPanel = () => {
                     <SelectItem value="published">Approuvé</SelectItem>
                     <SelectItem value="pending_approval">En attente</SelectItem>
                     <SelectItem value="rejected">Rejeté</SelectItem>
+                    <SelectItem value="needs_modification">Modification demandée</SelectItem>
                     <SelectItem value="suspended">Suspendu</SelectItem>
                     <SelectItem value="draft">Brouillon</SelectItem>
                   </SelectContent>
@@ -954,6 +997,33 @@ const AdminPanel = () => {
         </main>
       </div>
       <Footer />
+      {/* Remark Dialog */}
+      <Dialog open={remarkDialogOpen} onOpenChange={setRemarkDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display">Demander une modification</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Décrivez les modifications nécessaires. L'hôte recevra une notification avec votre remarque.
+            </p>
+            <Textarea
+              placeholder="Ex: Veuillez ajouter plus de photos de l'intérieur, préciser l'adresse exacte..."
+              rows={4}
+              className="rounded-xl"
+              value={remarkText}
+              onChange={(e) => setRemarkText(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setRemarkDialogOpen(false); setRemarkText(""); }}>Annuler</Button>
+            <Button onClick={handleRequestModification} disabled={!remarkText.trim() || updatingId === remarkListingId} className="bg-primary text-primary-foreground gap-1">
+              {updatingId === remarkListingId ? <Loader2 className="w-3 h-3 animate-spin" /> : <Pencil className="w-3 h-3" />}
+              Envoyer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
