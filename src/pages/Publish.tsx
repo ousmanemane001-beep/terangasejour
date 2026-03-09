@@ -149,14 +149,14 @@ const Publish = () => {
 
       const { error: insertError } = await supabase.from("listings").insert({
         user_id: user.id,
-        title: title.trim(),
-        description: description.trim() || null,
-        property_type: propertyType,
-        location: location.trim(),
-        bedrooms,
-        bathrooms,
-        capacity,
-        price_per_night: parseInt(price),
+        title: listingDraft.title.trim(),
+        description: listingDraft.description.trim() || null,
+        property_type: listingDraft.propertyType,
+        location: listingDraft.location.trim(),
+        bedrooms: listingDraft.bedrooms,
+        bathrooms: listingDraft.bathrooms,
+        capacity: listingDraft.capacity,
+        price_per_night: parseInt(listingDraft.price),
         photos: photoUrls,
         status: "published",
       });
