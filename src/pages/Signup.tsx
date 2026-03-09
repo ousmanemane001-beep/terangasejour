@@ -84,6 +84,11 @@ const Signup = () => {
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Créer mon compte"}
               </Button>
             </form>
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
+              <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">ou</span></div>
+            </div>
+            <SocialLoginButtons />
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">Déjà un compte ? <Link to="/login" className="text-primary font-medium hover:underline">Se connecter</Link></p>
             </div>
