@@ -19,14 +19,6 @@ const Explore = () => {
   const { data: dbListings } = useListings();
 
   const [destination, setDestination] = useState(searchParams.get("destination") || "");
-  const [checkIn, setCheckIn] = useState<Date | undefined>(
-    searchParams.get("checkIn") ? new Date(searchParams.get("checkIn")!) : undefined
-  );
-  const [checkOut, setCheckOut] = useState<Date | undefined>(
-    searchParams.get("checkOut") ? new Date(searchParams.get("checkOut")!) : undefined
-  );
-  const [guestCount, setGuestCount] = useState(Number(searchParams.get("guests")) || 1);
-
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 150000]);
   const [bedroomFilter, setBedroomFilter] = useState(0);
