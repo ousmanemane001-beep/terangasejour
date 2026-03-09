@@ -274,6 +274,15 @@ export default function OusmaneChatbot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+
+  // Lock body scroll when chat is open on mobile
+  useEffect(() => {
+    if (open && isMobile) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [open, isMobile]);
 
   // Fetch destination images from DB
   const { data: dbDestinations } = useQuery({
