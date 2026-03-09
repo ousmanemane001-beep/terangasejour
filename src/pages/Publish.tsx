@@ -210,7 +210,11 @@ const Publish = () => {
 
       const safePrice = Number.parseInt(listingDraft.price || "0", 10);
 
-      const { error: insertError } = await supabase.from("listings").insert({
+      const bookingMode = listingDraft.availabilityType === "request_only" ? "request" : "instant";
+      const availabilityMode = listingDraft.availabilityType === "always" ? "always" : 
+        listingDraft.availabilityType === "calendar" ? "calendar" : "request";
+
+      const { data: insertedListing, error: insertError } = await supabase.from("listings").insert({
         user_id: user.id,
         title: listingDraft.title.trim(),
         description: listingDraft.description.trim() || null,
@@ -222,9 +226,20 @@ const Publish = () => {
         price_per_night: safePrice,
         photos: photoUrls,
         status: "published",
-      });
+        booking_mode: bookingMode,
+        availability_mode: availabilityMode,
+      }).select("id").single();
 
       if (insertError) throw insertError;
+
+      // Insert blocked dates if calendar mode
+      if (listingDraft.availabilityType === "calendar" && listingDraft.blockedDates.length > 0 && insertedListing) {
+        const blockedRows = listingDraft.blockedDates.map((d) => ({
+          listing_id: insertedListing.id,
+          date: format(d, "yyyy-MM-dd"),
+        }));
+        await supabase.from("blocked_dates").insert(blockedRows);
+      }
 
       queryClient.invalidateQueries({ queryKey: ["listings"] });
       queryClient.invalidateQueries({ queryKey: ["owner-listings"] });
