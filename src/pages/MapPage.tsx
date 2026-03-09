@@ -82,7 +82,7 @@ const MapPage = () => {
                       <MapPin className="w-3 h-3" /> {p.location}
                     </p>
                     <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><BedDouble className="w-3 h-3" /> {p.beds}</span>
+                      <span className="flex items-center gap-1"><BedDouble className="w-3 h-3" /> {p.bedrooms}</span>
                       <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {p.guests}</span>
                     </div>
                     <p className="font-bold text-foreground text-sm mt-1">
