@@ -1,4 +1,4 @@
-import { MapPin, Users, Bed, Bath, Star } from "lucide-react";
+import { MapPin, Users, Bed, Bath, Star, Navigation } from "lucide-react";
 import { Link } from "react-router-dom";
 import FavoriteButton from "@/components/FavoriteButton";
 import type { DBListing } from "@/hooks/useListings";
@@ -13,8 +13,14 @@ function getRatingLabel(avg: number): string {
   return "Note";
 }
 
-const ListingCard = forwardRef<HTMLDivElement, { listing: DBListing; rating?: ListingRating }>(
-  ({ listing, rating }, ref) => {
+interface ListingCardProps {
+  listing: DBListing;
+  rating?: ListingRating;
+  distanceInfo?: { km: number; label: string } | null;
+}
+
+const ListingCard = forwardRef<HTMLDivElement, ListingCardProps>(
+  ({ listing, rating, distanceInfo }, ref) => {
     const coverImage = listing.photos?.[0] || "/placeholder.svg";
 
     return (
@@ -32,6 +38,12 @@ const ListingCard = forwardRef<HTMLDivElement, { listing: DBListing; rating?: Li
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
             <FavoriteButton listingId={listing.id} className="absolute top-2.5 right-2.5" />
+            {distanceInfo && (
+              <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/90 text-primary-foreground text-[11px] font-semibold backdrop-blur-sm">
+                <Navigation className="w-3 h-3" />
+                {distanceInfo.label}
+              </span>
+            )}
           </div>
         </Link>
 
