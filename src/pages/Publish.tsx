@@ -19,8 +19,11 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import PhotoUploader from "@/components/PhotoUploader";
+import AvailabilityStep, { type AvailabilityType } from "@/components/publish/AvailabilityStep";
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -30,6 +33,7 @@ const STEP_LABELS = [
   { icon: Home, title: "Description" },
   { icon: Camera, title: "Photos" },
   { icon: DollarSign, title: "Tarif" },
+  { icon: Clock, title: "Disponibilité" },
   { icon: CheckCircle, title: "Publier" },
 ] as const;
 
@@ -48,6 +52,8 @@ interface ListingDraft {
   price: string;
   currency: string;
   photos: PhotoItem[];
+  availabilityType: AvailabilityType;
+  blockedDates: Date[];
 }
 
 class StepRenderBoundary extends Component<
@@ -99,6 +105,8 @@ const Publish = () => {
   const [capacity, setCapacity] = useState(2);
   const [price, setPrice] = useState("0");
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  const [availabilityType, setAvailabilityType] = useState<AvailabilityType>("always");
+  const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [loading, setLoading] = useState(false);
 
   const listingDraft = useMemo<ListingDraft>(
@@ -115,8 +123,10 @@ const Publish = () => {
       photos: Array.isArray(photos)
         ? photos.filter((p) => !!p?.id && !!p?.file && !!p?.preview)
         : [],
+      availabilityType: availabilityType ?? "always",
+      blockedDates: Array.isArray(blockedDates) ? blockedDates : [],
     }),
-    [title, description, propertyType, location, bedrooms, bathrooms, capacity, price, photos]
+    [title, description, propertyType, location, bedrooms, bathrooms, capacity, price, photos, availabilityType, blockedDates]
   );
 
   const safeStep = useMemo(() => {
@@ -200,7 +210,11 @@ const Publish = () => {
 
       const safePrice = Number.parseInt(listingDraft.price || "0", 10);
 
-      const { error: insertError } = await supabase.from("listings").insert({
+      const bookingMode = listingDraft.availabilityType === "request_only" ? "request" : "instant";
+      const availabilityMode = listingDraft.availabilityType === "always" ? "always" : 
+        listingDraft.availabilityType === "calendar" ? "calendar" : "request";
+
+      const { data: insertedListing, error: insertError } = await supabase.from("listings").insert({
         user_id: user.id,
         title: listingDraft.title.trim(),
         description: listingDraft.description.trim() || null,
@@ -212,9 +226,20 @@ const Publish = () => {
         price_per_night: safePrice,
         photos: photoUrls,
         status: "published",
-      });
+        booking_mode: bookingMode,
+        availability_mode: availabilityMode,
+      }).select("id").single();
 
       if (insertError) throw insertError;
+
+      // Insert blocked dates if calendar mode
+      if (listingDraft.availabilityType === "calendar" && listingDraft.blockedDates.length > 0 && insertedListing) {
+        const blockedRows = listingDraft.blockedDates.map((d) => ({
+          listing_id: insertedListing.id,
+          date: format(d, "yyyy-MM-dd"),
+        }));
+        await supabase.from("blocked_dates").insert(blockedRows);
+      }
 
       queryClient.invalidateQueries({ queryKey: ["listings"] });
       queryClient.invalidateQueries({ queryKey: ["owner-listings"] });
@@ -407,6 +432,15 @@ const Publish = () => {
                 )}
 
                 {safeStep === 3 && (
+                  <AvailabilityStep
+                    availabilityType={listingDraft.availabilityType}
+                    blockedDates={listingDraft.blockedDates}
+                    onChangeType={setAvailabilityType}
+                    onChangeBlockedDates={setBlockedDates}
+                  />
+                )}
+
+                {safeStep === 4 && (
                   <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
                     <h2 className="font-display text-xl font-bold text-foreground">
                       <CheckCircle className="w-5 h-5 inline mr-2" />Récapitulatif
@@ -437,6 +471,14 @@ const Publish = () => {
                       <div className="flex justify-between py-2 border-b border-border">
                         <span className="text-muted-foreground">Photos</span>
                         <span className="font-medium text-foreground">{listingDraft.photos.length} photo(s)</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-border">
+                        <span className="text-muted-foreground">Disponibilité</span>
+                        <span className="font-medium text-foreground">
+                          {listingDraft.availabilityType === "always" && "Toujours disponible"}
+                          {listingDraft.availabilityType === "calendar" && `Calendrier (${listingDraft.blockedDates.length} date(s) bloquée(s))`}
+                          {listingDraft.availabilityType === "request_only" && "Sur demande"}
+                        </span>
                       </div>
                     </div>
 
