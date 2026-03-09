@@ -1,0 +1,1 @@
+ALTER TABLE public.listings ADD COLUMN admin_remark text DEFAULT NULL;

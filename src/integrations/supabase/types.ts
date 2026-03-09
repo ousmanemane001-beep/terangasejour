@@ -225,6 +225,7 @@ export type Database = {
       listings: {
         Row: {
           address: string | null
+          admin_remark: string | null
           availability_mode: string
           bathrooms: number
           bedrooms: number
@@ -248,6 +249,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          admin_remark?: string | null
           availability_mode?: string
           bathrooms?: number
           bedrooms?: number
@@ -271,6 +273,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          admin_remark?: string | null
           availability_mode?: string
           bathrooms?: number
           bedrooms?: number
