@@ -1,3 +1,5 @@
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +47,9 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] flex justify-center py-10 md:py-20 px-5 w-full bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
+      <Navbar />
+      <div className="flex-1 flex justify-center py-10 md:py-16 px-5 w-full">
       <motion.div
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
@@ -171,6 +175,8 @@ const Signup = () => {
           </div>
         </div>
       </motion.div>
+      </div>
+      <Footer />
     </div>
   );
 };
