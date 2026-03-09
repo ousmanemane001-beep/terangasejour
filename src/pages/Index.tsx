@@ -6,7 +6,7 @@ import SearchBar from "@/components/SearchBar";
 import ListingCard from "@/components/ListingCard";
 import PropertyCard from "@/components/PropertyCard";
 import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import OusmaneChatbot from "@/components/OusmaneChatbot";
 import { properties } from "@/data/properties";
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
