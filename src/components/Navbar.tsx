@@ -15,7 +15,7 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const { user, isHost, isAdmin, profile, signOut } = useAuth();
-  const unreadCount = useUnreadCount();
+  
 
   const initials = profile
     ? `${(profile.first_name || "")[0] || ""}${(profile.last_name || "")[0] || ""}`.toUpperCase() || "U"
