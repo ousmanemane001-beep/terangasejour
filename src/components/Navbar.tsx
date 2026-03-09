@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, User, LogOut, Heart, Home, CalendarDays, MessageCircle, Bell, Shield } from "lucide-react";
+import { Menu, X, User, LogOut, Heart, Home, CalendarDays, MessageCircle, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -9,14 +9,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUnreadCount } from "@/hooks/useAdmin";
-import { Badge } from "@/components/ui/badge";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const { user, isHost, isAdmin, profile, signOut } = useAuth();
-  const unreadCount = useUnreadCount();
+  
 
   const initials = profile
     ? `${(profile.first_name || "")[0] || ""}${(profile.last_name || "")[0] || ""}`.toUpperCase() || "U"
@@ -67,14 +66,7 @@ const Navbar = () => {
           )}
           {user ? (
             <>
-              {unreadCount > 0 && (
-                <Link to={dashboardPath} className="relative">
-                  <Button variant="ghost" size="icon" className="rounded text-primary-foreground hover:bg-white/10">
-                    <Bell className="w-5 h-5" />
-                    <Badge className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] h-5 w-5 flex items-center justify-center p-0 rounded-full">{unreadCount}</Badge>
-                  </Button>
-                </Link>
-              )}
+              <NotificationDropdown />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded text-primary-foreground hover:bg-white/10">
