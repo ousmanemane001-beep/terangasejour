@@ -187,6 +187,7 @@ const AdminPanel = () => {
       if (error) { toast.error(error.message); setUpdatingId(null); return; }
       toast.success("Logement supprimé");
       qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
+      qc.invalidateQueries({ queryKey: ["listings"] });
       setUpdatingId(null);
       return;
     }
@@ -211,6 +212,7 @@ const AdminPanel = () => {
     }
     toast.success(action === "approve" ? "Logement approuvé" : action === "reject" ? "Logement rejeté" : "Logement suspendu");
     qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
+    qc.invalidateQueries({ queryKey: ["listings"] });
     setUpdatingId(null);
   };
 
@@ -239,6 +241,7 @@ const AdminPanel = () => {
 
     toast.success("Demande de modification envoyée");
     qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
+    qc.invalidateQueries({ queryKey: ["listings"] });
     setUpdatingId(null);
     setRemarkDialogOpen(false);
     setRemarkText("");
