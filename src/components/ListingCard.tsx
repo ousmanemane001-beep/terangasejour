@@ -24,7 +24,7 @@ const ListingCard = forwardRef<HTMLDivElement, { listing: DBListing; rating?: Li
         style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.08)' }}
       >
         <Link to={`/property/${listing.id}`} className="block">
-          <div className="relative overflow-hidden" style={{ height: 210 }}>
+          <div className="relative overflow-hidden" style={{ height: 240 }}>
             <img
               src={coverImage}
               alt={listing.title}
