@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
 import ListingCard from "@/components/ListingCard";
 import ExploreMap from "@/components/ExploreMap";
-import ExploreHero from "@/components/explore/ExploreHero";
+import ExploreFilters from "@/components/explore/ExploreFilters";
 import ExploreFilters from "@/components/explore/ExploreFilters";
 import HostCTA from "@/components/explore/HostCTA";
 import { properties } from "@/data/properties";
