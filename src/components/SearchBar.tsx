@@ -72,10 +72,10 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-5xl">
+    <div className="w-full max-w-5xl relative" style={{ zIndex: 1000 }}>
       <div className="flex flex-col md:flex-row items-stretch gap-1 p-1 rounded-xl" style={{ backgroundColor: 'hsl(var(--search-highlight))' }}>
         {/* Destination */}
-        <div className="flex-[2] relative z-50">
+        <div className="flex-[2] relative" style={{ zIndex: 1000 }}>
           <div className="flex items-center gap-2 bg-background rounded px-3 py-2.5 h-full">
             <Bed className="w-5 h-5 text-muted-foreground shrink-0" />
             <Input
@@ -91,7 +91,8 @@ const SearchBar = () => {
           {showSuggestions && (
             <div
               ref={suggestionsRef}
-              className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-xl shadow-[var(--shadow-elevated)] z-50 max-h-[420px] overflow-y-auto"
+              className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-xl max-h-[420px] overflow-y-auto"
+              style={{ zIndex: 1000, boxShadow: '0 8px 20px rgba(0,0,0,0.15)' }}
             >
               {/* Searching mode */}
               {isSearching ? (
