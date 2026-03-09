@@ -327,6 +327,10 @@ const Publish = () => {
                         value={listingDraft.description}
                         onChange={(e) => setDescription(e.target.value)}
                       />
+                      <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3 shrink-0" />
+                        Ne partagez pas vos coordonnées personnelles. Les échanges avec les voyageurs se feront via la plateforme.
+                      </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
