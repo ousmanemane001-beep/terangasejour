@@ -1,9 +1,11 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { X, Send, Compass, Loader2, MapPin, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import ousmaneAvatar from "@/assets/ousmane-avatar.png";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -148,9 +150,11 @@ function parseMessageContent(content: string): ParsedPart[] {
   return parts;
 }
 
-function DestinationCard({ name, category, region, lat, lng }: { name: string; category: string; region: string; lat: string; lng: string }) {
+function DestinationCard({ name, category, region, lat, lng, dbPhotos }: { name: string; category: string; region: string; lat: string; lng: string; dbPhotos?: Record<string, string[]> }) {
   const nameLower = name.toLowerCase();
-  const photos = DESTINATION_PHOTOS[nameLower];
+  // Priority: DB images > hardcoded DESTINATION_PHOTOS > category fallback
+  const dbImages = dbPhotos?.[nameLower];
+  const photos = dbImages && dbImages.length > 0 ? dbImages : DESTINATION_PHOTOS[nameLower];
   const fallbackImage = CATEGORY_IMAGES[category] || CATEGORY_IMAGES.ville;
   const emoji = CATEGORY_EMOJI[category] || "📍";
   const hasGallery = photos && photos.length > 1;
@@ -235,7 +239,7 @@ function TravelMapPreview({ coords }: { coords: Array<{ lat: number; lng: number
   );
 }
 
-function MessageContent({ content }: { content: string }) {
+function MessageContent({ content, dbPhotos }: { content: string; dbPhotos?: Record<string, string[]> }) {
   const parts = parseMessageContent(content);
 
   return (
@@ -249,7 +253,7 @@ function MessageContent({ content }: { content: string }) {
               </div>
             );
           case "dest_card":
-            return <DestinationCard key={i} {...part} />;
+            return <DestinationCard key={i} {...part} dbPhotos={dbPhotos} />;
           case "listing_card":
             return <ListingCard key={i} {...part} />;
           case "travel_map":
@@ -272,6 +276,29 @@ export default function OusmaneChatbot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const location = useLocation();
   const [searchParams] = useSearchParams();
+
+  // Fetch destination images from DB
+  const { data: dbDestinations } = useQuery({
+    queryKey: ["dest-images-chatbot"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("destinations")
+        .select("name, image1, image2, image3, image4")
+        .not("image1", "is", null);
+      return data ?? [];
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const dbPhotos = useMemo(() => {
+    if (!dbDestinations) return {};
+    const map: Record<string, string[]> = {};
+    for (const d of dbDestinations) {
+      const imgs = [d.image1, d.image2, d.image3, d.image4].filter(Boolean) as string[];
+      if (imgs.length) map[d.name.toLowerCase()] = imgs;
+    }
+    return map;
+  }, [dbDestinations]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -502,7 +529,7 @@ export default function OusmaneChatbot() {
                   }`}
                 >
                   {m.role === "assistant" ? (
-                    <MessageContent content={m.content} />
+                    <MessageContent content={m.content} dbPhotos={dbPhotos} />
                   ) : (
                     m.content
                   )}

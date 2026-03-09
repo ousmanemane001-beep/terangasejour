@@ -19,13 +19,15 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const [{ data: destinations }, { data: listings }] = await Promise.all([
-      supabase.from("destinations").select("name, category, region, latitude, longitude, description").limit(200),
+      supabase.from("destinations").select("name, category, region, latitude, longitude, description, image1, image2, image3, image4").limit(200),
       supabase.from("listings").select("id, title, city, location, price_per_night, bedrooms, bathrooms, capacity, latitude, longitude, property_type, photos").eq("status", "published").limit(100),
     ]);
 
-    const destinationsContext = (destinations || []).map(d => 
-      `- ${d.name} (${d.category}, ${d.region || "Sénégal"})${d.description ? `: ${d.description}` : ""} [${d.latitude},${d.longitude}]`
-    ).join("\n");
+    const destinationsContext = (destinations || []).map(d => {
+      const images = [d.image1, d.image2, d.image3, d.image4].filter(Boolean);
+      const imgStr = images.length ? ` images:[${images.join(",")}]` : "";
+      return `- ${d.name} (${d.category}, ${d.region || "Sénégal"})${d.description ? `: ${d.description}` : ""} [${d.latitude},${d.longitude}]${imgStr}`;
+    }).join("\n");
 
     const listingsContext = (listings || []).map(l =>
       `- ID:${l.id} "${l.title}" à ${l.city || l.location || "Sénégal"} | ${l.price_per_night} FCFA/nuit | ${l.bedrooms} ch. | ${l.capacity} pers. | ${l.property_type} | photo:${l.photos?.[0] || ""} [${l.latitude},${l.longitude}]`
