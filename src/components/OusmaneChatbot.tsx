@@ -32,12 +32,12 @@ const WELCOME_MESSAGE: Message = {
 };
 
 const QUICK_ACTIONS = [
+  { label: "⚡ Voyageur pressé", message: "Je suis pressé, trouve-moi un logement rapidement" },
+  { label: "🗺️ Carte de voyage", message: "Je veux créer ma carte de voyage personnalisée" },
   { label: "🏖️ Plages", message: "Quelles plages me recommandes-tu ?" },
   { label: "🏠 Logements", message: "Montre-moi des logements" },
-  { label: "🗓️ Mon séjour", message: "Je veux planifier mon séjour" },
   { label: "🌍 Destinations", message: "Quelles sont les meilleures destinations ?" },
   { label: "🏛️ Histoire", message: "Des sites historiques à visiter ?" },
-  { label: "🌳 Nature", message: "Des parcs naturels à découvrir ?" },
 ];
 
 // Parse destination cards from message content
