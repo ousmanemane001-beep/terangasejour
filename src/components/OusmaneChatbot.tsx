@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Send, Compass, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { X, Send, Compass, Loader2, MapPin, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 
@@ -7,20 +8,110 @@ type Message = { role: "user" | "assistant"; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ousmane-chat`;
 
+const CATEGORY_IMAGES: Record<string, string> = {
+  plage: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=200&fit=crop",
+  ville: "https://images.unsplash.com/photo-1449157291145-7efd050a4d0e?w=400&h=200&fit=crop",
+  parc_naturel: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400&h=200&fit=crop",
+  site_historique: "https://images.unsplash.com/photo-1553913861-c0fddf2619ee?w=400&h=200&fit=crop",
+  lac: "https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=400&h=200&fit=crop",
+  ile: "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=400&h=200&fit=crop",
+  aeroport: "https://images.unsplash.com/photo-1436491865332-7a61a109db05?w=400&h=200&fit=crop",
+  restaurant: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=200&fit=crop",
+  hotel: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=200&fit=crop",
+};
+
+const CATEGORY_EMOJI: Record<string, string> = {
+  plage: "🏖️", ville: "🏙️", parc_naturel: "🌳", site_historique: "🏛️",
+  lac: "💧", ile: "🏝️", aeroport: "✈️", restaurant: "🍽️", hotel: "🏨",
+};
+
 const WELCOME_MESSAGE: Message = {
   role: "assistant",
   content:
-    "Bonjour ! 👋 Je suis **Ousmane**, votre guide touristique.\n\nJe peux vous aider à :\n- 🏖️ Découvrir les destinations au Sénégal\n- 🏠 Trouver un logement\n- 🗓️ Planifier votre séjour\n\nQue souhaitez-vous explorer ?",
+    "Bienvenue ! 👋 Je suis **Ousmane**, votre guide local.\n\nJe connais le Sénégal comme ma poche ! Que cherchez-vous ?",
 };
 
 const QUICK_ACTIONS = [
-  { label: "🏖️ Plages", message: "Quelles sont les plus belles plages du Sénégal ?" },
-  { label: "🏠 Logements", message: "Montre-moi les logements disponibles" },
-  { label: "🗓️ Planifier mon séjour", message: "Je veux planifier mon séjour au Sénégal. Aide-moi étape par étape." },
-  { label: "🌍 Destinations", message: "Quelles sont les destinations populaires au Sénégal ?" },
-  { label: "🏛️ Sites historiques", message: "Quels sont les sites historiques à visiter au Sénégal ?" },
-  { label: "🌳 Parcs naturels", message: "Quels parcs naturels peut-on visiter au Sénégal ?" },
+  { label: "🏖️ Plages", message: "Quelles plages me recommandes-tu ?" },
+  { label: "🏠 Logements", message: "Montre-moi des logements" },
+  { label: "🗓️ Mon séjour", message: "Je veux planifier mon séjour" },
+  { label: "🌍 Destinations", message: "Quelles sont les meilleures destinations ?" },
+  { label: "🏛️ Histoire", message: "Des sites historiques à visiter ?" },
+  { label: "🌳 Nature", message: "Des parcs naturels à découvrir ?" },
 ];
+
+// Parse destination cards from message content
+function parseMessageContent(content: string) {
+  const parts: Array<{ type: "text"; value: string } | { type: "dest_card"; name: string; category: string; region: string; lat: string; lng: string }> = [];
+  
+  const regex = /\[DEST_CARD:([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)\|([^\]]+)\]/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: "text", value: content.slice(lastIndex, match.index) });
+    }
+    parts.push({
+      type: "dest_card",
+      name: match[1].trim(),
+      category: match[2].trim(),
+      region: match[3].trim(),
+      lat: match[4].trim(),
+      lng: match[5].trim(),
+    });
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < content.length) {
+    parts.push({ type: "text", value: content.slice(lastIndex) });
+  }
+
+  return parts;
+}
+
+function DestinationCard({ name, category, region, lat, lng }: { name: string; category: string; region: string; lat: string; lng: string }) {
+  const image = CATEGORY_IMAGES[category] || CATEGORY_IMAGES.ville;
+  const emoji = CATEGORY_EMOJI[category] || "📍";
+
+  return (
+    <Link
+      to={`/explore?destination=${encodeURIComponent(name)}&lat=${lat}&lng=${lng}`}
+      className="block rounded-xl overflow-hidden border border-border bg-card hover:shadow-md transition-shadow my-2"
+    >
+      <img src={image} alt={name} className="w-full h-24 object-cover" loading="lazy" />
+      <div className="p-2.5 flex items-center justify-between">
+        <div className="min-w-0">
+          <p className="text-xs font-bold text-foreground truncate">{emoji} {name}</p>
+          <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+            <MapPin className="w-2.5 h-2.5" /> {region}
+          </p>
+        </div>
+        <div className="shrink-0 bg-primary text-primary-foreground text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-0.5">
+          Logements <ChevronRight className="w-3 h-3" />
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function MessageContent({ content }: { content: string }) {
+  const parts = parseMessageContent(content);
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.type === "text" ? (
+          <div key={i} className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-0.5 [&>ul]:my-0.5 [&>ol]:my-0.5 [&>p]:text-[13px] [&>ul]:text-[13px]">
+            <ReactMarkdown>{part.value}</ReactMarkdown>
+          </div>
+        ) : (
+          <DestinationCard key={i} {...part} />
+        )
+      )}
+    </>
+  );
+}
 
 export default function OusmaneChatbot() {
   const [open, setOpen] = useState(false);
@@ -155,21 +246,19 @@ export default function OusmaneChatbot() {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "assistant" && (
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] mr-1.5 mt-1 shrink-0">
                     🧑🏾
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                  className={`max-w-[82%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed ${
                     m.role === "user"
                       ? "bg-primary text-primary-foreground rounded-br-md"
                       : "bg-muted text-foreground rounded-bl-md"
                   }`}
                 >
                   {m.role === "assistant" ? (
-                    <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:my-1 [&>ul]:my-1 [&>ol]:my-1">
-                      <ReactMarkdown>{m.content}</ReactMarkdown>
-                    </div>
+                    <MessageContent content={m.content} />
                   ) : (
                     m.content
                   )}
@@ -178,14 +267,14 @@ export default function OusmaneChatbot() {
             ))}
             {isLoading && messages[messages.length - 1]?.role === "user" && (
               <div className="flex justify-start">
-                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs mr-2 mt-1 shrink-0">
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] mr-1.5 mt-1 shrink-0">
                   🧑🏾
                 </div>
                 <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
                   <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:0ms]" />
-                    <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:150ms]" />
-                    <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:300ms]" />
+                    <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:0ms]" />
+                    <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:150ms]" />
+                    <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:300ms]" />
                   </div>
                 </div>
               </div>
@@ -200,7 +289,7 @@ export default function OusmaneChatbot() {
                 <button
                   key={a.label}
                   onClick={() => sendMessage(a.message)}
-                  className="text-xs px-3 py-1.5 rounded-full bg-accent text-accent-foreground hover:bg-accent/80 transition-colors border border-border"
+                  className="text-[11px] px-2.5 py-1.5 rounded-full bg-accent text-accent-foreground hover:bg-accent/80 transition-colors border border-border"
                 >
                   {a.label}
                 </button>
@@ -217,7 +306,7 @@ export default function OusmaneChatbot() {
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Posez votre question..."
+              placeholder="Écrivez ici..."
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               disabled={isLoading}
             />
