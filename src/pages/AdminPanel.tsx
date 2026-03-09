@@ -996,6 +996,33 @@ const AdminPanel = () => {
         </main>
       </div>
       <Footer />
+      {/* Remark Dialog */}
+      <Dialog open={remarkDialogOpen} onOpenChange={setRemarkDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display">Demander une modification</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Décrivez les modifications nécessaires. L'hôte recevra une notification avec votre remarque.
+            </p>
+            <Textarea
+              placeholder="Ex: Veuillez ajouter plus de photos de l'intérieur, préciser l'adresse exacte..."
+              rows={4}
+              className="rounded-xl"
+              value={remarkText}
+              onChange={(e) => setRemarkText(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setRemarkDialogOpen(false); setRemarkText(""); }}>Annuler</Button>
+            <Button onClick={handleRequestModification} disabled={!remarkText.trim() || updatingId === remarkListingId} className="bg-primary text-primary-foreground gap-1">
+              {updatingId === remarkListingId ? <Loader2 className="w-3 h-3 animate-spin" /> : <Pencil className="w-3 h-3" />}
+              Envoyer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
