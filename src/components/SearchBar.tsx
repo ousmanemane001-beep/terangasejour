@@ -19,6 +19,8 @@ const POPULAR_DESTINATIONS: { name: string; region: string; lat: number; lng: nu
   { name: "Mbour", region: "Petite Côte", lat: 14.4167, lng: -16.9667 },
 ];
 
+const fieldClasses = "bg-white border border-[#e6e6e6] rounded-[4px] h-[60px] px-4 py-3 flex items-center gap-3 cursor-pointer hover:border-[#ccc] transition-colors";
+
 const SearchBar = () => {
   const navigate = useNavigate();
   const [destination, setDestination] = useState("");
@@ -70,25 +72,24 @@ const SearchBar = () => {
     navigate(`/explore?${params.toString()}`);
   };
 
-  const fieldStyle = "relative bg-white border border-[#e6e6e6] rounded-[10px] h-[58px] px-[14px] py-[10px] flex items-center gap-3 cursor-pointer hover:border-[#b3b3b3] transition-colors";
-
   return (
-    <div className="w-full max-w-lg relative" style={{ zIndex: 1000 }}>
-      <div className="flex flex-col gap-[14px]">
+    <div className="w-full max-w-[900px] relative" style={{ zIndex: 1000 }}>
+      {/* Desktop: horizontal row | Mobile: vertical stack */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-[14px] md:gap-4">
 
         {/* Destination */}
         <div className="relative" style={{ zIndex: 1000 }}>
-          <div className={fieldStyle} onClick={() => inputRef.current?.focus()}>
+          <div className={fieldClasses} onClick={() => inputRef.current?.focus()}>
             <MapPin className="w-5 h-5 text-[#333] shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-semibold text-[#333] leading-none mb-1">Destination</p>
+              <p className="text-[11px] font-semibold text-[#333] leading-none mb-0.5">Destination</p>
               <Input
                 ref={inputRef}
                 placeholder="Pays ou zone"
                 value={destination}
                 onChange={(e) => { setDestination(e.target.value); setSelectedDest(null); setShowSuggestions(true); }}
                 onFocus={() => setShowSuggestions(true)}
-                className="border-0 bg-transparent h-auto p-0 text-sm focus-visible:ring-0 focus-visible:ring-offset-0 text-[#333] font-normal placeholder:text-[#999]"
+                className="border-0 bg-transparent h-auto p-0 text-[13px] focus-visible:ring-0 focus-visible:ring-offset-0 text-[#333] font-normal placeholder:text-[#999]"
               />
             </div>
           </div>
@@ -96,7 +97,7 @@ const SearchBar = () => {
           {showSuggestions && (
             <div
               ref={suggestionsRef}
-              className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#e6e6e6] rounded-xl max-h-[400px] overflow-y-auto"
+              className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#e6e6e6] rounded-lg max-h-[400px] overflow-y-auto"
               style={{ zIndex: 1000, boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}
             >
               {isSearching ? (
@@ -164,11 +165,11 @@ const SearchBar = () => {
         {/* Durée du séjour */}
         <Popover>
           <PopoverTrigger asChild>
-            <div className={fieldStyle}>
+            <div className={fieldClasses}>
               <Calendar className="w-5 h-5 text-[#333] shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-semibold text-[#333] leading-none mb-1">Durée du séjour</p>
-                <p className="text-sm text-[#333] font-normal truncate">
+                <p className="text-[11px] font-semibold text-[#333] leading-none mb-0.5">Durée du séjour</p>
+                <p className="text-[13px] text-[#333] font-normal truncate">
                   {checkIn && checkOut
                     ? `${format(checkIn, "dd/MM/yyyy", { locale: fr })} - ${format(checkOut, "dd/MM/yyyy", { locale: fr })}`
                     : <span className="text-[#999]">Sélectionnez vos dates</span>}
@@ -202,16 +203,14 @@ const SearchBar = () => {
           </PopoverContent>
         </Popover>
 
-        {/* Voyageurs */}
+        {/* Nombre de voyageurs */}
         <Popover>
           <PopoverTrigger asChild>
-            <div className={fieldStyle}>
+            <div className={fieldClasses}>
               <Users className="w-5 h-5 text-[#333] shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-semibold text-[#333] leading-none mb-1">Nombre de voyageurs</p>
-                <p className="text-sm text-[#333] font-normal">
-                  {guestCount} adulte{guestCount > 1 ? "s" : ""} · 1 chambre
-                </p>
+                <p className="text-[11px] font-semibold text-[#333] leading-none mb-0.5">Nombre de voyageurs</p>
+                <p className="text-[13px] text-[#333] font-normal">{guestCount}</p>
               </div>
             </div>
           </PopoverTrigger>
@@ -221,24 +220,22 @@ const SearchBar = () => {
               <button
                 className="h-9 w-9 rounded-full border border-[#e6e6e6] flex items-center justify-center text-[#333] hover:border-[#999] transition-colors"
                 onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
-              >
-                -
-              </button>
+              >-</button>
               <span className="font-semibold text-[#333] text-lg">{guestCount}</span>
               <button
                 className="h-9 w-9 rounded-full border border-[#e6e6e6] flex items-center justify-center text-[#333] hover:border-[#999] transition-colors"
                 onClick={() => setGuestCount(Math.min(12, guestCount + 1))}
-              >
-                +
-              </button>
+              >+</button>
             </div>
           </PopoverContent>
         </Popover>
+      </div>
 
-        {/* Search button */}
+      {/* Search button */}
+      <div className="flex justify-center mt-5">
         <button
           onClick={handleSearch}
-          className="w-full h-[52px] bg-[#1a2b49] hover:bg-[#152240] text-white rounded-[26px] font-semibold text-base flex items-center justify-center gap-2 transition-colors mt-1"
+          className="w-full md:w-[180px] h-[52px] bg-[#1a2b49] hover:bg-[#152240] text-white rounded-[28px] font-semibold text-base flex items-center justify-center gap-2 transition-colors"
         >
           <Search className="w-5 h-5" />
           Rechercher
