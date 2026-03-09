@@ -529,7 +529,7 @@ export default function OusmaneChatbot() {
                   }`}
                 >
                   {m.role === "assistant" ? (
-                    <MessageContent content={m.content} />
+                    <MessageContent content={m.content} dbPhotos={dbPhotos} />
                   ) : (
                     m.content
                   )}
