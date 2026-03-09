@@ -59,7 +59,7 @@ const Navbar = () => {
         <div className="container mx-auto flex items-center justify-between h-14 px-4">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
-            <span className="font-display text-lg font-bold text-primary-foreground">TerangaSéjour</span>
+            <span className="font-display text-lg font-bold text-[#0d9488]">TerangaSéjour</span>
           </Link>
 
           {/* Desktop nav links */}
