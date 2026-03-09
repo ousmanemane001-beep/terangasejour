@@ -596,6 +596,7 @@ const AdminPanel = () => {
                     <SelectItem value="published">Approuvé</SelectItem>
                     <SelectItem value="pending_approval">En attente</SelectItem>
                     <SelectItem value="rejected">Rejeté</SelectItem>
+                    <SelectItem value="needs_modification">Modification demandée</SelectItem>
                     <SelectItem value="suspended">Suspendu</SelectItem>
                     <SelectItem value="draft">Brouillon</SelectItem>
                   </SelectContent>
