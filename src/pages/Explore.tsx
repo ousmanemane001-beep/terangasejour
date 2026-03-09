@@ -124,7 +124,7 @@ const Explore = () => {
         </div>
         {showMap && (
           <div className="hidden lg:block lg:w-[45%] sticky top-16 h-[calc(100vh-4rem)]">
-            <ExploreMap properties={filteredProperties} hoveredProperty={hoveredProperty} />
+            <ExploreMap properties={filteredProperties} hoveredProperty={hoveredProperty} center={mapCenter} />
           </div>
         )}
       </div>
