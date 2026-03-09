@@ -69,7 +69,7 @@ const SearchBar = () => {
     navigate(`/explore?${params.toString()}`);
   };
 
-  const fieldStyle = "bg-[#fafafa] border border-[#e5e5e5] rounded-[10px] h-[56px] px-4 flex items-center cursor-pointer hover:border-[#ccc] transition-colors";
+  const fieldStyle = "bg-[#fafafa] border border-[#e5e5e5] rounded-[10px] h-[52px] md:h-[56px] px-4 flex items-center cursor-pointer hover:border-[#ccc] transition-colors";
 
   return (
     <div className="w-full" style={{ zIndex: 1000 }}>
@@ -187,7 +187,7 @@ const SearchBar = () => {
       </div>
 
       {/* Mobile: stacked 4 rows */}
-      <div className="flex flex-col gap-4 md:hidden">
+      <div className="flex flex-col gap-3 md:hidden">
         {/* Row 1: Destination */}
         <div className="relative" style={{ zIndex: 1000 }}>
           <div className="flex items-center gap-1.5 mb-1.5">
