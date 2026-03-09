@@ -40,9 +40,9 @@ const DESTINATION_PHOTOS: Record<string, string[]> = {
     "https://images.unsplash.com/photo-1596005554384-d293674c91d7?w=400&h=200&fit=crop",
   ],
   "maison des esclaves": [
-    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/goree/goree-maison-esclaves.png",
-    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/goree/goree-panorama.png",
-    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/goree/goree-aerienne.png",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/goree/maison-esclaves-escaliers.png",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/goree/maison-esclaves-visiteurs.png",
+    "https://yishvbwgpughfhjteddr.supabase.co/storage/v1/object/public/destinations/goree/maison-esclaves-porte.png",
   ],
   "pont faidherbe": [
     "https://images.unsplash.com/photo-1591019479261-1a103585c559?w=400&h=200&fit=crop",
