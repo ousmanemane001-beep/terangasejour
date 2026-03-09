@@ -439,7 +439,7 @@ export default function OusmaneChatbot() {
 
       {/* Chat window */}
       {open && (
-        <div className="fixed bottom-4 right-4 z-50 w-[380px] max-w-[calc(100vw-2rem)] h-[560px] max-h-[calc(100vh-2rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300">
+        <div className="fixed z-50 bg-background border border-border shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300 sm:bottom-4 sm:right-4 sm:w-[380px] sm:max-w-[calc(100vw-2rem)] sm:h-[560px] sm:max-h-[calc(100vh-2rem)] sm:rounded-2xl inset-0 sm:inset-auto">
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 bg-primary text-primary-foreground">
             <div className="relative">
