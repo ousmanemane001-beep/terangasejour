@@ -284,7 +284,7 @@ const SearchBar = () => {
         </div>
 
         {/* Row 4: Bouton Rechercher */}
-        <button onClick={handleSearch} className="w-full h-[56px] bg-[#0d9488] hover:bg-[#0f766e] text-white rounded-[28px] font-semibold text-base flex items-center justify-center gap-2 transition-colors">
+        <button onClick={handleSearch} className="w-full h-[50px] md:h-[56px] bg-[#0d9488] hover:bg-[#0f766e] text-white rounded-[28px] font-semibold text-base flex items-center justify-center gap-2 transition-colors">
           <Search className="w-5 h-5" />
           Rechercher
         </button>
