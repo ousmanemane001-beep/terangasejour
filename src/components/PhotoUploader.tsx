@@ -123,7 +123,7 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png"
+        accept="image/*"
         multiple
         className="hidden"
         onChange={(e) => {
