@@ -277,6 +277,29 @@ export default function OusmaneChatbot() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
+  // Fetch destination images from DB
+  const { data: dbDestinations } = useQuery({
+    queryKey: ["dest-images-chatbot"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("destinations")
+        .select("name, image1, image2, image3, image4")
+        .not("image1", "is", null);
+      return data ?? [];
+    },
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const dbPhotos = useMemo(() => {
+    if (!dbDestinations) return {};
+    const map: Record<string, string[]> = {};
+    for (const d of dbDestinations) {
+      const imgs = [d.image1, d.image2, d.image3, d.image4].filter(Boolean) as string[];
+      if (imgs.length) map[d.name.toLowerCase()] = imgs;
+    }
+    return map;
+  }, [dbDestinations]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
