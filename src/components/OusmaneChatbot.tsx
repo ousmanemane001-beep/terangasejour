@@ -138,15 +138,27 @@ function parseMessageContent(content: string): ParsedPart[] {
 }
 
 function DestinationCard({ name, category, region, lat, lng }: { name: string; category: string; region: string; lat: string; lng: string }) {
-  const image = CATEGORY_IMAGES[category] || CATEGORY_IMAGES.ville;
+  const nameLower = name.toLowerCase();
+  const photos = DESTINATION_PHOTOS[nameLower];
+  const fallbackImage = CATEGORY_IMAGES[category] || CATEGORY_IMAGES.ville;
   const emoji = CATEGORY_EMOJI[category] || "📍";
+  const hasGallery = photos && photos.length > 1;
 
   return (
     <Link
       to={`/explore?destination=${encodeURIComponent(name)}&lat=${lat}&lng=${lng}`}
       className="block rounded-xl overflow-hidden border border-border bg-card hover:shadow-md transition-shadow my-2"
     >
-      <img src={image} alt={name} className="w-full h-24 object-cover" loading="lazy" />
+      {hasGallery ? (
+        <div className="grid grid-cols-2 gap-0.5">
+          <img src={photos[0]} alt={name} className="w-full h-20 object-cover col-span-2" loading="lazy" />
+          {photos.slice(1, 4).map((src, i) => (
+            <img key={i} src={src} alt={`${name} ${i + 2}`} className="w-full h-16 object-cover" loading="lazy" />
+          ))}
+        </div>
+      ) : (
+        <img src={photos?.[0] || fallbackImage} alt={name} className="w-full h-24 object-cover" loading="lazy" />
+      )}
       <div className="p-2.5 flex items-center justify-between">
         <div className="min-w-0">
           <p className="text-xs font-bold text-foreground truncate">{emoji} {name}</p>
