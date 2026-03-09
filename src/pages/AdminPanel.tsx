@@ -241,6 +241,7 @@ const AdminPanel = () => {
 
     toast.success("Demande de modification envoyée");
     qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
+    qc.invalidateQueries({ queryKey: ["listings"] });
     setUpdatingId(null);
     setRemarkDialogOpen(false);
     setRemarkText("");
