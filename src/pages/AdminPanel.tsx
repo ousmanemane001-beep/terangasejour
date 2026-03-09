@@ -187,6 +187,7 @@ const AdminPanel = () => {
       if (error) { toast.error(error.message); setUpdatingId(null); return; }
       toast.success("Logement supprimé");
       qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
+      qc.invalidateQueries({ queryKey: ["listings"] });
       setUpdatingId(null);
       return;
     }
