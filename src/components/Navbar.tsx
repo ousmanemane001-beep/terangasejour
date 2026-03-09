@@ -172,7 +172,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <button className="md:hidden p-2 text-primary-foreground" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
+          <button className="md:hidden p-2 text-[#333]" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
             <Menu className="w-5 h-5" />
           </button>
         </div>
