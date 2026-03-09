@@ -46,8 +46,9 @@ const Index = () => {
   const beachProperties = properties.filter((p) => p.amenities.includes("pool") || p.location.toLowerCase().includes("saly") || p.location.toLowerCase().includes("somone") || p.location.toLowerCase().includes("cap"));
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar />
+      <MobileStickySearch />
 
       {/* Hero — VotreSejour.sn style */}
       <section className="relative" style={{ zIndex: 10 }}>
