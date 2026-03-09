@@ -212,6 +212,7 @@ const Navbar = () => {
               {user && (
                 <div className="px-5 py-4 border-b border-border flex items-center gap-3">
                   <Avatar className="h-10 w-10">
+                    {avatarUrl && <AvatarImage src={avatarUrl} alt="Avatar" />}
                     <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">{initials}</AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
