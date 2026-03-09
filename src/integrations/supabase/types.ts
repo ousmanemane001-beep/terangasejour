@@ -200,6 +200,10 @@ export type Database = {
           description: string | null
           google_place_id: string | null
           id: string
+          image1: string | null
+          image2: string | null
+          image3: string | null
+          image4: string | null
           latitude: number | null
           longitude: number | null
           name: string
@@ -211,6 +215,10 @@ export type Database = {
           description?: string | null
           google_place_id?: string | null
           id?: string
+          image1?: string | null
+          image2?: string | null
+          image3?: string | null
+          image4?: string | null
           latitude?: number | null
           longitude?: number | null
           name: string
@@ -222,6 +230,10 @@ export type Database = {
           description?: string | null
           google_place_id?: string | null
           id?: string
+          image1?: string | null
+          image2?: string | null
+          image3?: string | null
+          image4?: string | null
           latitude?: number | null
           longitude?: number | null
           name?: string
