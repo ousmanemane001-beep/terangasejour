@@ -77,12 +77,12 @@ const Index = () => {
         </div>
 
         {/* Floating search card */}
-        <div className="absolute left-1/2 -translate-x-1/2 -bottom-[60px] md:-bottom-[40px] w-full max-w-[1100px] px-4" style={{ zIndex: 20 }}>
+        <div className="absolute left-1/2 -translate-x-1/2 -bottom-[100px] md:-bottom-[40px] w-[92%] max-w-[1100px] md:w-full md:px-4" style={{ zIndex: 20 }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white rounded-[14px] shadow-[0_10px_30px_rgba(0,0,0,0.12)] p-5"
+            className="bg-white rounded-[16px] md:rounded-[14px] shadow-[0_10px_25px_rgba(0,0,0,0.1)] md:shadow-[0_10px_30px_rgba(0,0,0,0.12)] p-[18px] md:p-5"
           >
             <SearchBar />
           </motion.div>
