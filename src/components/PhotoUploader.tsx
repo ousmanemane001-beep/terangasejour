@@ -4,7 +4,7 @@ import { Camera, Upload, X, Star, GripVertical, AlertCircle } from "lucide-react
 const MAX_PHOTOS = 10;
 const MIN_PHOTOS = 5;
 const MAX_SIZE_MB = 5;
-const ACCEPTED_TYPES = ["image/jpeg", "image/png"];
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
 interface PhotoItem {
   id: string;
@@ -35,8 +35,8 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
       const validFiles: File[] = [];
 
       fileArray.slice(0, remaining).forEach((file) => {
-        if (!ACCEPTED_TYPES.includes(file.type)) {
-          newErrors.push(`"${file.name}" : format non accepté (JPG ou PNG uniquement)`);
+        if (!file.type.startsWith("image/")) {
+          newErrors.push(`"${file.name}" : format non accepté (images uniquement)`);
         } else if (file.size > MAX_SIZE_MB * 1024 * 1024) {
           newErrors.push(`"${file.name}" : taille trop grande (max ${MAX_SIZE_MB} Mo)`);
         } else {
@@ -115,15 +115,15 @@ const PhotoUploader = ({ photos, onChange }: PhotoUploaderProps) => {
         }`}
       >
         <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-        <p className="font-medium text-foreground mb-1">Glissez vos photos ici</p>
-        <p className="text-sm text-muted-foreground">ou cliquez pour parcourir</p>
-        <p className="text-xs text-muted-foreground mt-2">JPG, PNG • Min 5, max 10 photos • 5 Mo par photo</p>
+        <p className="font-medium text-foreground mb-1">Appuyez pour ajouter des photos</p>
+        <p className="text-sm text-muted-foreground">depuis votre galerie ou appareil photo</p>
+        <p className="text-xs text-muted-foreground mt-2">Min 5, max 10 photos • 5 Mo par photo</p>
       </div>
 
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png"
+        accept="image/*"
         multiple
         className="hidden"
         onChange={(e) => {
