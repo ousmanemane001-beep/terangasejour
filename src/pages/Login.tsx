@@ -108,7 +108,14 @@ const Login = () => {
 
             {/* Social icon buttons */}
             <SocialLoginButtons variant="icon-only" />
-        </div>
+
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">
+                Pas encore de compte ?{" "}
+                <Link to="/signup" className="text-primary font-medium hover:underline">Créer un compte</Link>
+              </p>
+            </div>
+          </div>
       </motion.div>
     </div>
   );
