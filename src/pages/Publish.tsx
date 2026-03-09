@@ -138,6 +138,9 @@ const Publish = () => {
         if (listingDraft.photos.length < 5) {
           return `Ajoutez au moins 5 photos (${listingDraft.photos.length}/5).`;
         }
+        if (listingDraft.photos.some((p) => !!p.error)) {
+          return "Veuillez remplacer les images non conformes avant de continuer.";
+        }
         return null;
       case 2: {
         const parsedPrice = Number.parseInt(listingDraft.price || "0", 10);
