@@ -12,8 +12,8 @@ const MapPage = () => {
   const [hoveredProperty, setHoveredProperty] = useState<number | null>(null);
 
   // Convert DB listings to Property format for ExploreMap
-  const properties: Property[] = useMemo(() => {
-    if (!listings) return [];
+  const properties = useMemo(() => {
+    if (!listings) return [] as (Property & { dbId: string })[];
     return listings
       .filter((l) => l.latitude && l.longitude)
       .map((l, i) => ({
@@ -23,10 +23,12 @@ const MapPage = () => {
         location: l.location || l.city || "",
         price: l.price_per_night,
         rating: 4.5,
+        reviewCount: 0,
         image: l.photos?.[0] || "/placeholder.svg",
         type: l.property_type,
-        beds: l.bedrooms,
+        bedrooms: l.bedrooms,
         guests: l.capacity,
+        amenities: [] as string[],
         lat: l.latitude!,
         lng: l.longitude!,
       }));
