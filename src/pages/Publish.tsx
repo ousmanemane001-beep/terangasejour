@@ -31,6 +31,7 @@ const STEP_LABELS = [
   { icon: Home, title: "Description" },
   { icon: Camera, title: "Photos" },
   { icon: DollarSign, title: "Tarif" },
+  { icon: Clock, title: "Disponibilité" },
   { icon: CheckCircle, title: "Publier" },
 ] as const;
 
