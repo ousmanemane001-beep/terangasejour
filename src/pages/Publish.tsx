@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -29,6 +29,18 @@ interface PhotoItem {
   preview: string;
 }
 
+interface ListingDraft {
+  title: string;
+  description: string;
+  propertyType: string;
+  location: string;
+  bedrooms: number;
+  bathrooms: number;
+  capacity: number;
+  price: string;
+  photos: PhotoItem[];
+}
+
 const Publish = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -46,31 +58,61 @@ const Publish = () => {
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const listingDraft = useMemo<ListingDraft>(() => ({
+    title: title ?? "",
+    description: description ?? "",
+    propertyType: propertyType ?? "villa",
+    location: location ?? "",
+    bedrooms: Number.isFinite(bedrooms) ? bedrooms : 1,
+    bathrooms: Number.isFinite(bathrooms) ? bathrooms : 1,
+    capacity: Number.isFinite(capacity) ? capacity : 1,
+    price: price ?? "",
+    photos: Array.isArray(photos) ? photos.filter((p) => !!p?.id && !!p?.file && !!p?.preview) : [],
+  }), [title, description, propertyType, location, bedrooms, bathrooms, capacity, price, photos]);
+
+  const canRenderStep = (s: number): boolean => {
+    if (s === 1 && !Array.isArray(listingDraft.photos)) return false;
+    if (s === 2 && typeof listingDraft.price !== "string") return false;
+    if (s === 3 && (!listingDraft.title || !listingDraft.location || listingDraft.photos.length === 0)) return false;
+    return true;
+  };
+
   const validateStep = (s: number): string | null => {
     switch (s) {
       case 0:
-        if (!title.trim()) return "Veuillez saisir un titre pour votre annonce.";
-        if (!location.trim()) return "Veuillez indiquer la localisation.";
+        if (!listingDraft.title.trim()) return "Veuillez saisir un titre pour votre annonce.";
+        if (!listingDraft.location.trim()) return "Veuillez indiquer la localisation.";
         return null;
       case 1:
-        if (photos.length < 5) return `Ajoutez au moins 5 photos (${photos.length}/5).`;
+        if (listingDraft.photos.length < 5) return `Ajoutez au moins 5 photos (${listingDraft.photos.length}/5).`;
         return null;
       case 2:
-        if (!price || parseInt(price) <= 0) return "Veuillez indiquer un prix valide.";
+        if (!listingDraft.price || parseInt(listingDraft.price) <= 0) return "Veuillez indiquer un prix valide.";
         return null;
       default:
         return null;
     }
   };
 
+  useEffect(() => {
+    if (!canRenderStep(step)) {
+      setStep((prev) => Math.max(0, prev - 1));
+      toast.error("Données incomplètes, retour à l'étape précédente.");
+    }
+  }, [step, listingDraft]);
+
   const goNext = () => {
+    if (!canRenderStep(step)) {
+      toast.error("Impossible de continuer : données manquantes.");
+      return;
+    }
     const error = validateStep(step);
     if (error) {
       toast.error(error);
       return;
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setStep((s) => Math.min(s + 1, 3));
+    setStep((s) => Math.min(Math.max(0, s + 1), 3));
   };
 
   const goBack = () => {
@@ -94,7 +136,7 @@ const Publish = () => {
     setLoading(true);
     try {
       const photoUrls: string[] = [];
-      for (const photo of photos) {
+      for (const photo of listingDraft.photos) {
         const ext = photo.file.name.split(".").pop() || "jpg";
         const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
@@ -107,14 +149,14 @@ const Publish = () => {
 
       const { error: insertError } = await supabase.from("listings").insert({
         user_id: user.id,
-        title: title.trim(),
-        description: description.trim() || null,
-        property_type: propertyType,
-        location: location.trim(),
-        bedrooms,
-        bathrooms,
-        capacity,
-        price_per_night: parseInt(price),
+        title: listingDraft.title.trim(),
+        description: listingDraft.description.trim() || null,
+        property_type: listingDraft.propertyType,
+        location: listingDraft.location.trim(),
+        bedrooms: listingDraft.bedrooms,
+        bathrooms: listingDraft.bathrooms,
+        capacity: listingDraft.capacity,
+        price_per_night: parseInt(listingDraft.price),
         photos: photoUrls,
         status: "published",
       });
@@ -171,6 +213,20 @@ const Publish = () => {
       {/* Step content */}
       <div className="flex-1 py-6 sm:py-10">
         <div className="container mx-auto px-4 max-w-2xl">
+          {!canRenderStep(step) ? (
+            <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-4">
+              <div className="flex items-center gap-2 text-destructive">
+                <AlertCircle className="w-5 h-5" />
+                <p className="font-medium">Impossible de charger cette étape.</p>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Certaines données sont manquantes. Revenez à l’étape précédente.
+              </p>
+              <Button type="button" variant="outline" onClick={goBack} className="rounded-xl">
+                <ChevronLeft className="w-4 h-4 mr-1" /> Retour
+              </Button>
+            </div>
+          ) : (
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -388,7 +444,7 @@ const Publish = () => {
               )}
             </motion.div>
           </AnimatePresence>
-
+          )}
           {/* Navigation buttons */}
           <div className="flex items-center justify-between mt-6 gap-3">
             {step > 0 ? (
