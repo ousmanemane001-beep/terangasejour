@@ -211,7 +211,6 @@ function DestinationDetailCard({ destination, nearbyCount }: { destination: DbDe
           <h3 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
             {destination.name}
           </h3>
-          <Badge className={`text-[10px] shrink-0 ${info.color}`}>{info.label}</Badge>
         </div>
 
         {destination.region && (
