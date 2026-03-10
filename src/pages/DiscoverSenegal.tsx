@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import OusmaneChatbot from "@/components/OusmaneChatbot";
 import { useDestinations, type DbDestination } from "@/hooks/useDestinations";
 import { useListings, type DBListing } from "@/hooks/useListings";
-import { useReviewsForListings } from "@/hooks/useReviews";
+import { useListingsRatings } from "@/hooks/useReviews";
 import { haversineKm, formatDistance } from "@/lib/haversine";
 import { MapPin, Search, ChevronRight, Star, Users, BedDouble, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
