@@ -152,6 +152,28 @@ const DiscoverSenegal = () => {
             <p className="text-sm text-muted-foreground">Essayez un autre terme de recherche.</p>
           </div>
         )}
+        {/* Listings section */}
+        {listings && listings.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-6">
+              <Home className="w-6 h-6 text-accent" />
+              <h2 className="font-display text-xl md:text-2xl font-bold text-foreground">Logements disponibles</h2>
+              <Badge variant="secondary" className="ml-2">{listings.length}</Badge>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {listings.map(listing => {
+                const rating = ratingsMap?.[listing.id];
+                return (
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                    rating={rating}
+                  />
+                );
+              })}
+            </div>
+          </section>
+        )}
       </div>
 
       <Footer />
