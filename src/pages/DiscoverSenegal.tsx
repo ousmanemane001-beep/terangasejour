@@ -4,13 +4,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import OusmaneChatbot from "@/components/OusmaneChatbot";
 import { useDestinations, type DbDestination } from "@/hooks/useDestinations";
-import { useListings } from "@/hooks/useListings";
+import { useListings, type DBListing } from "@/hooks/useListings";
+import { useReviewsForListings } from "@/hooks/useReviews";
 import { haversineKm, formatDistance } from "@/lib/haversine";
-import { MapPin, Search, ChevronRight, Star, Users, BedDouble } from "lucide-react";
+import { MapPin, Search, ChevronRight, Star, Users, BedDouble, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
 const CATEGORY_INFO: Record<string, { label: string; emoji: string; color: string }> = {
   plage: { label: "Plages", emoji: "🏖️", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
   ville: { label: "Villes", emoji: "🏙️", color: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" },
