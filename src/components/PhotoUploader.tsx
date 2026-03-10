@@ -1,13 +1,24 @@
 import { useRef, useCallback, useState, useEffect } from "react";
-import { Camera, Upload, X, Star, GripVertical, AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Lightbulb, ImageIcon } from "lucide-react";
+import DropZone from "./photo-upload/DropZone";
+import PhotoGrid from "./photo-upload/PhotoGrid";
+import PhotoCropDialog from "./photo-upload/PhotoCropDialog";
+import {
+  convertHeicToJpeg,
+  isHeic,
+  compressImage,
+  isImageBlurry,
+  generateImageHash,
+  areHashesSimilar,
+  getImageDimensions,
+} from "./photo-upload/imageProcessor";
 
 const MAX_PHOTOS = 10;
 const MIN_PHOTOS = 5;
-const MAX_SIZE_MB = 8;
+const MAX_SIZE_MB = 10;
 const MIN_WIDTH = 800;
 const MIN_HEIGHT = 600;
-const ACCEPTED_MIME = ["image/jpeg", "image/png", "image/webp"];
-const ACCEPTED_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
+const ACCEPTED_MIME = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
 export interface PhotoItem {
   id: string;
@@ -15,6 +26,7 @@ export interface PhotoItem {
   preview: string;
   error?: string | null;
   validated?: boolean;
+  hash?: string;
 }
 
 interface PhotoUploaderProps {
@@ -23,65 +35,19 @@ interface PhotoUploaderProps {
   onValidityChange?: (allValid: boolean) => void;
 }
 
-function getExtension(name: string): string {
-  return (name.toLowerCase().split(".").pop() || "");
-}
-
 function isAcceptedFormat(file: File): boolean {
   if (ACCEPTED_MIME.includes(file.type)) return true;
-  return ACCEPTED_EXTENSIONS.includes(getExtension(file.name));
-}
-
-/** Load image into canvas to validate dimensions and fix EXIF orientation.
- *  Modern browsers auto-correct EXIF in <img> and canvas drawImage. */
-function validateImageDimensions(file: File): Promise<{ width: number; height: number; preview: string }> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      // Draw through canvas to flatten EXIF orientation
-      const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        URL.revokeObjectURL(url);
-        resolve({ width: img.naturalWidth, height: img.naturalHeight, preview: url });
-        return;
-      }
-      ctx.drawImage(img, 0, 0);
-
-      // Create a corrected blob URL for preview
-      canvas.toBlob(
-        (blob) => {
-          URL.revokeObjectURL(url);
-          if (blob) {
-            const correctedUrl = URL.createObjectURL(blob);
-            resolve({ width: img.naturalWidth, height: img.naturalHeight, preview: correctedUrl });
-          } else {
-            // Fallback to original URL
-            resolve({ width: img.naturalWidth, height: img.naturalHeight, preview: URL.createObjectURL(file) });
-          }
-        },
-        "image/jpeg",
-        0.92
-      );
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Impossible de lire cette image."));
-    };
-    img.src = url;
-  });
+  const ext = file.name.toLowerCase().split(".").pop() || "";
+  return ["jpg", "jpeg", "png", "webp", "heic", "heif"].includes(ext);
 }
 
 const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProps) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [cropIndex, setCropIndex] = useState<number | null>(null);
 
-  // Notify parent of validity changes
+  // Validity tracking
   useEffect(() => {
     if (!onValidityChange) return;
     const allValid = photos.length >= MIN_PHOTOS && photos.every((p) => p.validated && !p.error);
@@ -100,40 +66,75 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
       setProcessing(true);
       const newErrors: string[] = [];
       const newPhotos: PhotoItem[] = [];
+      const existingHashes = photos.map((p) => p.hash).filter(Boolean) as string[];
       const filesToProcess = fileArray.slice(0, remaining);
 
-      for (const file of filesToProcess) {
-        // Format check
-        if (!isAcceptedFormat(file)) {
-          newErrors.push(`"${file.name}" : format non supporté. Utilisez JPG, PNG ou WEBP.`);
-          continue;
-        }
-
-        // Size check
-        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-          const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-          newErrors.push(`"${file.name}" (${sizeMB} Mo) : image trop lourde. Maximum ${MAX_SIZE_MB} Mo.`);
-          continue;
-        }
-
-        // Dimension check + EXIF correction
+      for (const rawFile of filesToProcess) {
         try {
-          const { width, height, preview } = await validateImageDimensions(file);
-
-          let error: string | null = null;
-          if (width < MIN_WIDTH || height < MIN_HEIGHT) {
-            error = `Dimensions trop petites (${width}×${height}). Minimum ${MIN_WIDTH}×${MIN_HEIGHT} px.`;
+          // Format check
+          if (!isAcceptedFormat(rawFile)) {
+            newErrors.push(`"${rawFile.name}" : format non supporté. Utilisez JPG, PNG, WEBP ou HEIC.`);
+            continue;
           }
+
+          // Size check
+          if (rawFile.size > MAX_SIZE_MB * 1024 * 1024) {
+            const sizeMB = (rawFile.size / (1024 * 1024)).toFixed(1);
+            newErrors.push(`"${rawFile.name}" (${sizeMB} Mo) : fichier trop lourd. Maximum ${MAX_SIZE_MB} Mo.`);
+            continue;
+          }
+
+          // Convert HEIC if needed
+          let file = rawFile;
+          if (isHeic(rawFile)) {
+            try {
+              file = await convertHeicToJpeg(rawFile);
+            } catch {
+              newErrors.push(`"${rawFile.name}" : impossible de convertir le format HEIC.`);
+              continue;
+            }
+          }
+
+          // Check dimensions
+          const dims = await getImageDimensions(file);
+          if (dims.width < MIN_WIDTH || dims.height < MIN_HEIGHT) {
+            newErrors.push(
+              `"${rawFile.name}" (${dims.width}×${dims.height}) : image trop petite. Minimum ${MIN_WIDTH}×${MIN_HEIGHT} px.`
+            );
+            continue;
+          }
+
+          // Duplicate detection
+          const hash = await generateImageHash(file);
+          const allHashes = [...existingHashes, ...newPhotos.map((p) => p.hash).filter(Boolean) as string[]];
+          const isDuplicate = allHashes.some((h) => areHashesSimilar(hash, h));
+          if (isDuplicate) {
+            newErrors.push(`"${rawFile.name}" : cette image a déjà été ajoutée. Veuillez sélectionner une autre photo.`);
+            continue;
+          }
+
+          // Blur detection
+          const blurry = await isImageBlurry(file);
+          if (blurry) {
+            newErrors.push(`"${rawFile.name}" : cette image semble floue. Veuillez utiliser une photo plus nette.`);
+            continue;
+          }
+
+          // Compress & optimize to WebP
+          const { blob, width, height } = await compressImage(file);
+          const optimizedFile = new File([blob], file.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
+          const preview = URL.createObjectURL(blob);
 
           newPhotos.push({
             id: crypto.randomUUID(),
-            file,
+            file: optimizedFile,
             preview,
-            error,
+            error: null,
             validated: true,
+            hash,
           });
         } catch {
-          newErrors.push(`"${file.name}" : impossible de lire cette image.`);
+          newErrors.push(`"${rawFile.name}" : impossible de traiter cette image.`);
         }
       }
 
@@ -146,113 +147,79 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
     [photos, onChange]
   );
 
-  const openFilePicker = useCallback(() => {
-    if (!processing && photos.length < MAX_PHOTOS) {
-      fileInputRef.current?.click();
-    }
-  }, [processing, photos.length]);
+  const handleCropComplete = useCallback(
+    (croppedBlob: Blob) => {
+      if (cropIndex === null) return;
+      const photo = photos[cropIndex];
+      if (photo.preview.startsWith("blob:")) URL.revokeObjectURL(photo.preview);
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      handleFiles(e.dataTransfer.files);
+      const newPreview = URL.createObjectURL(croppedBlob);
+      const newFile = new File([croppedBlob], photo.file.name, { type: "image/webp" });
+      const updated = [...photos];
+      updated[cropIndex] = { ...photo, file: newFile, preview: newPreview };
+      onChange(updated);
+      setCropIndex(null);
     },
-    [handleFiles]
+    [cropIndex, photos, onChange]
   );
 
-  const handlePhotoDragStart = (index: number) => setDragIndex(index);
-
-  const handlePhotoDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    if (dragIndex === null || dragIndex === index) return;
-    const updated = [...photos];
-    const [moved] = updated.splice(dragIndex, 1);
-    updated.splice(index, 0, moved);
-    onChange(updated);
-    setDragIndex(index);
-  };
-
-  const handlePhotoDragEnd = () => setDragIndex(null);
-
-  const removePhoto = (index: number) => {
-    const removed = photos[index];
-    if (removed.preview.startsWith("blob:")) {
-      URL.revokeObjectURL(removed.preview);
-    }
-    onChange(photos.filter((_, i) => i !== index));
-  };
+  const openFilePicker = useCallback(() => {
+    // Trigger the DropZone's hidden input by simulating a click on the drop zone
+    dropZoneRef.current?.click();
+  }, []);
 
   const hasInvalidPhotos = photos.some((p) => !!p.error);
-  const emptySlots = Math.max(0, MIN_PHOTOS - photos.length);
+  const validCount = photos.filter((p) => !p.error && p.validated).length;
 
   return (
-    <div className="space-y-4">
-      {/* Drop zone / tap zone */}
-      <div
-        onClick={openFilePicker}
-        onDrop={handleDrop}
-        onDragOver={(e) => e.preventDefault()}
-        className={`border-2 border-dashed rounded-2xl p-8 sm:p-10 text-center transition-colors ${
-          photos.length >= MAX_PHOTOS || processing
-            ? "border-muted cursor-not-allowed opacity-50"
-            : "border-border hover:border-accent cursor-pointer active:border-accent"
-        }`}
-      >
-        {processing ? (
-          <>
-            <Loader2 className="w-10 h-10 text-accent mx-auto mb-3 animate-spin" />
-            <p className="font-medium text-foreground mb-1">Validation des images…</p>
-          </>
-        ) : (
-          <>
-            <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <p className="font-medium text-foreground mb-1">Appuyez pour ajouter des photos</p>
-            <p className="text-sm text-muted-foreground">depuis votre galerie ou appareil photo</p>
-          </>
-        )}
-        <p className="text-xs text-muted-foreground mt-2">
-          JPG, PNG, WEBP • Min {MIN_WIDTH}×{MIN_HEIGHT} px • Min {MIN_PHOTOS}, max {MAX_PHOTOS} photos • {MAX_SIZE_MB} Mo max
-        </p>
+    <div className="space-y-5" ref={dropZoneRef}>
+      {/* Tip for hosts */}
+      <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 flex items-start gap-3">
+        <Lightbulb className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-medium text-foreground">
+            Conseil : les annonces avec 8 photos ou plus obtiennent plus de réservations
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Montrez chaque pièce, la vue extérieure et les espaces communs pour attirer plus de voyageurs.
+          </p>
+        </div>
       </div>
 
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp,image/*"
-        multiple
-        capture={undefined}
-        className="hidden"
-        onChange={(e) => {
-          if (e.target.files && e.target.files.length > 0) {
-            handleFiles(e.target.files);
-          }
-          e.target.value = "";
-        }}
+      {/* Drop zone */}
+      <DropZone
+        onFiles={handleFiles}
+        disabled={photos.length >= MAX_PHOTOS}
+        processing={processing}
+        photoCount={photos.length}
+        maxPhotos={MAX_PHOTOS}
       />
 
       {/* Global errors */}
       {globalErrors.length > 0 && (
-        <div className="space-y-1">
+        <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-3 space-y-1.5">
           {globalErrors.map((err, i) => (
-            <p key={i} className="text-xs text-destructive flex items-start gap-1">
-              <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
+            <p key={i} className="text-xs text-destructive flex items-start gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
               {err}
             </p>
           ))}
         </div>
       )}
 
-      {/* Counter + invalid warning */}
+      {/* Counter */}
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <p className="text-sm font-medium text-foreground">
-          Photos ajoutées :{" "}
-          <span className={photos.length < MIN_PHOTOS ? "text-destructive" : "text-accent"}>
-            {photos.length}
-          </span>{" "}
-          / {MAX_PHOTOS}
-        </p>
-        {photos.length > 0 && photos.length < MIN_PHOTOS && (
+        <div className="flex items-center gap-2">
+          <ImageIcon className="w-4 h-4 text-muted-foreground" />
+          <p className="text-sm font-medium text-foreground">
+            Photos ajoutées :{" "}
+            <span className={validCount < MIN_PHOTOS ? "text-destructive" : "text-accent"}>
+              {validCount}
+            </span>{" "}
+            / {MAX_PHOTOS}
+          </p>
+        </div>
+        {photos.length > 0 && validCount < MIN_PHOTOS && (
           <p className="text-xs text-destructive font-medium flex items-center gap-1">
             <AlertCircle className="w-3 h-3" />
             Ajoutez au moins {MIN_PHOTOS} photos
@@ -271,67 +238,34 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
       )}
 
       {/* Photo grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-        {photos.map((photo, index) => (
-          <div
-            key={photo.id}
-            draggable
-            onDragStart={() => handlePhotoDragStart(index)}
-            onDragOver={(e) => handlePhotoDragOver(e, index)}
-            onDragEnd={handlePhotoDragEnd}
-            className={`relative rounded-xl overflow-hidden group border-2 ${
-              photo.error ? "border-destructive" : "border-border"
-            } ${dragIndex === index ? "opacity-50" : ""}`}
-            style={{ aspectRatio: "4/3" }}
-          >
-            <img
-              src={photo.preview}
-              alt={`Photo ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-            {/* Per-photo error overlay */}
-            {photo.error && (
-              <div className="absolute inset-0 bg-destructive/20 flex items-end">
-                <p className="w-full text-[9px] leading-tight text-destructive-foreground bg-destructive/90 px-1.5 py-1 font-medium">
-                  {photo.error}
-                </p>
-              </div>
-            )}
-            <div className="absolute top-1 left-1 w-7 h-7 bg-background/80 backdrop-blur-sm rounded-lg flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
-              <GripVertical className="w-3.5 h-3.5 text-foreground" />
-            </div>
-            {index === 0 && !photo.error && (
-              <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-md flex items-center gap-1">
-                <Star className="w-2.5 h-2.5" />
-                Principale
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={() => removePhoto(index)}
-              className="absolute top-1 right-1 w-7 h-7 bg-destructive text-destructive-foreground rounded-lg flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        ))}
-        {Array.from({ length: emptySlots }).map((_, i) => (
-          <div
-            key={`empty-${i}`}
-            onClick={openFilePicker}
-            className="rounded-xl bg-muted border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 active:border-accent transition-colors"
-            style={{ aspectRatio: "4/3" }}
-          >
-            <Camera className="w-5 h-5 text-muted-foreground/40 mb-1" />
-            <span className="text-[10px] text-muted-foreground/40">{photos.length + i + 1}</span>
-          </div>
-        ))}
-      </div>
+      {(photos.length > 0 || photos.length < MIN_PHOTOS) && (
+        <PhotoGrid
+          photos={photos}
+          onChange={onChange}
+          onCropRequest={setCropIndex}
+          onAddMore={() => {
+            const input = document.querySelector<HTMLInputElement>('input[type="file"][accept*="image"]');
+            if (input && photos.length < MAX_PHOTOS) input.click();
+          }}
+          maxPhotos={MAX_PHOTOS}
+          minPhotos={MIN_PHOTOS}
+        />
+      )}
 
       {photos.length === 0 && (
         <p className="text-sm text-destructive font-medium text-center">
           Ajoutez au moins {MIN_PHOTOS} photos pour publier votre logement
         </p>
+      )}
+
+      {/* Crop dialog */}
+      {cropIndex !== null && photos[cropIndex] && (
+        <PhotoCropDialog
+          open={cropIndex !== null}
+          onClose={() => setCropIndex(null)}
+          imageSrc={photos[cropIndex].preview}
+          onCropComplete={handleCropComplete}
+        />
       )}
     </div>
   );
