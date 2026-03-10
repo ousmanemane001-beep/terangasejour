@@ -228,4 +228,53 @@ function DestinationDetailCard({ destination, nearbyCount }: { destination: DbDe
   );
 }
 
+
+const DEFAULT_IMAGE = "/placeholder.svg";
+
+function ListingCard({ listing, rating }: { listing: DBListing; rating?: { avg: number | null; count: number } }) {
+  const coverImage = listing.photos && listing.photos.length > 0 ? listing.photos[0] : DEFAULT_IMAGE;
+  const city = listing.city || listing.location || "Sénégal";
+
+  return (
+    <Link
+      to={`/property/${listing.id}`}
+      className="group block bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1"
+    >
+      <div className="relative" style={{ aspectRatio: "4/3" }}>
+        <img
+          src={coverImage}
+          alt={listing.title}
+          loading="lazy"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        {rating && rating.avg !== null && (
+          <div className="absolute top-2 right-2 bg-background/90 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center gap-1">
+            <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+            <span className="text-xs font-semibold text-foreground">{rating.avg}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="p-4">
+        <h3 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1 mb-1">
+          {listing.title}
+        </h3>
+        <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+          <MapPin className="w-3 h-3" /> {city}
+        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-bold text-foreground">
+            {listing.price_per_night.toLocaleString("fr-FR")} <span className="text-xs font-normal text-muted-foreground">FCFA / nuit</span>
+          </p>
+          {rating && rating.count > 0 && (
+            <span className="text-[10px] text-muted-foreground">
+              {rating.count} avis
+            </span>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export default DiscoverSenegal;
