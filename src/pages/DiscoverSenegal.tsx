@@ -29,6 +29,8 @@ const PROXIMITY_KM = 30;
 const DiscoverSenegal = () => {
   const { data: allDestinations } = useDestinations();
   const { data: listings } = useListings();
+  const listingIds = useMemo(() => (listings ?? []).map(l => l.id), [listings]);
+  const { data: ratingsMap } = useListingsRatings(listingIds);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
