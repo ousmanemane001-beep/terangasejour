@@ -4,13 +4,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import OusmaneChatbot from "@/components/OusmaneChatbot";
 import { useDestinations, type DbDestination } from "@/hooks/useDestinations";
-import { useListings } from "@/hooks/useListings";
+import { useListings, type DBListing } from "@/hooks/useListings";
+import { useListingsRatings } from "@/hooks/useReviews";
 import { haversineKm, formatDistance } from "@/lib/haversine";
-import { MapPin, Search, ChevronRight, Star, Users, BedDouble } from "lucide-react";
+import { MapPin, Search, ChevronRight, Star, Users, BedDouble, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-
 const CATEGORY_INFO: Record<string, { label: string; emoji: string; color: string }> = {
   plage: { label: "Plages", emoji: "🏖️", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
   ville: { label: "Villes", emoji: "🏙️", color: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" },
@@ -29,6 +29,8 @@ const PROXIMITY_KM = 30;
 const DiscoverSenegal = () => {
   const { data: allDestinations } = useDestinations();
   const { data: listings } = useListings();
+  const listingIds = useMemo(() => (listings ?? []).map(l => l.id), [listings]);
+  const { data: ratingsMap } = useListingsRatings(listingIds);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -150,6 +152,28 @@ const DiscoverSenegal = () => {
             <p className="text-sm text-muted-foreground">Essayez un autre terme de recherche.</p>
           </div>
         )}
+        {/* Listings section */}
+        {listings && listings.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-6">
+              <Home className="w-6 h-6 text-accent" />
+              <h2 className="font-display text-xl md:text-2xl font-bold text-foreground">Logements disponibles</h2>
+              <Badge variant="secondary" className="ml-2">{listings.length}</Badge>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {listings.map(listing => {
+                const rating = ratingsMap?.[listing.id];
+                return (
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                    rating={rating}
+                  />
+                );
+              })}
+            </div>
+          </section>
+        )}
       </div>
 
       <Footer />
@@ -198,6 +222,55 @@ function DestinationDetailCard({ destination, nearbyCount }: { destination: DbDe
             <span className="text-xs text-muted-foreground">Explorer →</span>
           )}
           <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+
+const DEFAULT_IMAGE = "/placeholder.svg";
+
+function ListingCard({ listing, rating }: { listing: DBListing; rating?: { avg: number | null; count: number } }) {
+  const coverImage = listing.photos && listing.photos.length > 0 ? listing.photos[0] : DEFAULT_IMAGE;
+  const city = listing.city || listing.location || "Sénégal";
+
+  return (
+    <Link
+      to={`/property/${listing.id}`}
+      className="group block bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1"
+    >
+      <div className="relative" style={{ aspectRatio: "4/3" }}>
+        <img
+          src={coverImage}
+          alt={listing.title}
+          loading="lazy"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        {rating && rating.avg !== null && (
+          <div className="absolute top-2 right-2 bg-background/90 backdrop-blur-sm rounded-lg px-2 py-1 flex items-center gap-1">
+            <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+            <span className="text-xs font-semibold text-foreground">{rating.avg}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="p-4">
+        <h3 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1 mb-1">
+          {listing.title}
+        </h3>
+        <p className="text-xs text-muted-foreground flex items-center gap-1 mb-2">
+          <MapPin className="w-3 h-3" /> {city}
+        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-bold text-foreground">
+            {listing.price_per_night.toLocaleString("fr-FR")} <span className="text-xs font-normal text-muted-foreground">FCFA / nuit</span>
+          </p>
+          {rating && rating.count > 0 && (
+            <span className="text-[10px] text-muted-foreground">
+              {rating.count} avis
+            </span>
+          )}
         </div>
       </div>
     </Link>
