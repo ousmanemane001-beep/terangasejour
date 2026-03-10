@@ -10,6 +10,10 @@ export interface DbDestination {
   longitude: number | null;
   google_place_id: string | null;
   description: string | null;
+  image1: string | null;
+  image2: string | null;
+  image3: string | null;
+  image4: string | null;
 }
 
 export function useDestinations(search?: string) {
