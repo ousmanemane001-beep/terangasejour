@@ -218,8 +218,7 @@ const Publish = () => {
       const safePrice = Number.parseInt(listingDraft.price || "0", 10);
 
       const bookingMode = listingDraft.availabilityType === "request_only" ? "request" : "instant";
-      const availabilityMode = listingDraft.availabilityType === "always" ? "always" : 
-        listingDraft.availabilityType === "calendar" ? "calendar" : "request";
+      const availabilityMode = listingDraft.availabilityType === "always" ? "always" : "request";
 
       const { data: insertedListing, error: insertError } = await supabase.from("listings").insert({
         user_id: user.id,
@@ -239,8 +238,8 @@ const Publish = () => {
 
       if (insertError) throw insertError;
 
-      // Insert blocked dates if calendar mode
-      if (listingDraft.availabilityType === "calendar" && listingDraft.blockedDates.length > 0 && insertedListing) {
+      // Insert blocked dates if request mode with blocked dates
+      if (listingDraft.availabilityType === "request_only" && listingDraft.blockedDates.length > 0 && insertedListing) {
         const blockedRows = listingDraft.blockedDates.map((d) => ({
           listing_id: insertedListing.id,
           date: format(d, "yyyy-MM-dd"),
@@ -486,9 +485,8 @@ const Publish = () => {
                       <div className="flex justify-between py-2 border-b border-border">
                         <span className="text-muted-foreground">Disponibilité</span>
                         <span className="font-medium text-foreground">
-                          {listingDraft.availabilityType === "always" && "Toujours disponible"}
-                          {listingDraft.availabilityType === "calendar" && `Calendrier (${listingDraft.blockedDates.length} date(s) bloquée(s))`}
-                          {listingDraft.availabilityType === "request_only" && "Sur demande"}
+                          {listingDraft.availabilityType === "always" && "Toujours disponible (réservation instantanée)"}
+                          {listingDraft.availabilityType === "request_only" && `Sur demande${listingDraft.blockedDates.length > 0 ? ` (${listingDraft.blockedDates.length} date(s) bloquée(s))` : ""}`}
                         </span>
                       </div>
                     </div>
