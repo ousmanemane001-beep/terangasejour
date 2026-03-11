@@ -208,8 +208,11 @@ const DiscoverSenegal = () => {
   );
 };
 
-function DestinationDetailCard({ destination, nearbyCount }: { destination: DbDestination; nearbyCount: number }) {
+function DestinationDetailCard({ destination, nearbyCount, coverImage }: { destination: DbDestination; nearbyCount: number; coverImage: string | null }) {
   const info = CATEGORY_INFO[destination.category] || { label: destination.category, emoji: "📍", color: "bg-muted text-foreground" };
+
+  // Don't render if no real image
+  if (!coverImage) return null;
 
   return (
     <Link
@@ -217,18 +220,12 @@ function DestinationDetailCard({ destination, nearbyCount }: { destination: DbDe
       className="group block bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1"
     >
       <div className="relative" style={{ aspectRatio: "4/3" }}>
-        {destination.image1 ? (
-          <img
-            src={destination.image1}
-            alt={destination.name}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-            <span className="text-5xl opacity-80 group-hover:scale-110 transition-transform">{info.emoji}</span>
-          </div>
-        )}
+        <img
+          src={coverImage}
+          alt={destination.name}
+          loading="lazy"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
         <Badge className={`absolute top-2 left-2 text-[10px] ${info.color}`}>{info.emoji} {info.label}</Badge>
       </div>
 
