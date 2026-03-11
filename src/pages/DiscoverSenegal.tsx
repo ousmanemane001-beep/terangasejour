@@ -73,9 +73,7 @@ const DiscoverSenegal = () => {
         )
       : allDestinations;
 
-    // Only keep destinations that have a real cover image
-    filtered = filtered.filter(d => destMeta[d.id]?.coverImage);
-
+    // Show all destinations, not just those with images
     const groups: Record<string, DbDestination[]> = {};
     for (const d of filtered) {
       if (!groups[d.category]) groups[d.category] = [];
