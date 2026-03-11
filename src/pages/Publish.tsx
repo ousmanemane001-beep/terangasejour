@@ -218,8 +218,7 @@ const Publish = () => {
       const safePrice = Number.parseInt(listingDraft.price || "0", 10);
 
       const bookingMode = listingDraft.availabilityType === "request_only" ? "request" : "instant";
-      const availabilityMode = listingDraft.availabilityType === "always" ? "always" : 
-        listingDraft.availabilityType === "calendar" ? "calendar" : "request";
+      const availabilityMode = listingDraft.availabilityType === "always" ? "always" : "request";
 
       const { data: insertedListing, error: insertError } = await supabase.from("listings").insert({
         user_id: user.id,
