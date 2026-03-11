@@ -34,14 +34,47 @@ const DiscoverSenegal = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  // Build a map: destination id → { nearbyCount, coverImage }
+  const destMeta = useMemo(() => {
+    const meta: Record<string, { nearbyCount: number; coverImage: string | null }> = {};
+    if (!allDestinations || !listings) return meta;
+
+    for (const dest of allDestinations) {
+      if (!dest.latitude || !dest.longitude) {
+        meta[dest.id] = { nearbyCount: 0, coverImage: dest.image1 || null };
+        continue;
+      }
+      const nearby = listings.filter(l =>
+        l.latitude && l.longitude &&
+        haversineKm(dest.latitude!, dest.longitude!, l.latitude, l.longitude) <= PROXIMITY_KM &&
+        l.photos && l.photos.length > 0
+      );
+      const nearbyAll = listings.filter(l =>
+        l.latitude && l.longitude &&
+        haversineKm(dest.latitude!, dest.longitude!, l.latitude, l.longitude) <= PROXIMITY_KM
+      );
+      // Pick a random cover image from nearby listings
+      let coverImage: string | null = dest.image1 || null;
+      if (nearby.length > 0) {
+        const randomListing = nearby[Math.floor(Math.random() * nearby.length)];
+        coverImage = randomListing.photos![0];
+      }
+      meta[dest.id] = { nearbyCount: nearbyAll.length, coverImage };
+    }
+    return meta;
+  }, [allDestinations, listings]);
+
   const grouped = useMemo(() => {
     if (!allDestinations) return {};
-    const filtered = search
+    let filtered = search
       ? allDestinations.filter(d =>
           d.name.toLowerCase().includes(search.toLowerCase()) ||
           d.region?.toLowerCase().includes(search.toLowerCase())
         )
       : allDestinations;
+
+    // Only keep destinations that have a real cover image
+    filtered = filtered.filter(d => destMeta[d.id]?.coverImage);
 
     const groups: Record<string, DbDestination[]> = {};
     for (const d of filtered) {
@@ -49,19 +82,11 @@ const DiscoverSenegal = () => {
       groups[d.category].push(d);
     }
     return groups;
-  }, [allDestinations, search]);
+  }, [allDestinations, search, destMeta]);
 
   const displayCategories = selectedCategory
     ? [selectedCategory]
     : CATEGORIES_ORDER.filter(c => grouped[c]?.length);
-
-  const getNearbyListingsCount = (dest: DbDestination) => {
-    if (!listings || !dest.latitude || !dest.longitude) return 0;
-    return listings.filter(l =>
-      l.latitude && l.longitude &&
-      haversineKm(dest.latitude!, dest.longitude!, l.latitude, l.longitude) <= PROXIMITY_KM
-    ).length;
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
