@@ -34,14 +34,47 @@ const DiscoverSenegal = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  // Build a map: destination id → { nearbyCount, coverImage }
+  const destMeta = useMemo(() => {
+    const meta: Record<string, { nearbyCount: number; coverImage: string | null }> = {};
+    if (!allDestinations || !listings) return meta;
+
+    for (const dest of allDestinations) {
+      if (!dest.latitude || !dest.longitude) {
+        meta[dest.id] = { nearbyCount: 0, coverImage: dest.image1 || null };
+        continue;
+      }
+      const nearby = listings.filter(l =>
+        l.latitude && l.longitude &&
+        haversineKm(dest.latitude!, dest.longitude!, l.latitude, l.longitude) <= PROXIMITY_KM &&
+        l.photos && l.photos.length > 0
+      );
+      const nearbyAll = listings.filter(l =>
+        l.latitude && l.longitude &&
+        haversineKm(dest.latitude!, dest.longitude!, l.latitude, l.longitude) <= PROXIMITY_KM
+      );
+      // Pick a random cover image from nearby listings
+      let coverImage: string | null = dest.image1 || null;
+      if (nearby.length > 0) {
+        const randomListing = nearby[Math.floor(Math.random() * nearby.length)];
+        coverImage = randomListing.photos![0];
+      }
+      meta[dest.id] = { nearbyCount: nearbyAll.length, coverImage };
+    }
+    return meta;
+  }, [allDestinations, listings]);
+
   const grouped = useMemo(() => {
     if (!allDestinations) return {};
-    const filtered = search
+    let filtered = search
       ? allDestinations.filter(d =>
           d.name.toLowerCase().includes(search.toLowerCase()) ||
           d.region?.toLowerCase().includes(search.toLowerCase())
         )
       : allDestinations;
+
+    // Only keep destinations that have a real cover image
+    filtered = filtered.filter(d => destMeta[d.id]?.coverImage);
 
     const groups: Record<string, DbDestination[]> = {};
     for (const d of filtered) {
@@ -49,19 +82,11 @@ const DiscoverSenegal = () => {
       groups[d.category].push(d);
     }
     return groups;
-  }, [allDestinations, search]);
+  }, [allDestinations, search, destMeta]);
 
   const displayCategories = selectedCategory
     ? [selectedCategory]
     : CATEGORIES_ORDER.filter(c => grouped[c]?.length);
-
-  const getNearbyListingsCount = (dest: DbDestination) => {
-    if (!listings || !dest.latitude || !dest.longitude) return 0;
-    return listings.filter(l =>
-      l.latitude && l.longitude &&
-      haversineKm(dest.latitude!, dest.longitude!, l.latitude, l.longitude) <= PROXIMITY_KM
-    ).length;
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -137,7 +162,8 @@ const DiscoverSenegal = () => {
                   <DestinationDetailCard
                     key={dest.id}
                     destination={dest}
-                    nearbyCount={getNearbyListingsCount(dest)}
+                    nearbyCount={destMeta[dest.id]?.nearbyCount ?? 0}
+                    coverImage={destMeta[dest.id]?.coverImage ?? null}
                   />
                 ))}
               </div>
@@ -182,8 +208,11 @@ const DiscoverSenegal = () => {
   );
 };
 
-function DestinationDetailCard({ destination, nearbyCount }: { destination: DbDestination; nearbyCount: number }) {
+function DestinationDetailCard({ destination, nearbyCount, coverImage }: { destination: DbDestination; nearbyCount: number; coverImage: string | null }) {
   const info = CATEGORY_INFO[destination.category] || { label: destination.category, emoji: "📍", color: "bg-muted text-foreground" };
+
+  // Don't render if no real image
+  if (!coverImage) return null;
 
   return (
     <Link
@@ -191,18 +220,12 @@ function DestinationDetailCard({ destination, nearbyCount }: { destination: DbDe
       className="group block bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1"
     >
       <div className="relative" style={{ aspectRatio: "4/3" }}>
-        {destination.image1 ? (
-          <img
-            src={destination.image1}
-            alt={destination.name}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-            <span className="text-5xl opacity-80 group-hover:scale-110 transition-transform">{info.emoji}</span>
-          </div>
-        )}
+        <img
+          src={coverImage}
+          alt={destination.name}
+          loading="lazy"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
         <Badge className={`absolute top-2 left-2 text-[10px] ${info.color}`}>{info.emoji} {info.label}</Badge>
       </div>
 
@@ -239,10 +262,10 @@ function DestinationDetailCard({ destination, nearbyCount }: { destination: DbDe
 }
 
 
-const DEFAULT_IMAGE = "/placeholder.svg";
+const LISTING_DEFAULT_IMAGE = "/placeholder.svg";
 
 function ListingCard({ listing, rating }: { listing: DBListing; rating?: { avg: number | null; count: number } }) {
-  const coverImage = listing.photos && listing.photos.length > 0 ? listing.photos[0] : DEFAULT_IMAGE;
+  const coverImage = listing.photos && listing.photos.length > 0 ? listing.photos[0] : LISTING_DEFAULT_IMAGE;
   const city = listing.city || listing.location || "Sénégal";
 
   return (
