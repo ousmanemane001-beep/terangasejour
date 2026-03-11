@@ -265,7 +265,7 @@ function DestinationDetailCard({ destination, nearbyCount, coverImage }: { desti
 const LISTING_DEFAULT_IMAGE = "/placeholder.svg";
 
 function ListingCard({ listing, rating }: { listing: DBListing; rating?: { avg: number | null; count: number } }) {
-  const coverImage = listing.photos && listing.photos.length > 0 ? listing.photos[0] : DEFAULT_IMAGE;
+  const coverImage = listing.photos && listing.photos.length > 0 ? listing.photos[0] : LISTING_DEFAULT_IMAGE;
   const city = listing.city || listing.location || "Sénégal";
 
   return (
