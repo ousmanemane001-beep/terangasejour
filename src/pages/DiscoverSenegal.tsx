@@ -262,7 +262,7 @@ function DestinationDetailCard({ destination, nearbyCount, coverImage }: { desti
 }
 
 
-const DEFAULT_IMAGE = "/placeholder.svg";
+const LISTING_DEFAULT_IMAGE = "/placeholder.svg";
 
 function ListingCard({ listing, rating }: { listing: DBListing; rating?: { avg: number | null; count: number } }) {
   const coverImage = listing.photos && listing.photos.length > 0 ? listing.photos[0] : DEFAULT_IMAGE;
