@@ -238,8 +238,8 @@ const Publish = () => {
 
       if (insertError) throw insertError;
 
-      // Insert blocked dates if calendar mode
-      if (listingDraft.availabilityType === "calendar" && listingDraft.blockedDates.length > 0 && insertedListing) {
+      // Insert blocked dates if request mode with blocked dates
+      if (listingDraft.availabilityType === "request_only" && listingDraft.blockedDates.length > 0 && insertedListing) {
         const blockedRows = listingDraft.blockedDates.map((d) => ({
           listing_id: insertedListing.id,
           date: format(d, "yyyy-MM-dd"),
