@@ -162,7 +162,8 @@ const DiscoverSenegal = () => {
                   <DestinationDetailCard
                     key={dest.id}
                     destination={dest}
-                    nearbyCount={getNearbyListingsCount(dest)}
+                    nearbyCount={destMeta[dest.id]?.nearbyCount ?? 0}
+                    coverImage={destMeta[dest.id]?.coverImage ?? null}
                   />
                 ))}
               </div>
