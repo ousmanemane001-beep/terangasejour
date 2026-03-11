@@ -16,8 +16,8 @@ import {
 const MAX_PHOTOS = 10;
 const MIN_PHOTOS = 5;
 const MAX_SIZE_MB = 10;
-const MIN_WIDTH = 800;
-const MIN_HEIGHT = 600;
+const MIN_WIDTH = 1024;
+const MIN_HEIGHT = 768;
 const ACCEPTED_MIME = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
 export interface PhotoItem {
@@ -27,6 +27,8 @@ export interface PhotoItem {
   error?: string | null;
   validated?: boolean;
   hash?: string;
+  /** 0-100 processing progress */
+  progress?: number;
 }
 
 interface PhotoUploaderProps {
@@ -46,13 +48,22 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
   const [processing, setProcessing] = useState(false);
   const [cropIndex, setCropIndex] = useState<number | null>(null);
+  // Track per-file progress for files being processed
+  const [processingItems, setProcessingItems] = useState<{ name: string; progress: number }[]>([]);
 
-  // Validity tracking
   useEffect(() => {
     if (!onValidityChange) return;
     const allValid = photos.length >= MIN_PHOTOS && photos.every((p) => p.validated && !p.error);
     onValidityChange(allValid);
   }, [photos, onValidityChange]);
+
+  const updateItemProgress = (index: number, progress: number) => {
+    setProcessingItems((prev) => {
+      const copy = [...prev];
+      if (copy[index]) copy[index] = { ...copy[index], progress };
+      return copy;
+    });
+  };
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
@@ -63,17 +74,23 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
         return;
       }
 
+      const filesToProcess = fileArray.slice(0, remaining);
       setProcessing(true);
+      setProcessingItems(filesToProcess.map((f) => ({ name: f.name, progress: 0 })));
+
       const newErrors: string[] = [];
       const newPhotos: PhotoItem[] = [];
       const existingHashes = photos.map((p) => p.hash).filter(Boolean) as string[];
-      const filesToProcess = fileArray.slice(0, remaining);
 
-      for (const rawFile of filesToProcess) {
+      for (let fi = 0; fi < filesToProcess.length; fi++) {
+        const rawFile = filesToProcess[fi];
         try {
+          updateItemProgress(fi, 5);
+
           // Format check
           if (!isAcceptedFormat(rawFile)) {
-            newErrors.push(`"${rawFile.name}" : format non supporté. Utilisez JPG, PNG, WEBP ou HEIC.`);
+            newErrors.push(`"${rawFile.name}" : format non supporté. Utilisez JPG, PNG ou WEBP.`);
+            updateItemProgress(fi, 100);
             continue;
           }
 
@@ -81,8 +98,11 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
           if (rawFile.size > MAX_SIZE_MB * 1024 * 1024) {
             const sizeMB = (rawFile.size / (1024 * 1024)).toFixed(1);
             newErrors.push(`"${rawFile.name}" (${sizeMB} Mo) : fichier trop lourd. Maximum ${MAX_SIZE_MB} Mo.`);
+            updateItemProgress(fi, 100);
             continue;
           }
+
+          updateItemProgress(fi, 15);
 
           // Convert HEIC if needed
           let file = rawFile;
@@ -91,39 +111,53 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
               file = await convertHeicToJpeg(rawFile);
             } catch {
               newErrors.push(`"${rawFile.name}" : impossible de convertir le format HEIC.`);
+              updateItemProgress(fi, 100);
               continue;
             }
           }
+
+          updateItemProgress(fi, 25);
 
           // Check dimensions
           const dims = await getImageDimensions(file);
           if (dims.width < MIN_WIDTH || dims.height < MIN_HEIGHT) {
             newErrors.push(
-              `"${rawFile.name}" (${dims.width}×${dims.height}) : image trop petite. Minimum ${MIN_WIDTH}×${MIN_HEIGHT} px.`
+              `"${rawFile.name}" (${dims.width}×${dims.height}) : résolution trop faible. Minimum ${MIN_WIDTH}×${MIN_HEIGHT} px.`
             );
+            updateItemProgress(fi, 100);
             continue;
           }
+
+          updateItemProgress(fi, 40);
 
           // Duplicate detection
           const hash = await generateImageHash(file);
           const allHashes = [...existingHashes, ...newPhotos.map((p) => p.hash).filter(Boolean) as string[]];
           const isDuplicate = allHashes.some((h) => areHashesSimilar(hash, h));
           if (isDuplicate) {
-            newErrors.push(`"${rawFile.name}" : cette image a déjà été ajoutée. Veuillez sélectionner une autre photo.`);
+            newErrors.push(`"${rawFile.name}" : image dupliquée détectée. Veuillez sélectionner une autre photo.`);
+            updateItemProgress(fi, 100);
             continue;
           }
+
+          updateItemProgress(fi, 55);
 
           // Blur detection
           const blurry = await isImageBlurry(file);
           if (blurry) {
-            newErrors.push(`"${rawFile.name}" : cette image semble floue. Veuillez utiliser une photo plus nette.`);
+            newErrors.push(`"${rawFile.name}" : image trop floue. Veuillez utiliser une photo plus nette.`);
+            updateItemProgress(fi, 100);
             continue;
           }
 
-          // Compress & optimize to WebP
+          updateItemProgress(fi, 70);
+
+          // Compress, auto-crop 4:3, optimize to WebP
           const { blob, width, height } = await compressImage(file);
           const optimizedFile = new File([blob], file.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
           const preview = URL.createObjectURL(blob);
+
+          updateItemProgress(fi, 95);
 
           newPhotos.push({
             id: crypto.randomUUID(),
@@ -132,9 +166,13 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
             error: null,
             validated: true,
             hash,
+            progress: 100,
           });
+
+          updateItemProgress(fi, 100);
         } catch {
           newErrors.push(`"${rawFile.name}" : impossible de traiter cette image.`);
+          updateItemProgress(fi, 100);
         }
       }
 
@@ -143,6 +181,7 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
         onChange([...photos, ...newPhotos]);
       }
       setProcessing(false);
+      setProcessingItems([]);
     },
     [photos, onChange]
   );
@@ -163,25 +202,20 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
     [cropIndex, photos, onChange]
   );
 
-  const openFilePicker = useCallback(() => {
-    // Trigger the DropZone's hidden input by simulating a click on the drop zone
-    dropZoneRef.current?.click();
-  }, []);
-
   const hasInvalidPhotos = photos.some((p) => !!p.error);
   const validCount = photos.filter((p) => !p.error && p.validated).length;
 
   return (
     <div className="space-y-5" ref={dropZoneRef}>
-      {/* Tip for hosts */}
+      {/* Tip */}
       <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 flex items-start gap-3">
         <Lightbulb className="w-5 h-5 text-accent shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-medium text-foreground">
-            Conseil : les annonces avec 8 photos ou plus obtiennent plus de réservations
+            Conseil : les annonces avec 8+ photos obtiennent plus de réservations
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Montrez chaque pièce, la vue extérieure et les espaces communs pour attirer plus de voyageurs.
+            Montrez chaque pièce, la vue extérieure et les espaces communs. Les images seront automatiquement recadrées au format 4:3.
           </p>
         </div>
       </div>
@@ -194,6 +228,26 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
         photoCount={photos.length}
         maxPhotos={MAX_PHOTOS}
       />
+
+      {/* Per-image progress bars */}
+      {processingItems.length > 0 && (
+        <div className="space-y-2">
+          {processingItems.map((item, i) => (
+            <div key={i} className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-foreground font-medium truncate max-w-[70%]">{item.name}</span>
+                <span className="text-muted-foreground">{item.progress}%</span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${item.progress}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Global errors */}
       {globalErrors.length > 0 && (
@@ -225,6 +279,15 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
             Ajoutez au moins {MIN_PHOTOS} photos
           </p>
         )}
+      </div>
+
+      {/* Requirements summary */}
+      <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+        <span className="bg-muted px-2 py-0.5 rounded">JPG, PNG, WEBP</span>
+        <span className="bg-muted px-2 py-0.5 rounded">Max 10 Mo</span>
+        <span className="bg-muted px-2 py-0.5 rounded">Min 1024×768 px</span>
+        <span className="bg-muted px-2 py-0.5 rounded">Recadrage 4:3 auto</span>
+        <span className="bg-muted px-2 py-0.5 rounded">5 à 10 photos</span>
       </div>
 
       {/* Invalid photos warning */}

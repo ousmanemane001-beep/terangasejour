@@ -5,9 +5,9 @@
 const MAX_DIMENSION = 1920;
 const TARGET_QUALITY_MIN = 0.6;
 const TARGET_QUALITY_MAX = 0.85;
-const TARGET_SIZE_MIN = 300 * 1024; // 300 KB
 const TARGET_SIZE_MAX = 500 * 1024; // 500 KB
 const BLUR_THRESHOLD = 50;
+const ASPECT_RATIO = 4 / 3;
 
 /** Convert HEIC to JPEG using heic2any */
 export async function convertHeicToJpeg(file: File): Promise<File> {
@@ -39,7 +39,7 @@ function loadImage(file: File): Promise<HTMLImageElement> {
   });
 }
 
-/** Resize and compress image to WebP, targeting 300-500KB, max 1920px */
+/** Resize, auto-crop to 4:3 ratio, and compress image to WebP */
 export async function compressImage(file: File): Promise<{ blob: Blob; width: number; height: number }> {
   const img = await loadImage(file);
   let { naturalWidth: w, naturalHeight: h } = img;
@@ -51,23 +51,44 @@ export async function compressImage(file: File): Promise<{ blob: Blob; width: nu
     h = Math.round(h * ratio);
   }
 
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(img, 0, 0, w, h);
+  // Auto-crop to 4:3 aspect ratio (center crop)
+  const currentRatio = w / h;
+  let cropX = 0, cropY = 0, cropW = w, cropH = h;
 
-  // Try to hit target size range with WebP
+  if (currentRatio > ASPECT_RATIO) {
+    // Image is wider than 4:3 — crop sides
+    cropW = Math.round(h * ASPECT_RATIO);
+    cropX = Math.round((w - cropW) / 2);
+  } else if (currentRatio < ASPECT_RATIO) {
+    // Image is taller than 4:3 — crop top/bottom
+    cropH = Math.round(w / ASPECT_RATIO);
+    cropY = Math.round((h - cropH) / 2);
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = cropW;
+  canvas.height = cropH;
+  const ctx = canvas.getContext("2d")!;
+
+  // Draw the full scaled image first, then extract the crop region
+  const tmpCanvas = document.createElement("canvas");
+  tmpCanvas.width = w;
+  tmpCanvas.height = h;
+  const tmpCtx = tmpCanvas.getContext("2d")!;
+  tmpCtx.drawImage(img, 0, 0, w, h);
+
+  ctx.drawImage(tmpCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+  // Compress to WebP
   let quality = TARGET_QUALITY_MAX;
   let blob = await canvasToBlob(canvas, "image/webp", quality);
 
-  // If too large, reduce quality
   while (blob.size > TARGET_SIZE_MAX && quality > TARGET_QUALITY_MIN) {
     quality -= 0.05;
     blob = await canvasToBlob(canvas, "image/webp", quality);
   }
 
-  return { blob, width: w, height: h };
+  return { blob, width: cropW, height: cropH };
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> {
@@ -84,7 +105,7 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number):
 export async function isImageBlurry(file: File): Promise<boolean> {
   try {
     const img = await loadImage(file);
-    const size = 256; // Analyze at reduced size for speed
+    const size = 256;
     const canvas = document.createElement("canvas");
     const ratio = Math.min(size / img.naturalWidth, size / img.naturalHeight, 1);
     canvas.width = Math.round(img.naturalWidth * ratio);
@@ -95,13 +116,11 @@ export async function isImageBlurry(file: File): Promise<boolean> {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const gray = new Float32Array(canvas.width * canvas.height);
 
-    // Convert to grayscale
     for (let i = 0; i < gray.length; i++) {
       const idx = i * 4;
       gray[i] = 0.299 * imageData.data[idx] + 0.587 * imageData.data[idx + 1] + 0.114 * imageData.data[idx + 2];
     }
 
-    // Laplacian kernel convolution
     const w = canvas.width;
     const h = canvas.height;
     let sum = 0;
@@ -123,11 +142,11 @@ export async function isImageBlurry(file: File): Promise<boolean> {
     const variance = sum / count;
     return variance < BLUR_THRESHOLD;
   } catch {
-    return false; // If we can't analyze, don't block
+    return false;
   }
 }
 
-/** Generate a perceptual hash (simple average hash) for duplicate detection */
+/** Generate a perceptual hash for duplicate detection */
 export async function generateImageHash(file: File): Promise<string> {
   const img = await loadImage(file);
   const canvas = document.createElement("canvas");
@@ -147,7 +166,7 @@ export async function generateImageHash(file: File): Promise<string> {
   return gray.map((v) => (v >= avg ? "1" : "0")).join("");
 }
 
-/** Compare two hashes - returns true if images are similar (hamming distance < threshold) */
+/** Compare two hashes */
 export function areHashesSimilar(hash1: string, hash2: string, threshold = 10): boolean {
   let distance = 0;
   for (let i = 0; i < hash1.length; i++) {
