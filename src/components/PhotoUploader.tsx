@@ -205,7 +205,7 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
         currentPhotos.map((p) => (p.id === photoId ? { ...p, aiAnalyzing: false } : p))
       );
     }
-  }, [photos, onChange]);
+  }, [onChange]);
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
