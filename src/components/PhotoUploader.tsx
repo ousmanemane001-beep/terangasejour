@@ -112,8 +112,9 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
   /** Run AI analysis on a photo and update it in-place */
   const analyzeWithAI = useCallback(async (photoId: string, file: File) => {
     // Mark as analyzing
+    const currentPhotos = photosRef.current;
     onChange(
-      photos.map((p) => (p.id === photoId ? { ...p, aiAnalyzing: true } : p))
+      currentPhotos.map((p) => (p.id === photoId ? { ...p, aiAnalyzing: true } : p))
     );
 
     try {
