@@ -293,7 +293,7 @@ const Navbar = () => {
               </div>
 
               {/* CTA bottom */}
-              {!isAdmin && (!user || isHost) && (
+              {user && !isAdmin && (
                 <div className="px-5 py-4 border-t border-border">
                   <Link to={isHost ? "/create-listing" : "/become-host"} onClick={close}>
                     <Button className="w-full rounded-lg font-semibold text-sm" style={{ backgroundColor: 'hsl(var(--search-highlight))', color: '#fff' }}>
