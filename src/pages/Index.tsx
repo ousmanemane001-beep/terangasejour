@@ -48,7 +48,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar />
-      <MobileStickySearch />
+      
 
       {/* Hero — VotreSejour.sn style */}
       <section className="relative" style={{ zIndex: 10 }}>
