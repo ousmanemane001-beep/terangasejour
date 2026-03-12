@@ -492,8 +492,8 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
 
       {/* Missing rooms suggestion */}
       {photos.length >= 1 && missingRooms.length > 0 && analyzingCount === 0 && (
-        <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3 flex items-start gap-2">
-          <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <div className="bg-accent/5 border border-accent/20 rounded-xl p-3 flex items-start gap-2">
+          <Sparkles className="w-4 h-4 text-accent shrink-0 mt-0.5" />
           <div>
             <p className="text-xs font-medium text-foreground">
               Les voyageurs préfèrent voir ces espaces :
@@ -504,7 +504,7 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
                 return (
                   <span
                     key={room}
-                    className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-700 text-[10px] font-medium px-2 py-0.5 rounded-md"
+                    className="inline-flex items-center gap-1 bg-accent/10 text-accent text-[10px] font-medium px-2 py-0.5 rounded-md"
                   >
                     <Icon className="w-3 h-3" />
                     {label}
