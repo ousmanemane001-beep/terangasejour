@@ -92,6 +92,8 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
   const [processing, setProcessing] = useState(false);
   const [cropIndex, setCropIndex] = useState<number | null>(null);
   const [processingItems, setProcessingItems] = useState<{ name: string; progress: number }[]>([]);
+  const photosRef = useRef(photos);
+  photosRef.current = photos;
 
   useEffect(() => {
     if (!onValidityChange) return;
