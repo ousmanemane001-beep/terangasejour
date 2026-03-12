@@ -78,7 +78,7 @@ const Navbar = () => {
 
           {/* Desktop right actions */}
           <div className="hidden md:flex items-center gap-2">
-            {!isAdmin && (
+            {user && !isAdmin && (
               <Link to={isHost ? "/create-listing" : "/become-host"}>
                 <Button variant="outline" size="sm" className="rounded text-sm border-[#0d9488] text-[#0d9488] bg-transparent hover:bg-[#0d9488]/10">
                   Ajouter mon logement
