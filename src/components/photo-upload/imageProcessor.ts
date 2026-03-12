@@ -86,13 +86,41 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 
 /** Resize, auto-crop to 3:2 ratio, and compress image to WebP */
 export async function compressImage(file: File): Promise<{ blob: Blob; width: number; height: number }> {
+  const result = await generateImageVariant(file, MAX_DIMENSION);
+  return result;
+}
+
+/** Generate multiple size variants of an image */
+export async function generateImageVariants(file: File): Promise<{
+  thumbnail: Blob;
+  medium: Blob;
+  full: Blob;
+  width: number;
+  height: number;
+}> {
+  const [thumbnail, medium, full] = await Promise.all([
+    generateImageVariant(file, 400),
+    generateImageVariant(file, 900),
+    generateImageVariant(file, 1500),
+  ]);
+
+  return {
+    thumbnail: thumbnail.blob,
+    medium: medium.blob,
+    full: full.blob,
+    width: full.width,
+    height: full.height,
+  };
+}
+
+/** Generate a single size variant with 3:2 crop and WebP compression */
+async function generateImageVariant(file: File, maxWidth: number): Promise<{ blob: Blob; width: number; height: number }> {
   const img = await loadImage(file);
   let { naturalWidth: w, naturalHeight: h } = img;
 
-  // Scale down if needed (mobile-friendly: cap at 2000px)
-  const maxDim = Math.min(MAX_DIMENSION, 2000);
-  if (w > maxDim || h > maxDim) {
-    const ratio = Math.min(maxDim / w, maxDim / h);
+  // Scale down to target max width
+  if (w > maxWidth) {
+    const ratio = maxWidth / w;
     w = Math.round(w * ratio);
     h = Math.round(h * ratio);
   }
