@@ -180,8 +180,9 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
       }
 
       // Update the photo with AI results
-      onChange((prev: PhotoItem[]) =>
-        prev.map((p) =>
+      const currentPhotos = photosRef.current;
+      onChange(
+        currentPhotos.map((p) =>
           p.id === photoId
             ? {
                 ...p,
