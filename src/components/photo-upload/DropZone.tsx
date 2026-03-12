@@ -64,7 +64,7 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
             </div>
             <div className="text-center">
               <p className="font-semibold text-foreground">
-                {photoCount === 0 ? "Ajouter une image" : "Ajouter d'autres photos"}
+                {photoCount === 0 ? "Ajouter des photos" : "Ajouter d'autres photos"}
               </p>
             </div>
             <div className="flex gap-3 w-full max-w-xs">
