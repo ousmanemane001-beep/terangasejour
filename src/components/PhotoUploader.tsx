@@ -17,9 +17,9 @@ import { toast } from "sonner";
 
 const MAX_PHOTOS = 10;
 const MIN_PHOTOS = 5;
-const MAX_SIZE_MB = 10;
-const MIN_WIDTH = 1200;
-const MIN_HEIGHT = 800;
+const MAX_SIZE_MB = 2;
+const MIN_WIDTH = 900;
+const MIN_HEIGHT = 600;
 const DRAFT_KEY = "photo_upload_draft";
 
 export type RoomCategory = "exterieur" | "salon" | "chambre" | "salle_de_bain" | "cuisine" | "terrasse" | "piscine" | "vue" | "autre";
