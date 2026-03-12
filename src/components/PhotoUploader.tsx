@@ -5,6 +5,7 @@ import PhotoGrid from "./photo-upload/PhotoGrid";
 import PhotoCropDialog from "./photo-upload/PhotoCropDialog";
 import {
   compressImage,
+  generateImageVariants,
   isImageBlurry,
   isImageTooDark,
   generateImageHash,
@@ -18,8 +19,8 @@ import { toast } from "sonner";
 const MAX_PHOTOS = 10;
 const MIN_PHOTOS = 5;
 const MAX_SIZE_MB = 2;
-const MIN_WIDTH = 900;
-const MIN_HEIGHT = 600;
+const MIN_WIDTH = 800;
+const MIN_HEIGHT = 1; // No minimum height — ratio handled by auto-crop
 const DRAFT_KEY = "photo_upload_draft";
 
 export type RoomCategory = "exterieur" | "salon" | "chambre" | "salle_de_bain" | "cuisine" | "terrasse" | "piscine" | "vue" | "autre";
@@ -36,6 +37,8 @@ export interface PhotoItem {
   aiAnalyzing?: boolean;
   aiWarning?: string | null;
   qualityScore?: number;
+  thumbnailBlob?: Blob;
+  mediumBlob?: Blob;
 }
 
 interface PhotoUploaderProps {
@@ -270,11 +273,11 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
             continue;
           }
 
-          // Step 6: Compression
-          setCurrentStep("Compression en cours…");
-          const { blob } = await compressImage(rawFile);
-          const optimizedFile = new File([blob], rawFile.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
-          const preview = URL.createObjectURL(blob);
+          // Step 6: Compression + multi-size generation
+          setCurrentStep("Optimisation des images…");
+          const variants = await generateImageVariants(rawFile);
+          const optimizedFile = new File([variants.full], rawFile.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
+          const preview = URL.createObjectURL(variants.full);
 
           const photoItem: PhotoItem = {
             id: crypto.randomUUID(),
@@ -286,6 +289,8 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
             progress: 100,
             roomCategory: "autre",
             aiAnalyzing: true,
+            thumbnailBlob: variants.thumbnail,
+            mediumBlob: variants.medium,
           };
 
           newPhotoHashes.push(hash);
@@ -465,12 +470,9 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
 
       {/* Requirements */}
       <div className="flex flex-wrap gap-1.5 text-[9px] sm:text-[10px] text-muted-foreground">
-        <span className="bg-muted px-2 py-0.5 rounded">JPG, PNG, WEBP</span>
-        <span className="bg-muted px-2 py-0.5 rounded">Max 2 Mo</span>
-        <span className="bg-muted px-2 py-0.5 rounded">Recommandé 1500×1000</span>
-        <span className="bg-muted px-2 py-0.5 rounded">Min 900×600</span>
-        <span className="bg-muted px-2 py-0.5 rounded">Ratio 3:2 auto</span>
-        <span className="bg-muted px-2 py-0.5 rounded">5–10 photos</span>
+        <span className="bg-muted px-2 py-0.5 rounded">JPG, PNG, HEIC</span>
+        <span className="bg-muted px-2 py-0.5 rounded">Min 5 · Max 10 photos</span>
+        <span className="bg-muted px-2 py-0.5 rounded">Optimisation auto</span>
       </div>
 
       {/* Missing rooms suggestion */}
