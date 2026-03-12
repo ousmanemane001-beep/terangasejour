@@ -54,7 +54,6 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
             <p className="text-xs text-muted-foreground">Compression et vérification qualité</p>
           </div>
         ) : isMobile ? (
-          /* Mobile: two explicit buttons */
           <div className="flex flex-col items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center">
               {photoCount === 0 ? (
@@ -63,9 +62,11 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
                 <ImagePlus className="w-7 h-7 text-accent" />
               )}
             </div>
-            <p className="font-semibold text-foreground">
-              {photoCount === 0 ? "Ajoutez vos photos" : "Ajouter d'autres photos"}
-            </p>
+            <div className="text-center">
+              <p className="font-semibold text-foreground">
+                {photoCount === 0 ? "Ajouter une image" : "Ajouter d'autres photos"}
+              </p>
+            </div>
             <div className="flex gap-3 w-full max-w-xs">
               <button
                 type="button"
@@ -86,12 +87,13 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
                 Galerie
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              JPG, PNG, HEIC • Max 10 Mo • {photoCount}/{maxPhotos}
-            </p>
+            <div className="text-xs text-muted-foreground space-y-0.5 text-center">
+              <p>Formats acceptés : JPG, PNG, WEBP</p>
+              <p>Dimension recommandée : 1500 × 1000 px</p>
+              <p>Taille maximale : 2 Mo</p>
+            </div>
           </div>
         ) : (
-          /* Desktop: drag & drop area */
           <div className="flex flex-col items-center gap-3">
             <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
               {photoCount === 0 ? (
@@ -102,23 +104,25 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
             </div>
             <div>
               <p className="font-semibold text-foreground text-lg">
-                {photoCount === 0
-                  ? "Glissez vos photos ici ou cliquez pour ajouter"
-                  : "Ajouter d'autres photos"}
+                {photoCount === 0 ? "Ajouter une image" : "Ajouter d'autres photos"}
               </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                JPG, PNG, HEIC, WEBP • Max 10 Mo • Min 1200×800 px
+              <p className="text-xs text-muted-foreground mt-1">
+                Glissez vos photos ici ou cliquez pour parcourir
               </p>
+            </div>
+            <div className="text-xs text-muted-foreground space-y-0.5">
+              <p>Formats acceptés : JPG, PNG, WEBP</p>
+              <p>Dimension recommandée : 1500 × 1000 px</p>
+              <p>Taille maximale : 2 Mo</p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Gallery file input */}
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/heic,image/heif,image/webp,image/*"
+        accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
         multiple
         className="hidden"
         onChange={(e) => {
@@ -127,7 +131,6 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
         }}
       />
 
-      {/* Camera capture input (mobile) */}
       <input
         ref={cameraInputRef}
         type="file"

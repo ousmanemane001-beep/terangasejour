@@ -517,9 +517,9 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
         />
       )}
 
-      {photos.length === 0 && (
-        <p className="text-xs sm:text-sm text-destructive font-medium text-center">
-          Ajoutez au moins {MIN_PHOTOS} photos pour publier votre logement
+      {photos.length < MIN_PHOTOS && (
+        <p className="text-xs sm:text-sm text-destructive font-medium text-center py-2">
+          Ajoutez au moins {MIN_PHOTOS} photos pour publier votre logement.
         </p>
       )}
 

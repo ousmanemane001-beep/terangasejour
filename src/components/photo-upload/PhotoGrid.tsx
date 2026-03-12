@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Star, GripVertical, AlertCircle, Crop, Camera, Sparkles, Loader2, ChevronDown } from "lucide-react";
+import { X, Star, AlertCircle, Crop, Camera, Loader2, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import type { PhotoItem, RoomCategory } from "../PhotoUploader";
 
 interface PhotoGridProps {
@@ -45,6 +45,14 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
     onChange(updated);
   };
 
+  const movePhoto = (index: number, direction: "left" | "right") => {
+    const newIndex = direction === "left" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= photos.length) return;
+    const updated = [...photos];
+    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    onChange(updated);
+  };
+
   const emptySlots = Math.max(0, minPhotos - photos.length);
   const allCategories = Object.keys(roomLabels) as RoomCategory[];
 
@@ -53,6 +61,7 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
       {photos.map((photo, index) => {
         const category = photo.roomCategory || "autre";
         const { label: catLabel, icon: CatIcon } = roomLabels[category];
+        const isPrimary = index === 0 && !photo.error && !photo.aiWarning;
 
         return (
           <div
@@ -62,7 +71,11 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
             onDragOver={(e) => handleDragOver(e, index)}
             onDragEnd={handleDragEnd}
             className={`relative rounded-xl overflow-hidden group border-2 transition-all ${
-              photo.error || photo.aiWarning ? "border-destructive" : index === 0 ? "border-accent" : "border-border"
+              photo.error || photo.aiWarning
+                ? "border-destructive"
+                : isPrimary
+                ? "border-accent ring-2 ring-accent/30"
+                : "border-border"
             } ${dragIndex === index ? "opacity-50 scale-95" : "hover:shadow-md"}`}
             style={{ aspectRatio: "3/2" }}
           >
@@ -90,22 +103,17 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
               </div>
             )}
 
-            {/* Drag handle */}
-            <div className="absolute top-1.5 left-1.5 w-7 h-7 bg-background/80 backdrop-blur-sm rounded-lg flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
-              <GripVertical className="w-3.5 h-3.5 text-foreground" />
-            </div>
-
             {/* Primary badge */}
-            {index === 0 && !photo.error && !photo.aiWarning && (
-              <div className="absolute bottom-1.5 left-1.5 px-2 py-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-md flex items-center gap-1">
-                <Star className="w-2.5 h-2.5" />
-                Couverture
+            {isPrimary && (
+              <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-md flex items-center gap-1 shadow-sm">
+                <Star className="w-2.5 h-2.5 fill-current" />
+                Photo principale
               </div>
             )}
 
             {/* Room category badge */}
             {!photo.aiAnalyzing && !photo.error && !photo.aiWarning && (
-              <div className="absolute top-1.5 left-10 relative">
+              <div className="absolute bottom-1.5 left-1.5 relative">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -119,9 +127,8 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
                   <ChevronDown className="w-2 h-2" />
                 </button>
 
-                {/* Category dropdown */}
                 {editingCategory === photo.id && (
-                  <div className="absolute top-6 left-0 z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[120px]">
+                  <div className="absolute bottom-6 left-0 z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[120px]">
                     {allCategories.map((cat) => {
                       const { label, icon: Icon } = roomLabels[cat];
                       return (
@@ -147,23 +154,48 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
               </div>
             )}
 
-            {/* Action buttons overlay */}
+            {/* Top-right action buttons: delete + crop */}
             <div className="absolute top-1.5 right-1.5 flex flex-col gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
               <button
                 type="button"
                 onClick={() => removePhoto(index)}
-                className="w-7 h-7 bg-destructive text-destructive-foreground rounded-lg flex items-center justify-center hover:bg-destructive/90"
+                className="w-7 h-7 bg-destructive text-destructive-foreground rounded-lg flex items-center justify-center hover:bg-destructive/90 shadow-sm"
+                title="Supprimer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
               <button
                 type="button"
                 onClick={() => onCropRequest(index)}
-                className="w-7 h-7 bg-background/80 backdrop-blur-sm text-foreground rounded-lg flex items-center justify-center hover:bg-background"
+                className="w-7 h-7 bg-background/80 backdrop-blur-sm text-foreground rounded-lg flex items-center justify-center hover:bg-background shadow-sm"
                 title="Recadrer"
               >
                 <Crop className="w-3.5 h-3.5" />
               </button>
+            </div>
+
+            {/* Reorder arrows */}
+            <div className="absolute bottom-1.5 right-1.5 flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+              {index > 0 && (
+                <button
+                  type="button"
+                  onClick={() => movePhoto(index, "left")}
+                  className="w-6 h-6 bg-background/80 backdrop-blur-sm text-foreground rounded-md flex items-center justify-center hover:bg-background shadow-sm"
+                  title="Déplacer à gauche"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+              )}
+              {index < photos.length - 1 && (
+                <button
+                  type="button"
+                  onClick={() => movePhoto(index, "right")}
+                  className="w-6 h-6 bg-background/80 backdrop-blur-sm text-foreground rounded-md flex items-center justify-center hover:bg-background shadow-sm"
+                  title="Déplacer à droite"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
 
             {/* Set as primary button (non-primary photos) */}
@@ -171,16 +203,17 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
               <button
                 type="button"
                 onClick={() => setAsPrimary(index)}
-                className="absolute bottom-1.5 left-1.5 px-2 py-0.5 bg-background/80 backdrop-blur-sm text-foreground text-[10px] font-medium rounded-md md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-background flex items-center gap-1"
+                className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-background/80 backdrop-blur-sm text-foreground text-[10px] font-medium rounded-md md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-background flex items-center gap-1 shadow-sm"
+                title="Définir comme photo principale"
               >
                 <Star className="w-2.5 h-2.5" />
-                Définir couverture
+                Principale
               </button>
             )}
 
             {/* Quality score badge */}
             {photo.qualityScore != null && !photo.aiAnalyzing && !photo.error && !photo.aiWarning && (
-              <div className={`absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold ${
+              <div className={`absolute top-1.5 right-10 px-1.5 py-0.5 rounded text-[9px] font-bold md:opacity-0 md:group-hover:opacity-100 transition-opacity ${
                 photo.qualityScore >= 7 ? "bg-green-500/90 text-white" :
                 photo.qualityScore >= 4 ? "bg-amber-500/90 text-white" :
                 "bg-destructive/90 text-white"
