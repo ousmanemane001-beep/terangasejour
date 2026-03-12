@@ -231,11 +231,10 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
             toast.info(message, { duration: 2000 });
           }
 
-          // Step 2: Size check
+          // Step 2: Size check — auto-compress if > 2MB instead of rejecting
           if (rawFile.size > MAX_SIZE_MB * 1024 * 1024) {
-            const sizeMB = (rawFile.size / (1024 * 1024)).toFixed(1);
-            newErrors.push(`"${rawFile.name}" (${sizeMB} Mo) dépasse la limite de ${MAX_SIZE_MB} Mo.`);
-            continue;
+            // We'll let the compression step handle it rather than rejecting
+            // The compressImage function will bring it under target size
           }
 
           // Step 3: Resolution check
