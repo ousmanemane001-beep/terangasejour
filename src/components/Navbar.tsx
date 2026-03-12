@@ -50,7 +50,7 @@ const Navbar = () => {
   const mobileMenuItems = [
     { label: "Accueil", path: "/", icon: Home },
     { label: "Destinations", path: "/explore", icon: MapPin },
-    { label: "Publier un logement", path: isHost ? "/create-listing" : "/become-host", icon: PlusCircle },
+    ...(user ? [{ label: "Publier un logement", path: isHost ? "/create-listing" : "/become-host", icon: PlusCircle }] : []),
     ...(user ? [{ label: "Mes réservations", path: "/dashboard", icon: CalendarDays }] : []),
   ];
 
@@ -293,7 +293,7 @@ const Navbar = () => {
               </div>
 
               {/* CTA bottom */}
-              {!isAdmin && (!user || isHost) && (
+              {user && !isAdmin && (
                 <div className="px-5 py-4 border-t border-border">
                   <Link to={isHost ? "/create-listing" : "/become-host"} onClick={close}>
                     <Button className="w-full rounded-lg font-semibold text-sm" style={{ backgroundColor: 'hsl(var(--search-highlight))', color: '#fff' }}>
