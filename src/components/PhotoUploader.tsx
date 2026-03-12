@@ -17,9 +17,9 @@ import { toast } from "sonner";
 
 const MAX_PHOTOS = 10;
 const MIN_PHOTOS = 5;
-const MAX_SIZE_MB = 10;
-const MIN_WIDTH = 1200;
-const MIN_HEIGHT = 800;
+const MAX_SIZE_MB = 2;
+const MIN_WIDTH = 900;
+const MIN_HEIGHT = 600;
 const DRAFT_KEY = "photo_upload_draft";
 
 export type RoomCategory = "exterieur" | "salon" | "chambre" | "salle_de_bain" | "cuisine" | "terrasse" | "piscine" | "vue" | "autre";
@@ -231,11 +231,10 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
             toast.info(message, { duration: 2000 });
           }
 
-          // Step 2: Size check
+          // Step 2: Size check — auto-compress if > 2MB instead of rejecting
           if (rawFile.size > MAX_SIZE_MB * 1024 * 1024) {
-            const sizeMB = (rawFile.size / (1024 * 1024)).toFixed(1);
-            newErrors.push(`"${rawFile.name}" (${sizeMB} Mo) dépasse la limite de ${MAX_SIZE_MB} Mo.`);
-            continue;
+            // We'll let the compression step handle it rather than rejecting
+            // The compressImage function will bring it under target size
           }
 
           // Step 3: Resolution check
@@ -466,9 +465,10 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
 
       {/* Requirements */}
       <div className="flex flex-wrap gap-1.5 text-[9px] sm:text-[10px] text-muted-foreground">
-        <span className="bg-muted px-2 py-0.5 rounded">JPG, PNG, HEIC</span>
-        <span className="bg-muted px-2 py-0.5 rounded">Max 10 Mo</span>
-        <span className="bg-muted px-2 py-0.5 rounded">Min 1200×800</span>
+        <span className="bg-muted px-2 py-0.5 rounded">JPG, PNG, WEBP</span>
+        <span className="bg-muted px-2 py-0.5 rounded">Max 2 Mo</span>
+        <span className="bg-muted px-2 py-0.5 rounded">Recommandé 1500×1000</span>
+        <span className="bg-muted px-2 py-0.5 rounded">Min 900×600</span>
         <span className="bg-muted px-2 py-0.5 rounded">Ratio 3:2 auto</span>
         <span className="bg-muted px-2 py-0.5 rounded">5–10 photos</span>
       </div>
@@ -516,9 +516,9 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
         />
       )}
 
-      {photos.length === 0 && (
-        <p className="text-xs sm:text-sm text-destructive font-medium text-center">
-          Ajoutez au moins {MIN_PHOTOS} photos pour publier votre logement
+      {photos.length < MIN_PHOTOS && (
+        <p className="text-xs sm:text-sm text-destructive font-medium text-center py-2">
+          Ajoutez au moins {MIN_PHOTOS} photos pour publier votre logement.
         </p>
       )}
 
