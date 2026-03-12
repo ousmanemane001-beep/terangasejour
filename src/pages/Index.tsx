@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
-import MobileStickySearch from "@/components/MobileStickySearch";
+
 import ListingCard from "@/components/ListingCard";
 import PropertyCard from "@/components/PropertyCard";
 import Footer from "@/components/Footer";
