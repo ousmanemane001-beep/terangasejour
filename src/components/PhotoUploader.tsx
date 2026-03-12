@@ -5,6 +5,7 @@ import PhotoGrid from "./photo-upload/PhotoGrid";
 import PhotoCropDialog from "./photo-upload/PhotoCropDialog";
 import {
   compressImage,
+  generateImageVariants,
   isImageBlurry,
   isImageTooDark,
   generateImageHash,
