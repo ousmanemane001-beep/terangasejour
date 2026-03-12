@@ -1,5 +1,6 @@
 /**
- * Image processing utilities: compression, blur detection, duplicate detection, HEIC conversion
+ * Image processing utilities: compression, blur detection, darkness detection,
+ * text/logo detection, duplicate detection
  */
 
 const MAX_DIMENSION = 1920;
@@ -7,20 +8,8 @@ const TARGET_QUALITY_MIN = 0.6;
 const TARGET_QUALITY_MAX = 0.85;
 const TARGET_SIZE_MAX = 500 * 1024; // 500 KB
 const BLUR_THRESHOLD = 50;
-const ASPECT_RATIO = 4 / 3;
-
-/** Convert HEIC to JPEG using heic2any */
-export async function convertHeicToJpeg(file: File): Promise<File> {
-  const heic2any = (await import("heic2any")).default;
-  const blob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 }) as Blob;
-  return new File([blob], file.name.replace(/\.heic$/i, ".jpg"), { type: "image/jpeg" });
-}
-
-/** Check if file is HEIC format */
-export function isHeic(file: File): boolean {
-  return file.type === "image/heic" || file.type === "image/heif" ||
-    /\.heic$/i.test(file.name) || /\.heif$/i.test(file.name);
-}
+const DARKNESS_THRESHOLD = 55; // average brightness below this = too dark
+const ASPECT_RATIO = 3 / 2;
 
 /** Load an image from a File and return the HTMLImageElement */
 function loadImage(file: File): Promise<HTMLImageElement> {
@@ -39,7 +28,7 @@ function loadImage(file: File): Promise<HTMLImageElement> {
   });
 }
 
-/** Resize, auto-crop to 4:3 ratio, and compress image to WebP */
+/** Resize, auto-crop to 3:2 ratio, and compress image to WebP */
 export async function compressImage(file: File): Promise<{ blob: Blob; width: number; height: number }> {
   const img = await loadImage(file);
   let { naturalWidth: w, naturalHeight: h } = img;
@@ -51,16 +40,14 @@ export async function compressImage(file: File): Promise<{ blob: Blob; width: nu
     h = Math.round(h * ratio);
   }
 
-  // Auto-crop to 4:3 aspect ratio (center crop)
+  // Auto-crop to 3:2 aspect ratio (center crop)
   const currentRatio = w / h;
   let cropX = 0, cropY = 0, cropW = w, cropH = h;
 
   if (currentRatio > ASPECT_RATIO) {
-    // Image is wider than 4:3 — crop sides
     cropW = Math.round(h * ASPECT_RATIO);
     cropX = Math.round((w - cropW) / 2);
   } else if (currentRatio < ASPECT_RATIO) {
-    // Image is taller than 4:3 — crop top/bottom
     cropH = Math.round(w / ASPECT_RATIO);
     cropY = Math.round((h - cropH) / 2);
   }
@@ -70,7 +57,6 @@ export async function compressImage(file: File): Promise<{ blob: Blob; width: nu
   canvas.height = cropH;
   const ctx = canvas.getContext("2d")!;
 
-  // Draw the full scaled image first, then extract the crop region
   const tmpCanvas = document.createElement("canvas");
   tmpCanvas.width = w;
   tmpCanvas.height = h;
@@ -141,6 +127,83 @@ export async function isImageBlurry(file: File): Promise<boolean> {
 
     const variance = sum / count;
     return variance < BLUR_THRESHOLD;
+  } catch {
+    return false;
+  }
+}
+
+/** Detect if the image is too dark (average brightness below threshold) */
+export async function isImageTooDark(file: File): Promise<boolean> {
+  try {
+    const img = await loadImage(file);
+    const canvas = document.createElement("canvas");
+    const size = 128;
+    const ratio = Math.min(size / img.naturalWidth, size / img.naturalHeight, 1);
+    canvas.width = Math.round(img.naturalWidth * ratio);
+    canvas.height = Math.round(img.naturalHeight * ratio);
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let totalBrightness = 0;
+    const pixelCount = canvas.width * canvas.height;
+
+    for (let i = 0; i < pixelCount; i++) {
+      const idx = i * 4;
+      totalBrightness += 0.299 * imageData.data[idx] + 0.587 * imageData.data[idx + 1] + 0.114 * imageData.data[idx + 2];
+    }
+
+    const avgBrightness = totalBrightness / pixelCount;
+    return avgBrightness < DARKNESS_THRESHOLD;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Detect if the image likely contains text or logos by analyzing
+ * high-contrast edge density — text-heavy images have many sharp edges
+ * concentrated in specific patterns.
+ */
+export async function hasTextOrLogo(file: File): Promise<boolean> {
+  try {
+    const img = await loadImage(file);
+    const canvas = document.createElement("canvas");
+    const size = 200;
+    const ratio = Math.min(size / img.naturalWidth, size / img.naturalHeight, 1);
+    canvas.width = Math.round(img.naturalWidth * ratio);
+    canvas.height = Math.round(img.naturalHeight * ratio);
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const w = canvas.width;
+    const h = canvas.height;
+    const gray = new Float32Array(w * h);
+
+    for (let i = 0; i < gray.length; i++) {
+      const idx = i * 4;
+      gray[i] = 0.299 * imageData.data[idx] + 0.587 * imageData.data[idx + 1] + 0.114 * imageData.data[idx + 2];
+    }
+
+    // Count pixels with very high gradient (sharp edges typical of text)
+    let sharpEdgeCount = 0;
+    const edgeThreshold = 80;
+
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const gx = gray[y * w + (x + 1)] - gray[y * w + (x - 1)];
+        const gy = gray[(y + 1) * w + x] - gray[(y - 1) * w + x];
+        const magnitude = Math.sqrt(gx * gx + gy * gy);
+        if (magnitude > edgeThreshold) sharpEdgeCount++;
+      }
+    }
+
+    const totalPixels = (w - 2) * (h - 2);
+    const edgeRatio = sharpEdgeCount / totalPixels;
+
+    // Text-heavy images typically have >25% sharp edges
+    return edgeRatio > 0.25;
   } catch {
     return false;
   }

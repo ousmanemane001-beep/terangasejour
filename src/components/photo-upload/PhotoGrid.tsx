@@ -56,7 +56,7 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onAddMore, maxPhotos, minP
           className={`relative rounded-xl overflow-hidden group border-2 transition-all ${
             photo.error ? "border-destructive" : index === 0 ? "border-accent" : "border-border"
           } ${dragIndex === index ? "opacity-50 scale-95" : "hover:shadow-md"}`}
-          style={{ aspectRatio: "4/3" }}
+          style={{ aspectRatio: "3/2" }}
         >
           <img
             src={photo.preview}
@@ -96,16 +96,14 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onAddMore, maxPhotos, minP
             >
               <X className="w-3.5 h-3.5" />
             </button>
-            {index === 0 && !photo.error && (
-              <button
-                type="button"
-                onClick={() => onCropRequest(index)}
-                className="w-7 h-7 bg-background/80 backdrop-blur-sm text-foreground rounded-lg flex items-center justify-center hover:bg-background"
-                title="Recadrer"
-              >
-                <Crop className="w-3.5 h-3.5" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => onCropRequest(index)}
+              className="w-7 h-7 bg-background/80 backdrop-blur-sm text-foreground rounded-lg flex items-center justify-center hover:bg-background"
+              title="Recadrer"
+            >
+              <Crop className="w-3.5 h-3.5" />
+            </button>
           </div>
 
           {/* Set as primary button (non-primary photos) */}
@@ -128,7 +126,7 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onAddMore, maxPhotos, minP
           key={`empty-${i}`}
           onClick={onAddMore}
           className="rounded-xl bg-muted/50 border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 active:border-accent transition-colors"
-          style={{ aspectRatio: "4/3" }}
+          style={{ aspectRatio: "3/2" }}
         >
           <Camera className="w-5 h-5 text-muted-foreground/40 mb-1" />
           <span className="text-[10px] text-muted-foreground/40">{photos.length + i + 1}</span>
@@ -140,7 +138,7 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onAddMore, maxPhotos, minP
         <div
           onClick={onAddMore}
           className="rounded-xl bg-muted/50 border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 active:border-accent transition-colors"
-          style={{ aspectRatio: "4/3" }}
+          style={{ aspectRatio: "3/2" }}
         >
           <Camera className="w-5 h-5 text-muted-foreground/40 mb-1" />
           <span className="text-[10px] text-muted-foreground/40">+</span>

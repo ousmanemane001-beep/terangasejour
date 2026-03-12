@@ -12,6 +12,8 @@ interface PhotoCropDialogProps {
   onCropComplete: (croppedBlob: Blob) => void;
 }
 
+const ASPECT = 3 / 2;
+
 function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number): Crop {
   return centerCrop(
     makeAspectCrop({ unit: "%", width: 90 }, aspect, mediaWidth, mediaHeight),
@@ -24,11 +26,10 @@ const PhotoCropDialog = ({ open, onClose, imageSrc, onCropComplete }: PhotoCropD
   const [crop, setCrop] = useState<Crop>();
   const [saving, setSaving] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
-  const aspect = 4 / 3;
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth: w, naturalHeight: h } = e.currentTarget;
-    setCrop(centerAspectCrop(w, h, aspect));
+    setCrop(centerAspectCrop(w, h, ASPECT));
   }, []);
 
   const handleSave = useCallback(async () => {
@@ -45,7 +46,6 @@ const PhotoCropDialog = ({ open, onClose, imageSrc, onCropComplete }: PhotoCropD
     const cropW = (crop.unit === "%" ? (crop.width / 100) * image.width : crop.width) * scaleX;
     const cropH = (crop.unit === "%" ? (crop.height / 100) * image.height : crop.height) * scaleY;
 
-    // Limit output to 1920px
     const maxDim = 1920;
     let outW = cropW;
     let outH = cropH;
@@ -74,13 +74,13 @@ const PhotoCropDialog = ({ open, onClose, imageSrc, onCropComplete }: PhotoCropD
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Recadrer la photo de couverture</DialogTitle>
+          <DialogTitle>Recadrer la photo</DialogTitle>
         </DialogHeader>
         <div className="flex items-center justify-center max-h-[60vh] overflow-auto">
           <ReactCrop
             crop={crop}
             onChange={(c) => setCrop(c)}
-            aspect={aspect}
+            aspect={ASPECT}
             className="max-w-full"
           >
             <img
@@ -93,7 +93,7 @@ const PhotoCropDialog = ({ open, onClose, imageSrc, onCropComplete }: PhotoCropD
           </ReactCrop>
         </div>
         <p className="text-xs text-muted-foreground text-center">
-          Format recommandé : 4:3 — Déplacez et redimensionnez le cadre
+          Format 3:2 — Déplacez et redimensionnez le cadre pour ajuster
         </p>
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={saving}>
