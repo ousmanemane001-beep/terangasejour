@@ -37,6 +37,8 @@ export interface PhotoItem {
   aiAnalyzing?: boolean;
   aiWarning?: string | null;
   qualityScore?: number;
+  thumbnailBlob?: Blob;
+  mediumBlob?: Blob;
 }
 
 interface PhotoUploaderProps {
