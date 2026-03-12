@@ -88,9 +88,9 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
               </button>
             </div>
             <div className="text-xs text-muted-foreground space-y-0.5 text-center">
-              <p>Formats acceptés : JPG, PNG, WEBP</p>
-              <p>Dimension recommandée : 1500 × 1000 px</p>
-              <p>Taille maximale : 2 Mo</p>
+              <p>Formats acceptés : JPG, PNG, HEIC</p>
+              <p>Minimum : 5 photos · Maximum : 10 photos</p>
+              <p>Toutes les photos seront automatiquement optimisées.</p>
             </div>
           </div>
         ) : (
