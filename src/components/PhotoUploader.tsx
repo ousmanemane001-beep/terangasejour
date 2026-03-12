@@ -1,13 +1,13 @@
 import { useRef, useCallback, useState, useEffect } from "react";
-import { AlertCircle, Lightbulb, ImageIcon } from "lucide-react";
+import { AlertCircle, Camera, ImageIcon, Home, Sofa, BedDouble, Bath, UtensilsCrossed } from "lucide-react";
 import DropZone from "./photo-upload/DropZone";
 import PhotoGrid from "./photo-upload/PhotoGrid";
 import PhotoCropDialog from "./photo-upload/PhotoCropDialog";
 import {
-  convertHeicToJpeg,
-  isHeic,
   compressImage,
   isImageBlurry,
+  isImageTooDark,
+  hasTextOrLogo,
   generateImageHash,
   areHashesSimilar,
   getImageDimensions,
@@ -16,9 +16,9 @@ import {
 const MAX_PHOTOS = 10;
 const MIN_PHOTOS = 5;
 const MAX_SIZE_MB = 10;
-const MIN_WIDTH = 1024;
-const MIN_HEIGHT = 768;
-const ACCEPTED_MIME = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+const MIN_WIDTH = 1200;
+const MIN_HEIGHT = 800;
+const ACCEPTED_EXTENSIONS = ["jpg", "jpeg", "png"];
 
 export interface PhotoItem {
   id: string;
@@ -27,7 +27,6 @@ export interface PhotoItem {
   error?: string | null;
   validated?: boolean;
   hash?: string;
-  /** 0-100 processing progress */
   progress?: number;
 }
 
@@ -38,17 +37,23 @@ interface PhotoUploaderProps {
 }
 
 function isAcceptedFormat(file: File): boolean {
-  if (ACCEPTED_MIME.includes(file.type)) return true;
   const ext = file.name.toLowerCase().split(".").pop() || "";
-  return ["jpg", "jpeg", "png", "webp", "heic", "heif"].includes(ext);
+  return ACCEPTED_EXTENSIONS.includes(ext);
 }
+
+const PHOTO_TIPS = [
+  { icon: Home, label: "Façade / Extérieur" },
+  { icon: Sofa, label: "Salon" },
+  { icon: BedDouble, label: "Chambre" },
+  { icon: Bath, label: "Salle de bain" },
+  { icon: UtensilsCrossed, label: "Cuisine / Terrasse" },
+];
 
 const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProps) => {
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const [globalErrors, setGlobalErrors] = useState<string[]>([]);
   const [processing, setProcessing] = useState(false);
   const [cropIndex, setCropIndex] = useState<number | null>(null);
-  // Track per-file progress for files being processed
   const [processingItems, setProcessingItems] = useState<{ name: string; progress: number }[]>([]);
 
   useEffect(() => {
@@ -89,7 +94,7 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
 
           // Format check
           if (!isAcceptedFormat(rawFile)) {
-            newErrors.push(`"${rawFile.name}" : format non supporté. Utilisez JPG, PNG ou WEBP.`);
+            newErrors.push(`"${rawFile.name}" : format non supporté. Utilisez JPG, JPEG ou PNG.`);
             updateItemProgress(fi, 100);
             continue;
           }
@@ -102,59 +107,65 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
             continue;
           }
 
-          updateItemProgress(fi, 15);
-
-          // Convert HEIC if needed
-          let file = rawFile;
-          if (isHeic(rawFile)) {
-            try {
-              file = await convertHeicToJpeg(rawFile);
-            } catch {
-              newErrors.push(`"${rawFile.name}" : impossible de convertir le format HEIC.`);
-              updateItemProgress(fi, 100);
-              continue;
-            }
-          }
-
-          updateItemProgress(fi, 25);
+          updateItemProgress(fi, 10);
 
           // Check dimensions
-          const dims = await getImageDimensions(file);
+          const dims = await getImageDimensions(rawFile);
           if (dims.width < MIN_WIDTH || dims.height < MIN_HEIGHT) {
             newErrors.push(
-              `"${rawFile.name}" (${dims.width}×${dims.height}) : résolution trop faible. Minimum ${MIN_WIDTH}×${MIN_HEIGHT} px.`
+              `"${rawFile.name}" (${dims.width}×${dims.height}) : cette image est trop petite. Veuillez ajouter une photo de meilleure qualité (min ${MIN_WIDTH}×${MIN_HEIGHT} px).`
             );
             updateItemProgress(fi, 100);
             continue;
           }
 
-          updateItemProgress(fi, 40);
+          updateItemProgress(fi, 20);
 
           // Duplicate detection
-          const hash = await generateImageHash(file);
+          const hash = await generateImageHash(rawFile);
           const allHashes = [...existingHashes, ...newPhotos.map((p) => p.hash).filter(Boolean) as string[]];
           const isDuplicate = allHashes.some((h) => areHashesSimilar(hash, h));
           if (isDuplicate) {
-            newErrors.push(`"${rawFile.name}" : image dupliquée détectée. Veuillez sélectionner une autre photo.`);
+            newErrors.push(`"${rawFile.name}" : cette image a déjà été ajoutée.`);
             updateItemProgress(fi, 100);
             continue;
           }
 
-          updateItemProgress(fi, 55);
+          updateItemProgress(fi, 35);
 
           // Blur detection
-          const blurry = await isImageBlurry(file);
+          const blurry = await isImageBlurry(rawFile);
           if (blurry) {
             newErrors.push(`"${rawFile.name}" : image trop floue. Veuillez utiliser une photo plus nette.`);
             updateItemProgress(fi, 100);
             continue;
           }
 
+          updateItemProgress(fi, 50);
+
+          // Darkness detection
+          const tooDark = await isImageTooDark(rawFile);
+          if (tooDark) {
+            newErrors.push(`"${rawFile.name}" : image trop sombre. Utilisez une photo plus lumineuse.`);
+            updateItemProgress(fi, 100);
+            continue;
+          }
+
+          updateItemProgress(fi, 60);
+
+          // Text / logo detection
+          const textDetected = await hasTextOrLogo(rawFile);
+          if (textDetected) {
+            newErrors.push(`"${rawFile.name}" : cette image semble contenir du texte ou un logo. Veuillez utiliser une photo sans texte promotionnel.`);
+            updateItemProgress(fi, 100);
+            continue;
+          }
+
           updateItemProgress(fi, 70);
 
-          // Compress, auto-crop 4:3, optimize to WebP
-          const { blob, width, height } = await compressImage(file);
-          const optimizedFile = new File([blob], file.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
+          // Compress, auto-crop 3:2, optimize to WebP
+          const { blob } = await compressImage(rawFile);
+          const optimizedFile = new File([blob], rawFile.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
           const preview = URL.createObjectURL(blob);
 
           updateItemProgress(fi, 95);
@@ -202,21 +213,28 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
     [cropIndex, photos, onChange]
   );
 
-  const hasInvalidPhotos = photos.some((p) => !!p.error);
   const validCount = photos.filter((p) => !p.error && p.validated).length;
 
   return (
     <div className="space-y-5" ref={dropZoneRef}>
-      {/* Tip */}
-      <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 flex items-start gap-3">
-        <Lightbulb className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-        <div>
-          <p className="text-sm font-medium text-foreground">
-            Conseil : les annonces avec 8+ photos obtiennent plus de réservations
+      {/* Visual guide for hosts */}
+      <div className="bg-accent/5 border border-accent/20 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Camera className="w-5 h-5 text-accent" />
+          <p className="text-sm font-semibold text-foreground">
+            Pour attirer plus de voyageurs, ajoutez des photos lumineuses de :
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Montrez chaque pièce, la vue extérieure et les espaces communs. Les images seront automatiquement recadrées au format 4:3.
-          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {PHOTO_TIPS.map(({ icon: Icon, label }) => (
+            <div
+              key={label}
+              className="flex items-center gap-1.5 bg-background border border-border rounded-lg px-3 py-1.5"
+            >
+              <Icon className="w-3.5 h-3.5 text-accent" />
+              <span className="text-xs font-medium text-foreground">{label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -283,22 +301,12 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
 
       {/* Requirements summary */}
       <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
-        <span className="bg-muted px-2 py-0.5 rounded">JPG, PNG, WEBP</span>
+        <span className="bg-muted px-2 py-0.5 rounded">JPG, JPEG, PNG</span>
         <span className="bg-muted px-2 py-0.5 rounded">Max 10 Mo</span>
-        <span className="bg-muted px-2 py-0.5 rounded">Min 1024×768 px</span>
-        <span className="bg-muted px-2 py-0.5 rounded">Recadrage 4:3 auto</span>
+        <span className="bg-muted px-2 py-0.5 rounded">Min 1200×800 px</span>
+        <span className="bg-muted px-2 py-0.5 rounded">Recadrage 3:2 auto</span>
         <span className="bg-muted px-2 py-0.5 rounded">5 à 10 photos</span>
       </div>
-
-      {/* Invalid photos warning */}
-      {hasInvalidPhotos && (
-        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-3 flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
-          <p className="text-sm text-destructive font-medium">
-            Veuillez remplacer les images non conformes avant de continuer.
-          </p>
-        </div>
-      )}
 
       {/* Photo grid */}
       {(photos.length > 0 || photos.length < MIN_PHOTOS) && (

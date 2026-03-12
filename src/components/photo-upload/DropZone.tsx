@@ -40,7 +40,7 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
           <div className="flex flex-col items-center gap-3">
             <Loader2 className="w-12 h-12 text-accent animate-spin" />
             <p className="font-semibold text-foreground">Traitement des images…</p>
-            <p className="text-sm text-muted-foreground">Compression et vérification en cours</p>
+            <p className="text-sm text-muted-foreground">Compression, vérification qualité et recadrage en cours</p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3">
@@ -54,25 +54,12 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
             <div>
               <p className="font-semibold text-foreground text-lg">
                 {photoCount === 0
-                  ? "Glissez vos photos ici ou cliquez pour télécharger"
+                  ? "Glissez vos photos ici ou cliquez pour ajouter"
                   : "Ajouter d'autres photos"}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                Sélectionnez plusieurs photos depuis votre ordinateur ou téléphone
+                JPG, JPEG ou PNG • Max 10 Mo • Min 1200×800 px
               </p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2 mt-2">
-              {["JPG", "PNG", "WEBP", "HEIC"].map((fmt) => (
-                <span
-                  key={fmt}
-                  className="px-2 py-0.5 bg-muted text-muted-foreground text-xs font-medium rounded-md"
-                >
-                  {fmt}
-                </span>
-              ))}
-              <span className="px-2 py-0.5 bg-muted text-muted-foreground text-xs font-medium rounded-md">
-                Max 10 Mo
-              </span>
             </div>
           </div>
         )}
@@ -81,7 +68,7 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*"
+        accept="image/jpeg,image/png,image/*"
         multiple
         className="hidden"
         onChange={(e) => {
