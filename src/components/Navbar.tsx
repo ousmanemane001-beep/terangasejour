@@ -50,7 +50,7 @@ const Navbar = () => {
   const mobileMenuItems = [
     { label: "Accueil", path: "/", icon: Home },
     { label: "Destinations", path: "/explore", icon: MapPin },
-    { label: "Publier un logement", path: isHost ? "/create-listing" : "/become-host", icon: PlusCircle },
+    ...(user ? [{ label: "Publier un logement", path: isHost ? "/create-listing" : "/become-host", icon: PlusCircle }] : []),
     ...(user ? [{ label: "Mes réservations", path: "/dashboard", icon: CalendarDays }] : []),
   ];
 
