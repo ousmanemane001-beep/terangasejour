@@ -57,7 +57,7 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
   const allCategories = Object.keys(roomLabels) as RoomCategory[];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {photos.map((photo, index) => {
         const category = photo.roomCategory || "autre";
         const { label: catLabel, icon: CatIcon } = roomLabels[category];
