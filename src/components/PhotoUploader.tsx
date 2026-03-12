@@ -199,8 +199,9 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
     } catch (err) {
       console.error("AI analysis failed:", err);
       // Don't block — just mark as done without AI data
-      onChange((prev: PhotoItem[]) =>
-        prev.map((p) => (p.id === photoId ? { ...p, aiAnalyzing: false } : p))
+      const currentPhotos = photosRef.current;
+      onChange(
+        currentPhotos.map((p) => (p.id === photoId ? { ...p, aiAnalyzing: false } : p))
       );
     }
   }, [photos, onChange]);
