@@ -273,11 +273,11 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
             continue;
           }
 
-          // Step 6: Compression
-          setCurrentStep("Compression en cours…");
-          const { blob } = await compressImage(rawFile);
-          const optimizedFile = new File([blob], rawFile.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
-          const preview = URL.createObjectURL(blob);
+          // Step 6: Compression + multi-size generation
+          setCurrentStep("Optimisation des images…");
+          const variants = await generateImageVariants(rawFile);
+          const optimizedFile = new File([variants.full], rawFile.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
+          const preview = URL.createObjectURL(variants.full);
 
           const photoItem: PhotoItem = {
             id: crypto.randomUUID(),
@@ -289,6 +289,8 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
             progress: 100,
             roomCategory: "autre",
             aiAnalyzing: true,
+            thumbnailBlob: variants.thumbnail,
+            mediumBlob: variants.medium,
           };
 
           newPhotoHashes.push(hash);
