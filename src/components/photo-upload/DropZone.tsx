@@ -104,16 +104,16 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
             </div>
             <div>
               <p className="font-semibold text-foreground text-lg">
-                {photoCount === 0 ? "Ajouter une image" : "Ajouter d'autres photos"}
+                {photoCount === 0 ? "Ajouter des photos" : "Ajouter d'autres photos"}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Glissez vos photos ici ou cliquez pour parcourir
               </p>
             </div>
             <div className="text-xs text-muted-foreground space-y-0.5">
-              <p>Formats acceptés : JPG, PNG, WEBP</p>
-              <p>Dimension recommandée : 1500 × 1000 px</p>
-              <p>Taille maximale : 2 Mo</p>
+              <p>Formats acceptés : JPG, PNG, HEIC</p>
+              <p>Minimum : 5 photos · Maximum : 10 photos</p>
+              <p>Toutes les photos seront automatiquement optimisées.</p>
             </div>
           </div>
         )}

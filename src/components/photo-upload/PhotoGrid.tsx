@@ -83,6 +83,7 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
               src={photo.preview}
               alt={`Photo ${index + 1}`}
               className="w-full h-full object-cover"
+              loading="lazy"
             />
 
             {/* AI analyzing overlay */}

@@ -465,12 +465,9 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
 
       {/* Requirements */}
       <div className="flex flex-wrap gap-1.5 text-[9px] sm:text-[10px] text-muted-foreground">
-        <span className="bg-muted px-2 py-0.5 rounded">JPG, PNG, WEBP</span>
-        <span className="bg-muted px-2 py-0.5 rounded">Max 2 Mo</span>
-        <span className="bg-muted px-2 py-0.5 rounded">Recommandé 1500×1000</span>
-        <span className="bg-muted px-2 py-0.5 rounded">Min 900×600</span>
-        <span className="bg-muted px-2 py-0.5 rounded">Ratio 3:2 auto</span>
-        <span className="bg-muted px-2 py-0.5 rounded">5–10 photos</span>
+        <span className="bg-muted px-2 py-0.5 rounded">JPG, PNG, HEIC</span>
+        <span className="bg-muted px-2 py-0.5 rounded">Min 5 · Max 10 photos</span>
+        <span className="bg-muted px-2 py-0.5 rounded">Optimisation auto</span>
       </div>
 
       {/* Missing rooms suggestion */}
