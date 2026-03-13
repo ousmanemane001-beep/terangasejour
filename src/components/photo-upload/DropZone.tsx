@@ -51,7 +51,7 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
           <div className="flex flex-col items-center gap-3">
             <Loader2 className="w-10 h-10 text-accent animate-spin" />
             <p className="font-semibold text-foreground text-sm">Traitement en cours…</p>
-            <p className="text-xs text-muted-foreground">Compression et vérification qualité</p>
+            <p className="text-xs text-muted-foreground">Compression et optimisation</p>
           </div>
         ) : isMobile ? (
           <div className="flex flex-col items-center gap-4">
@@ -64,7 +64,7 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
             </div>
             <div className="text-center">
               <p className="font-semibold text-foreground">
-                {photoCount === 0 ? "Ajouter des photos" : "Ajouter d'autres photos"}
+                {photoCount === 0 ? "Ajouter une image" : "Ajouter d'autres photos"}
               </p>
             </div>
             <div className="flex gap-3 w-full max-w-xs">
@@ -88,9 +88,10 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
               </button>
             </div>
             <div className="text-xs text-muted-foreground space-y-0.5 text-center">
-              <p>Formats acceptés : JPG, PNG, HEIC</p>
-              <p>Minimum : 5 photos · Maximum : 10 photos</p>
-              <p>Toutes les photos seront automatiquement optimisées.</p>
+              <p>Formats acceptés : JPG, PNG</p>
+              <p>Dimension recommandée : 1500 × 1000 px</p>
+              <p>Dimension minimale : 900 × 600 px</p>
+              <p>Taille maximale : 2 MB</p>
             </div>
           </div>
         ) : (
@@ -104,16 +105,17 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
             </div>
             <div>
               <p className="font-semibold text-foreground text-lg">
-                {photoCount === 0 ? "Ajouter des photos" : "Ajouter d'autres photos"}
+                {photoCount === 0 ? "Ajouter une image" : "Ajouter d'autres photos"}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Glissez vos photos ici ou cliquez pour parcourir
               </p>
             </div>
             <div className="text-xs text-muted-foreground space-y-0.5">
-              <p>Formats acceptés : JPG, PNG, HEIC</p>
-              <p>Minimum : 5 photos · Maximum : 10 photos</p>
-              <p>Toutes les photos seront automatiquement optimisées.</p>
+              <p>Formats acceptés : JPG, PNG</p>
+              <p>Dimension recommandée : 1500 × 1000 px</p>
+              <p>Dimension minimale : 900 × 600 px</p>
+              <p>Taille maximale : 2 MB</p>
             </div>
           </div>
         )}
