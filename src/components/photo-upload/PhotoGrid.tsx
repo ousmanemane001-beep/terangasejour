@@ -1,21 +1,18 @@
 import { useState } from "react";
-import { X, Star, AlertCircle, Crop, Camera, Loader2, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
-import type { PhotoItem, RoomCategory } from "../PhotoUploader";
+import { X, Star, AlertCircle, Crop, Camera, ChevronLeft, ChevronRight } from "lucide-react";
+import type { PhotoItem } from "../PhotoUploader";
 
 interface PhotoGridProps {
   photos: PhotoItem[];
   onChange: (photos: PhotoItem[]) => void;
   onCropRequest: (index: number) => void;
-  onCategoryChange: (photoId: string, category: RoomCategory) => void;
   onAddMore: () => void;
   maxPhotos: number;
   minPhotos: number;
-  roomLabels: Record<RoomCategory, { label: string; icon: React.ElementType }>;
 }
 
-const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMore, maxPhotos, minPhotos, roomLabels }: PhotoGridProps) => {
+const PhotoGrid = ({ photos, onChange, onCropRequest, onAddMore, maxPhotos, minPhotos }: PhotoGridProps) => {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [editingCategory, setEditingCategory] = useState<string | null>(null);
 
   const handleDragStart = (index: number) => setDragIndex(index);
 
@@ -54,14 +51,11 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
   };
 
   const emptySlots = Math.max(0, minPhotos - photos.length);
-  const allCategories = Object.keys(roomLabels) as RoomCategory[];
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {photos.map((photo, index) => {
-        const category = photo.roomCategory || "autre";
-        const { label: catLabel, icon: CatIcon } = roomLabels[category];
-        const isPrimary = index === 0 && !photo.error && !photo.aiWarning;
+        const isPrimary = index === 0 && !photo.error;
 
         return (
           <div
@@ -71,7 +65,7 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
             onDragOver={(e) => handleDragOver(e, index)}
             onDragEnd={handleDragEnd}
             className={`relative rounded-xl overflow-hidden group border-2 transition-all ${
-              photo.error || photo.aiWarning
+              photo.error
                 ? "border-destructive"
                 : isPrimary
                 ? "border-accent ring-2 ring-accent/30"
@@ -86,20 +80,12 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
               loading="lazy"
             />
 
-            {/* AI analyzing overlay */}
-            {photo.aiAnalyzing && (
-              <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center gap-1.5">
-                <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                <span className="text-[9px] font-medium text-primary">Analyse IA…</span>
-              </div>
-            )}
-
-            {/* Error / AI warning overlay */}
-            {(photo.error || photo.aiWarning) && !photo.aiAnalyzing && (
+            {/* Error overlay */}
+            {photo.error && (
               <div className="absolute inset-0 bg-destructive/30 flex items-end">
                 <p className="w-full text-[9px] leading-tight text-destructive-foreground bg-destructive/90 px-2 py-1.5 font-medium flex items-start gap-1">
                   <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
-                  {photo.aiWarning || photo.error}
+                  {photo.error}
                 </p>
               </div>
             )}
@@ -109,49 +95,6 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
               <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-md flex items-center gap-1 shadow-sm">
                 <Star className="w-2.5 h-2.5 fill-current" />
                 Photo principale
-              </div>
-            )}
-
-            {/* Room category badge */}
-            {!photo.aiAnalyzing && !photo.error && !photo.aiWarning && (
-              <div className="absolute bottom-1.5 left-1.5 relative">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditingCategory(editingCategory === photo.id ? null : photo.id);
-                  }}
-                  className="flex items-center gap-1 bg-background/80 backdrop-blur-sm text-foreground text-[9px] font-medium rounded-md px-1.5 py-0.5 hover:bg-background transition-colors"
-                >
-                  <CatIcon className="w-2.5 h-2.5" />
-                  {catLabel}
-                  <ChevronDown className="w-2 h-2" />
-                </button>
-
-                {editingCategory === photo.id && (
-                  <div className="absolute bottom-6 left-0 z-50 bg-card border border-border rounded-lg shadow-lg py-1 min-w-[120px]">
-                    {allCategories.map((cat) => {
-                      const { label, icon: Icon } = roomLabels[cat];
-                      return (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onCategoryChange(photo.id, cat);
-                            setEditingCategory(null);
-                          }}
-                          className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs hover:bg-muted transition-colors ${
-                            cat === category ? "text-primary font-medium" : "text-foreground"
-                          }`}
-                        >
-                          <Icon className="w-3 h-3" />
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             )}
 
@@ -199,8 +142,8 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
               )}
             </div>
 
-            {/* Set as primary button (non-primary photos) */}
-            {index !== 0 && !photo.error && !photo.aiWarning && (
+            {/* Set as primary button */}
+            {index !== 0 && !photo.error && (
               <button
                 type="button"
                 onClick={() => setAsPrimary(index)}
@@ -210,17 +153,6 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onCategoryChange, onAddMor
                 <Star className="w-2.5 h-2.5" />
                 Principale
               </button>
-            )}
-
-            {/* Quality score badge */}
-            {photo.qualityScore != null && !photo.aiAnalyzing && !photo.error && !photo.aiWarning && (
-              <div className={`absolute top-1.5 right-10 px-1.5 py-0.5 rounded text-[9px] font-bold md:opacity-0 md:group-hover:opacity-100 transition-opacity ${
-                photo.qualityScore >= 7 ? "bg-green-500/90 text-white" :
-                photo.qualityScore >= 4 ? "bg-amber-500/90 text-white" :
-                "bg-destructive/90 text-white"
-              }`}>
-                {photo.qualityScore}/10
-              </div>
             )}
           </div>
         );
