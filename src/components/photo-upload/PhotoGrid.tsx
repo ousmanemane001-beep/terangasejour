@@ -1,17 +1,16 @@
 import { useState } from "react";
-import { X, Star, AlertCircle, Crop, Camera, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Star, Camera, ChevronLeft, ChevronRight } from "lucide-react";
 import type { PhotoItem } from "../PhotoUploader";
 
 interface PhotoGridProps {
   photos: PhotoItem[];
   onChange: (photos: PhotoItem[]) => void;
-  onCropRequest: (index: number) => void;
   onAddMore: () => void;
   maxPhotos: number;
   minPhotos: number;
 }
 
-const PhotoGrid = ({ photos, onChange, onCropRequest, onAddMore, maxPhotos, minPhotos }: PhotoGridProps) => {
+const PhotoGrid = ({ photos, onChange, onAddMore, maxPhotos, minPhotos }: PhotoGridProps) => {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const handleDragStart = (index: number) => setDragIndex(index);
@@ -35,7 +34,7 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onAddMore, maxPhotos, minP
   };
 
   const setAsPrimary = (index: number) => {
-    if (index === 0 || photos[index].error) return;
+    if (index === 0) return;
     const updated = [...photos];
     const [moved] = updated.splice(index, 1);
     updated.unshift(moved);
@@ -55,7 +54,7 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onAddMore, maxPhotos, minP
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {photos.map((photo, index) => {
-        const isPrimary = index === 0 && !photo.error;
+        const isPrimary = index === 0;
 
         return (
           <div
@@ -65,9 +64,7 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onAddMore, maxPhotos, minP
             onDragOver={(e) => handleDragOver(e, index)}
             onDragEnd={handleDragEnd}
             className={`relative rounded-xl overflow-hidden group border-2 transition-all ${
-              photo.error
-                ? "border-destructive"
-                : isPrimary
+              isPrimary
                 ? "border-accent ring-2 ring-accent/30"
                 : "border-border"
             } ${dragIndex === index ? "opacity-50 scale-95" : "hover:shadow-md"}`}
@@ -80,80 +77,61 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onAddMore, maxPhotos, minP
               loading="lazy"
             />
 
-            {/* Error overlay */}
-            {photo.error && (
-              <div className="absolute inset-0 bg-destructive/30 flex items-end">
-                <p className="w-full text-[9px] leading-tight text-destructive-foreground bg-destructive/90 px-2 py-1.5 font-medium flex items-start gap-1">
-                  <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
-                  {photo.error}
-                </p>
-              </div>
-            )}
-
             {/* Primary badge */}
             {isPrimary && (
               <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-md flex items-center gap-1 shadow-sm">
                 <Star className="w-2.5 h-2.5 fill-current" />
-                Photo principale
+                Principale
               </div>
             )}
 
-            {/* Top-right action buttons: delete + crop */}
-            <div className="absolute top-1.5 right-1.5 flex flex-col gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-              <button
-                type="button"
-                onClick={() => removePhoto(index)}
-                className="w-7 h-7 bg-destructive text-destructive-foreground rounded-lg flex items-center justify-center hover:bg-destructive/90 shadow-sm"
-                title="Supprimer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onCropRequest(index)}
-                className="w-7 h-7 bg-background/80 backdrop-blur-sm text-foreground rounded-lg flex items-center justify-center hover:bg-background shadow-sm"
-                title="Recadrer"
-              >
-                <Crop className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            {/* Delete button */}
+            <button
+              type="button"
+              onClick={() => removePhoto(index)}
+              className="absolute top-1.5 right-1.5 w-7 h-7 bg-destructive text-destructive-foreground rounded-lg flex items-center justify-center hover:bg-destructive/90 shadow-sm md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+              title="Supprimer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
 
-            {/* Reorder arrows */}
-            <div className="absolute bottom-1.5 right-1.5 flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-              {index > 0 && (
+            {/* Reorder + set primary */}
+            <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+              {/* Set as primary */}
+              {index !== 0 && (
                 <button
                   type="button"
-                  onClick={() => movePhoto(index, "left")}
-                  className="w-6 h-6 bg-background/80 backdrop-blur-sm text-foreground rounded-md flex items-center justify-center hover:bg-background shadow-sm"
-                  title="Déplacer à gauche"
+                  onClick={() => setAsPrimary(index)}
+                  className="px-2 py-0.5 bg-background/80 backdrop-blur-sm text-foreground text-[10px] font-medium rounded-md hover:bg-background flex items-center gap-1 shadow-sm"
                 >
-                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <Star className="w-2.5 h-2.5" />
+                  Principale
                 </button>
               )}
-              {index < photos.length - 1 && (
-                <button
-                  type="button"
-                  onClick={() => movePhoto(index, "right")}
-                  className="w-6 h-6 bg-background/80 backdrop-blur-sm text-foreground rounded-md flex items-center justify-center hover:bg-background shadow-sm"
-                  title="Déplacer à droite"
-                >
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+              {index === 0 && <span />}
 
-            {/* Set as primary button */}
-            {index !== 0 && !photo.error && (
-              <button
-                type="button"
-                onClick={() => setAsPrimary(index)}
-                className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-background/80 backdrop-blur-sm text-foreground text-[10px] font-medium rounded-md md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-background flex items-center gap-1 shadow-sm"
-                title="Définir comme photo principale"
-              >
-                <Star className="w-2.5 h-2.5" />
-                Principale
-              </button>
-            )}
+              {/* Arrows */}
+              <div className="flex items-center gap-0.5">
+                {index > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => movePhoto(index, "left")}
+                    className="w-6 h-6 bg-background/80 backdrop-blur-sm text-foreground rounded-md flex items-center justify-center hover:bg-background shadow-sm"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {index < photos.length - 1 && (
+                  <button
+                    type="button"
+                    onClick={() => movePhoto(index, "right")}
+                    className="w-6 h-6 bg-background/80 backdrop-blur-sm text-foreground rounded-md flex items-center justify-center hover:bg-background shadow-sm"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         );
       })}
@@ -171,7 +149,7 @@ const PhotoGrid = ({ photos, onChange, onCropRequest, onAddMore, maxPhotos, minP
         </div>
       ))}
 
-      {/* Add more button */}
+      {/* Add more */}
       {emptySlots === 0 && photos.length < maxPhotos && (
         <div
           onClick={onAddMore}

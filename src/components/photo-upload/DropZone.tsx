@@ -10,6 +10,8 @@ interface DropZoneProps {
   maxPhotos: number;
 }
 
+const ACCEPTED = "image/jpeg,image/png,image/webp";
+
 const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: DropZoneProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -29,6 +31,14 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
       if (!disabled && !processing) onFiles(e.dataTransfer.files);
     },
     [onFiles, disabled, processing]
+  );
+
+  const instructions = (
+    <div className="text-xs text-muted-foreground space-y-0.5 text-center">
+      <p>Formats acceptés : JPG, PNG, WEBP</p>
+      <p>Minimum : 5 photos · Maximum : 10 photos</p>
+      <p>Toutes les photos seront automatiquement optimisées.</p>
+    </div>
   );
 
   return (
@@ -51,22 +61,13 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
           <div className="flex flex-col items-center gap-3">
             <Loader2 className="w-10 h-10 text-accent animate-spin" />
             <p className="font-semibold text-foreground text-sm">Traitement en cours…</p>
-            <p className="text-xs text-muted-foreground">Compression et optimisation</p>
           </div>
         ) : isMobile ? (
           <div className="flex flex-col items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center">
-              {photoCount === 0 ? (
-                <Upload className="w-7 h-7 text-accent" />
-              ) : (
-                <ImagePlus className="w-7 h-7 text-accent" />
-              )}
+              <Upload className="w-7 h-7 text-accent" />
             </div>
-            <div className="text-center">
-              <p className="font-semibold text-foreground">
-                {photoCount === 0 ? "Ajouter une image" : "Ajouter d'autres photos"}
-              </p>
-            </div>
+            <p className="font-semibold text-foreground">Ajouter des photos</p>
             <div className="flex gap-3 w-full max-w-xs">
               <button
                 type="button"
@@ -87,36 +88,20 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
                 Galerie
               </button>
             </div>
-            <div className="text-xs text-muted-foreground space-y-0.5 text-center">
-              <p>Formats acceptés : JPG, PNG</p>
-              <p>Dimension recommandée : 1500 × 1000 px</p>
-              <p>Dimension minimale : 900 × 600 px</p>
-              <p>Taille maximale : 2 MB</p>
-            </div>
+            {instructions}
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3">
             <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
-              {photoCount === 0 ? (
-                <Upload className="w-8 h-8 text-accent" />
-              ) : (
-                <ImagePlus className="w-8 h-8 text-accent" />
-              )}
+              <Upload className="w-8 h-8 text-accent" />
             </div>
             <div>
-              <p className="font-semibold text-foreground text-lg">
-                {photoCount === 0 ? "Ajouter une image" : "Ajouter d'autres photos"}
-              </p>
+              <p className="font-semibold text-foreground text-lg">Ajouter des photos</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Glissez vos photos ici ou cliquez pour parcourir
               </p>
             </div>
-            <div className="text-xs text-muted-foreground space-y-0.5">
-              <p>Formats acceptés : JPG, PNG</p>
-              <p>Dimension recommandée : 1500 × 1000 px</p>
-              <p>Dimension minimale : 900 × 600 px</p>
-              <p>Taille maximale : 2 MB</p>
-            </div>
+            {instructions}
           </div>
         )}
       </div>
@@ -124,15 +109,14 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
+        accept={ACCEPTED}
         multiple
         className="hidden"
         onChange={(e) => {
-          if (e.target.files && e.target.files.length > 0) onFiles(e.target.files);
+          if (e.target.files?.length) onFiles(e.target.files);
           e.target.value = "";
         }}
       />
-
       <input
         ref={cameraInputRef}
         type="file"
@@ -140,7 +124,7 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
         capture="environment"
         className="hidden"
         onChange={(e) => {
-          if (e.target.files && e.target.files.length > 0) onFiles(e.target.files);
+          if (e.target.files?.length) onFiles(e.target.files);
           e.target.value = "";
         }}
       />
