@@ -10,7 +10,7 @@ interface DropZoneProps {
   maxPhotos: number;
 }
 
-const ACCEPTED = "image/jpeg,image/png,image/webp";
+const ACCEPTED = "image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif";
 
 const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: DropZoneProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,9 +36,13 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
   const instructions = (
     <div className="text-xs text-muted-foreground space-y-0.5 text-center mt-2">
       <p>Formats acceptés : JPG, PNG, WEBP</p>
+      <p>HEIC mobile : conversion automatique en WEBP</p>
       <p>Dimension recommandée : 1500 × 1000 px</p>
       <p>Dimension minimale : 300 × 200 px</p>
       <p>Taille maximale : 2 MB</p>
+      <p>
+        {photoCount}/{maxPhotos} photo(s)
+      </p>
     </div>
   );
 
@@ -98,9 +102,7 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
             </div>
             <div>
               <p className="font-semibold text-foreground text-lg">Ajouter une image</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Glissez vos photos ici ou cliquez pour parcourir
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">Glissez vos photos ici ou cliquez pour parcourir</p>
             </div>
             {instructions}
           </div>
@@ -113,6 +115,7 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
         accept={ACCEPTED}
         multiple
         className="hidden"
+        data-photo-picker="gallery"
         onChange={(e) => {
           if (e.target.files?.length) onFiles(e.target.files);
           e.target.value = "";
@@ -124,6 +127,7 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
         accept="image/*"
         capture="environment"
         className="hidden"
+        data-photo-picker="camera"
         onChange={(e) => {
           if (e.target.files?.length) onFiles(e.target.files);
           e.target.value = "";

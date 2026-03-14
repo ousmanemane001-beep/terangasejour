@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home,
@@ -109,6 +110,8 @@ const Publish = () => {
   const [availabilityType, setAvailabilityType] = useState<AvailabilityType>("always");
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isPhotoProcessing, setIsPhotoProcessing] = useState(false);
+  const [submitUploadProgress, setSubmitUploadProgress] = useState({ current: 0, total: 0 });
 
   const listingDraft = useMemo<ListingDraft>(
     () => ({
@@ -139,6 +142,21 @@ const Publish = () => {
     if (safeStep !== step) setStep(safeStep);
   }, [safeStep, step]);
 
+  const validPhotoCount = listingDraft.photos.filter((p) => !p.error && p.validated).length;
+  const hasPhotoErrors = listingDraft.photos.some((p) => !!p.error);
+  const isPhotoStepBlocked = isPhotoProcessing || validPhotoCount < 5 || hasPhotoErrors;
+
+  const mapUploadError = (rawMessage?: string) => {
+    const message = (rawMessage || "").toLowerCase();
+    if (message.includes("mime") || message.includes("content-type")) {
+      return "Format non accepté. Utilisez JPG, PNG ou WEBP.";
+    }
+    if (message.includes("size") || message.includes("too large") || message.includes("file_size_limit")) {
+      return "Image trop lourde. Taille maximale : 2 MB.";
+    }
+    return "Échec d'upload. Vérifiez l'image et réessayez.";
+  };
+
   const validateStep = (s: number): string | null => {
     switch (s) {
       case 0: {
@@ -152,11 +170,14 @@ const Publish = () => {
         return null;
       }
       case 1:
-        if (listingDraft.photos.length < 5) {
-          return `Ajoutez au moins 5 photos (${listingDraft.photos.length}/5).`;
+        if (isPhotoProcessing) {
+          return "Traitement des images en cours. Veuillez patienter.";
         }
-        if (listingDraft.photos.some((p) => !!p.error)) {
-          return "Veuillez remplacer les images non conformes avant de continuer.";
+        if (validPhotoCount < 5) {
+          return `Ajoutez au moins 5 photos (${validPhotoCount}/5).`;
+        }
+        if (hasPhotoErrors) {
+          return "Veuillez corriger les images avant de continuer.";
         }
         return null;
       case 2: {
@@ -196,6 +217,12 @@ const Publish = () => {
       return;
     }
 
+    if (isPhotoProcessing) {
+      toast.error("Traitement des images en cours. Veuillez patienter.");
+      setStep(1);
+      return;
+    }
+
     const error = validateStep(0) || validateStep(1) || validateStep(2);
     if (error) {
       toast.error(error);
@@ -206,13 +233,55 @@ const Publish = () => {
     try {
       const photoUrls: string[] = [];
       const validPhotos = listingDraft.photos.filter((p) => !p.error);
-      for (const photo of validPhotos) {
-        const ext = photo.file.name.split(".").pop() || "jpg";
+      setSubmitUploadProgress({ current: 0, total: validPhotos.length });
+
+      for (let i = 0; i < validPhotos.length; i++) {
+        const photo = validPhotos[i];
+
+        if (photo.file.size > 2 * 1024 * 1024) {
+          const sizeError = "Image trop lourde. Taille maximale : 2 MB.";
+          setPhotos((prev) =>
+            prev.map((p) =>
+              p.id === photo.id
+                ? {
+                    ...p,
+                    error: sizeError,
+                    validated: false,
+                  }
+                : p
+            )
+          );
+          setStep(1);
+          throw new Error(`"${photo.file.name}" : ${sizeError}`);
+        }
+
+        const ext = photo.file.name.split(".").pop() || "webp";
         const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-        const { error: uploadError } = await supabase.storage.from("listing-photos").upload(path, photo.file);
-        if (uploadError) throw uploadError;
+
+        const { error: uploadError } = await supabase.storage.from("listing-photos").upload(path, photo.file, {
+          contentType: photo.file.type || "image/webp",
+        });
+
+        if (uploadError) {
+          const friendlyError = mapUploadError(uploadError.message);
+          setPhotos((prev) =>
+            prev.map((p) =>
+              p.id === photo.id
+                ? {
+                    ...p,
+                    error: friendlyError,
+                    validated: false,
+                  }
+                : p
+            )
+          );
+          setStep(1);
+          throw new Error(`"${photo.file.name}" : ${friendlyError}`);
+        }
+
         const { data: urlData } = supabase.storage.from("listing-photos").getPublicUrl(path);
         photoUrls.push(urlData.publicUrl);
+        setSubmitUploadProgress({ current: i + 1, total: validPhotos.length });
       }
 
       const safePrice = Number.parseInt(listingDraft.price || "0", 10);
@@ -220,25 +289,28 @@ const Publish = () => {
       const bookingMode = listingDraft.availabilityType === "request_only" ? "request" : "instant";
       const availabilityMode = listingDraft.availabilityType === "always" ? "always" : "request";
 
-      const { data: insertedListing, error: insertError } = await supabase.from("listings").insert({
-        user_id: user.id,
-        title: listingDraft.title.trim(),
-        description: listingDraft.description.trim() || null,
-        property_type: listingDraft.propertyType,
-        location: listingDraft.location.trim(),
-        bedrooms: listingDraft.bedrooms,
-        bathrooms: listingDraft.bathrooms,
-        capacity: listingDraft.capacity,
-        price_per_night: safePrice,
-        photos: photoUrls,
-        status: "published",
-        booking_mode: bookingMode,
-        availability_mode: availabilityMode,
-      }).select("id").single();
+      const { data: insertedListing, error: insertError } = await supabase
+        .from("listings")
+        .insert({
+          user_id: user.id,
+          title: listingDraft.title.trim(),
+          description: listingDraft.description.trim() || null,
+          property_type: listingDraft.propertyType,
+          location: listingDraft.location.trim(),
+          bedrooms: listingDraft.bedrooms,
+          bathrooms: listingDraft.bathrooms,
+          capacity: listingDraft.capacity,
+          price_per_night: safePrice,
+          photos: photoUrls,
+          status: "published",
+          booking_mode: bookingMode,
+          availability_mode: availabilityMode,
+        })
+        .select("id")
+        .single();
 
       if (insertError) throw insertError;
 
-      // Insert blocked dates if request mode with blocked dates
       if (listingDraft.availabilityType === "request_only" && listingDraft.blockedDates.length > 0 && insertedListing) {
         const blockedRows = listingDraft.blockedDates.map((d) => ({
           listing_id: insertedListing.id,
@@ -255,6 +327,7 @@ const Publish = () => {
       toast.error(err?.message || "Une erreur est survenue lors de la publication.");
     } finally {
       setLoading(false);
+      setSubmitUploadProgress({ current: 0, total: 0 });
     }
   };
 
@@ -411,7 +484,17 @@ const Publish = () => {
                     <p className="text-sm text-muted-foreground">
                       Des photos de qualité attirent plus de voyageurs. Ajoutez au moins 5 photos.
                     </p>
-                    <PhotoUploader photos={listingDraft.photos} onChange={setPhotos} />
+                    <PhotoUploader
+                      photos={listingDraft.photos}
+                      onChange={setPhotos}
+                      onProcessingChange={setIsPhotoProcessing}
+                    />
+                    {isPhotoProcessing && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                        Traitement des images en cours…
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -511,7 +594,7 @@ const Publish = () => {
 
           <div className="flex items-center justify-between mt-6 gap-3">
             {safeStep > 0 ? (
-              <Button type="button" variant="outline" onClick={goBack} className="rounded-xl h-12 px-6">
+              <Button type="button" variant="outline" onClick={goBack} className="rounded-xl h-12 px-6" disabled={loading}>
                 <ChevronLeft className="w-4 h-4 mr-1" />Précédent
               </Button>
             ) : (
@@ -522,17 +605,26 @@ const Publish = () => {
               <Button
                 type="button"
                 onClick={goNext}
-                disabled={safeStep === 1 && (listingDraft.photos.filter(p => !p.error && p.validated).length < 5 || listingDraft.photos.some(p => !!p.error))}
+                disabled={(safeStep === 1 && isPhotoStepBlocked) || loading}
                 className="rounded-xl h-12 px-6 bg-primary text-primary-foreground disabled:opacity-50"
               >
-                Suivant
-                <ChevronRight className="w-4 h-4 ml-1" />
+                {safeStep === 1 && isPhotoProcessing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Traitement…
+                  </>
+                ) : (
+                  <>
+                    Suivant
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </>
+                )}
               </Button>
             ) : (
               <Button
                 type="button"
                 onClick={handleSubmit}
-                disabled={loading}
+                disabled={loading || isPhotoProcessing}
                 className="rounded-xl h-12 px-8 bg-primary text-primary-foreground font-medium"
               >
                 {loading ? (
@@ -546,6 +638,18 @@ const Publish = () => {
               </Button>
             )}
           </div>
+
+          {loading && submitUploadProgress.total > 0 && (
+            <div className="mt-3 bg-muted/50 border border-border rounded-xl p-3 space-y-2">
+              <p className="text-xs text-muted-foreground">
+                Upload des images : {submitUploadProgress.current}/{submitUploadProgress.total}
+              </p>
+              <Progress
+                value={(submitUploadProgress.current / submitUploadProgress.total) * 100}
+                className="h-2"
+              />
+            </div>
+          )}
         </div>
       </div>
 
