@@ -1,5 +1,5 @@
 import { useRef, useCallback, useState, useEffect } from "react";
-import { AlertCircle, Camera, ImageIcon, Loader2 } from "lucide-react";
+import { AlertCircle, ImageIcon, Loader2 } from "lucide-react";
 import DropZone from "./photo-upload/DropZone";
 import PhotoGrid from "./photo-upload/PhotoGrid";
 import {
@@ -8,8 +8,9 @@ import {
   isScreenshot,
   isScreenshotRatio,
   isTooSmall,
+  isFileTooLarge,
+  getFileFingerprint,
 } from "./photo-upload/imageProcessor";
-import { toast } from "sonner";
 
 const MAX_PHOTOS = 10;
 const MIN_PHOTOS = 5;
@@ -21,6 +22,7 @@ export interface PhotoItem {
   error?: string | null;
   validated?: boolean;
   progress?: number;
+  fingerprint?: string;
 }
 
 interface PhotoUploaderProps {
@@ -38,11 +40,13 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
   const photosRef = useRef(photos);
   photosRef.current = photos;
 
+  const validCount = photos.filter((p) => !p.error && p.validated).length;
+  const hasErrors = photos.some((p) => !!p.error);
+  const isValid = validCount >= MIN_PHOTOS && !hasErrors;
+
   useEffect(() => {
-    if (!onValidityChange) return;
-    const allValid = photos.length >= MIN_PHOTOS && photos.every((p) => p.validated && !p.error);
-    onValidityChange(allValid);
-  }, [photos, onValidityChange]);
+    onValidityChange?.(isValid);
+  }, [isValid, onValidityChange]);
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
@@ -68,7 +72,13 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
           // Check format
           const ext = rawFile.name.toLowerCase().split(".").pop() || "";
           if (!["jpg", "jpeg", "png", "webp"].includes(ext)) {
-            newErrors.push(`"${rawFile.name}" : format non accepté. Utilisez JPG, PNG ou WEBP.`);
+            newErrors.push(`"${rawFile.name}" : Format non accepté. Utilisez JPG, PNG ou WEBP.`);
+            continue;
+          }
+
+          // Check file size
+          if (isFileTooLarge(rawFile)) {
+            newErrors.push(`"${rawFile.name}" : Image trop lourde. Taille maximale : 2 MB.`);
             continue;
           }
 
@@ -78,11 +88,19 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
             continue;
           }
 
+          // Check for duplicates
+          const fingerprint = getFileFingerprint(rawFile);
+          const isDuplicate = photosRef.current.some((p) => p.fingerprint === fingerprint);
+          if (isDuplicate) {
+            newErrors.push(`"${rawFile.name}" : cette image a déjà été ajoutée.`);
+            continue;
+          }
+
           // Check dimensions
           const dims = await getImageDimensions(rawFile);
 
           if (isTooSmall(dims.width, dims.height)) {
-            newErrors.push(`"${rawFile.name}" (${dims.width}×${dims.height}) est trop petite. Minimum 80×80 px.`);
+            newErrors.push(`"${rawFile.name}" : Image trop petite. Dimension minimale : 300 × 200 px.`);
             continue;
           }
 
@@ -104,6 +122,7 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
             error: null,
             validated: true,
             progress: 100,
+            fingerprint,
           };
 
           const updatedPhotos = [...photosRef.current, photoItem];
@@ -121,8 +140,6 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
     },
     [onChange]
   );
-
-  const validCount = photos.filter((p) => !p.error && p.validated).length;
 
   return (
     <div className="space-y-4" ref={dropZoneRef}>
@@ -197,8 +214,20 @@ const PhotoUploader = ({ photos, onChange, onValidityChange }: PhotoUploaderProp
         minPhotos={MIN_PHOTOS}
       />
 
-      {photos.length < MIN_PHOTOS && (
-        <p className="text-xs sm:text-sm text-destructive font-medium text-center py-2">
+      {/* Validation message */}
+      {photos.length > 0 && !isValid && (
+        <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-3">
+          <p className="text-xs sm:text-sm text-destructive font-medium flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {validCount < MIN_PHOTOS
+              ? `Ajoutez au moins ${MIN_PHOTOS} photos pour publier votre logement.`
+              : "Veuillez corriger les images avant de continuer."}
+          </p>
+        </div>
+      )}
+
+      {photos.length === 0 && (
+        <p className="text-xs sm:text-sm text-muted-foreground text-center py-2">
           Ajoutez au moins {MIN_PHOTOS} photos pour publier votre logement.
         </p>
       )}

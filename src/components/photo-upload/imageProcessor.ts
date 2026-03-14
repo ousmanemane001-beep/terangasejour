@@ -6,8 +6,9 @@
 const OUTPUT_WIDTH = 1500;
 const OUTPUT_HEIGHT = 1000;
 const COMPRESSION_QUALITY = 0.75;
-const MIN_WIDTH = 80;
-const MIN_HEIGHT = 80;
+const MIN_WIDTH = 300;
+const MIN_HEIGHT = 200;
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 
 const SCREENSHOT_PATTERNS = ["screenshot", "screen", "capture"];
 
@@ -17,14 +18,26 @@ export function isScreenshot(fileName: string): boolean {
   return SCREENSHOT_PATTERNS.some((p) => lower.includes(p));
 }
 
-/** Check if image dimensions suggest a screenshot (height/width > 2.2) */
+/** Check if image dimensions suggest a phone screenshot (9:16 or 19.5:9 style ratios) */
 export function isScreenshotRatio(width: number, height: number): boolean {
-  return height / width > 2.2;
+  const ratio = height / width;
+  // Portrait phone screenshots: ratio >= 1.7 (roughly 9:16 = 1.78, 19.5:9 = 2.17)
+  return ratio >= 1.7;
 }
 
 /** Validate minimum dimensions */
 export function isTooSmall(width: number, height: number): boolean {
   return width < MIN_WIDTH || height < MIN_HEIGHT;
+}
+
+/** Check if file exceeds max size */
+export function isFileTooLarge(file: File): boolean {
+  return file.size > MAX_FILE_SIZE;
+}
+
+/** Simple hash for duplicate detection based on file size + name length */
+export function getFileFingerprint(file: File): string {
+  return `${file.size}-${file.name.length}-${file.type}`;
 }
 
 /** Load an image from a File */
@@ -57,16 +70,13 @@ export async function processImage(file: File): Promise<{ blob: Blob; width: num
   let cropX = 0, cropY = 0, cropW = srcW, cropH = srcH;
 
   if (srcRatio > targetRatio) {
-    // Too wide → crop sides
     cropW = Math.round(srcH * targetRatio);
     cropX = Math.round((srcW - cropW) / 2);
   } else if (srcRatio < targetRatio) {
-    // Too tall → crop top/bottom
     cropH = Math.round(srcW / targetRatio);
     cropY = Math.round((srcH - cropH) / 2);
   }
 
-  // Draw cropped region resized to 1500×1000
   const canvas = document.createElement("canvas");
   canvas.width = OUTPUT_WIDTH;
   canvas.height = OUTPUT_HEIGHT;

@@ -1,5 +1,5 @@
 import { useRef, useCallback } from "react";
-import { Upload, Loader2, ImagePlus, Camera, Image } from "lucide-react";
+import { Upload, Loader2, Camera, Image } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DropZoneProps {
@@ -34,10 +34,11 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
   );
 
   const instructions = (
-    <div className="text-xs text-muted-foreground space-y-0.5 text-center">
+    <div className="text-xs text-muted-foreground space-y-0.5 text-center mt-2">
       <p>Formats acceptés : JPG, PNG, WEBP</p>
-      <p>Minimum : 5 photos · Maximum : 10 photos</p>
-      <p>Toutes les photos seront automatiquement optimisées.</p>
+      <p>Dimension recommandée : 1500 × 1000 px</p>
+      <p>Dimension minimale : 300 × 200 px</p>
+      <p>Taille maximale : 2 MB</p>
     </div>
   );
 
@@ -67,7 +68,7 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
             <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center">
               <Upload className="w-7 h-7 text-accent" />
             </div>
-            <p className="font-semibold text-foreground">Ajouter des photos</p>
+            <p className="font-semibold text-foreground">Ajouter une image</p>
             <div className="flex gap-3 w-full max-w-xs">
               <button
                 type="button"
@@ -96,7 +97,7 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
               <Upload className="w-8 h-8 text-accent" />
             </div>
             <div>
-              <p className="font-semibold text-foreground text-lg">Ajouter des photos</p>
+              <p className="font-semibold text-foreground text-lg">Ajouter une image</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Glissez vos photos ici ou cliquez pour parcourir
               </p>
