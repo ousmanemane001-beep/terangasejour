@@ -110,6 +110,8 @@ const Publish = () => {
   const [availabilityType, setAvailabilityType] = useState<AvailabilityType>("always");
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isPhotoProcessing, setIsPhotoProcessing] = useState(false);
+  const [submitUploadProgress, setSubmitUploadProgress] = useState({ current: 0, total: 0 });
 
   const listingDraft = useMemo<ListingDraft>(
     () => ({
