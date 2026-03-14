@@ -1,16 +1,17 @@
 import { useState } from "react";
-import { X, Star, Camera, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Star, Camera, ChevronLeft, ChevronRight, AlertCircle, RefreshCcw } from "lucide-react";
 import type { PhotoItem } from "../PhotoUploader";
 
 interface PhotoGridProps {
   photos: PhotoItem[];
   onChange: (photos: PhotoItem[]) => void;
   onAddMore: () => void;
+  onReplace: (index: number) => void;
   maxPhotos: number;
   minPhotos: number;
 }
 
-const PhotoGrid = ({ photos, onChange, onAddMore, maxPhotos, minPhotos }: PhotoGridProps) => {
+const PhotoGrid = ({ photos, onChange, onAddMore, onReplace, maxPhotos, minPhotos }: PhotoGridProps) => {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const handleDragStart = (index: number) => setDragIndex(index);
@@ -57,81 +58,112 @@ const PhotoGrid = ({ photos, onChange, onAddMore, maxPhotos, minPhotos }: PhotoG
         const isPrimary = index === 0;
 
         return (
-          <div
-            key={photo.id}
-            draggable
-            onDragStart={() => handleDragStart(index)}
-            onDragOver={(e) => handleDragOver(e, index)}
-            onDragEnd={handleDragEnd}
-            className={`relative rounded-xl overflow-hidden group border-2 transition-all ${
-              isPrimary
-                ? "border-accent ring-2 ring-accent/30"
-                : "border-border"
-            } ${dragIndex === index ? "opacity-50 scale-95" : "hover:shadow-md"}`}
-            style={{ aspectRatio: "3/2" }}
-          >
-            <img
-              src={photo.preview}
-              alt={`Photo ${index + 1}`}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-
-            {/* Primary badge */}
-            {isPrimary && (
-              <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-md flex items-center gap-1 shadow-sm">
-                <Star className="w-2.5 h-2.5 fill-current" />
-                Principale
-              </div>
-            )}
-
-            {/* Delete button */}
-            <button
-              type="button"
-              onClick={() => removePhoto(index)}
-              className="absolute top-1.5 right-1.5 w-7 h-7 bg-destructive text-destructive-foreground rounded-lg flex items-center justify-center hover:bg-destructive/90 shadow-sm md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-              title="Supprimer"
+          <div key={photo.id} className="space-y-1">
+            <div
+              draggable
+              onDragStart={() => handleDragStart(index)}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragEnd={handleDragEnd}
+              className={`relative rounded-xl overflow-hidden group border-2 transition-all ${
+                photo.error
+                  ? "border-destructive ring-2 ring-destructive/20"
+                  : isPrimary
+                  ? "border-accent ring-2 ring-accent/30"
+                  : "border-border"
+              } ${dragIndex === index ? "opacity-50 scale-95" : "hover:shadow-md"}`}
+              style={{ aspectRatio: "3/2" }}
             >
-              <X className="w-3.5 h-3.5" />
-            </button>
-
-            {/* Reorder + set primary */}
-            <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-              {/* Set as primary */}
-              {index !== 0 && (
-                <button
-                  type="button"
-                  onClick={() => setAsPrimary(index)}
-                  className="px-2 py-0.5 bg-background/80 backdrop-blur-sm text-foreground text-[10px] font-medium rounded-md hover:bg-background flex items-center gap-1 shadow-sm"
-                >
-                  <Star className="w-2.5 h-2.5" />
-                  Principale
-                </button>
+              {photo.preview ? (
+                <img
+                  src={photo.preview}
+                  alt={`Photo ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <Camera className="w-6 h-6 text-muted-foreground" />
+                </div>
               )}
-              {index === 0 && <span />}
 
-              {/* Arrows */}
-              <div className="flex items-center gap-0.5">
-                {index > 0 && (
+              {/* Primary badge */}
+              {isPrimary && !photo.error && (
+                <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-md flex items-center gap-1 shadow-sm">
+                  <Star className="w-2.5 h-2.5 fill-current" />
+                  Principale
+                </div>
+              )}
+
+              {photo.error && (
+                <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-md flex items-center gap-1 shadow-sm">
+                  <AlertCircle className="w-2.5 h-2.5" />
+                  Invalide
+                </div>
+              )}
+
+              {/* Delete button */}
+              <button
+                type="button"
+                onClick={() => removePhoto(index)}
+                className="absolute top-1.5 right-1.5 w-7 h-7 bg-destructive text-destructive-foreground rounded-lg flex items-center justify-center hover:bg-destructive/90 shadow-sm md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                title="Supprimer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Reorder + set primary */}
+              <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between md:opacity-0 md:group-hover:opacity-100 transition-opacity gap-1">
+                {photo.error ? (
                   <button
                     type="button"
-                    onClick={() => movePhoto(index, "left")}
-                    className="w-6 h-6 bg-background/80 backdrop-blur-sm text-foreground rounded-md flex items-center justify-center hover:bg-background shadow-sm"
+                    onClick={() => onReplace(index)}
+                    className="px-2 py-0.5 bg-background/85 backdrop-blur-sm text-foreground text-[10px] font-medium rounded-md hover:bg-background flex items-center gap-1 shadow-sm"
                   >
-                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <RefreshCcw className="w-2.5 h-2.5" />
+                    Remplacer
                   </button>
-                )}
-                {index < photos.length - 1 && (
+                ) : index !== 0 ? (
                   <button
                     type="button"
-                    onClick={() => movePhoto(index, "right")}
-                    className="w-6 h-6 bg-background/80 backdrop-blur-sm text-foreground rounded-md flex items-center justify-center hover:bg-background shadow-sm"
+                    onClick={() => setAsPrimary(index)}
+                    className="px-2 py-0.5 bg-background/80 backdrop-blur-sm text-foreground text-[10px] font-medium rounded-md hover:bg-background flex items-center gap-1 shadow-sm"
                   >
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    <Star className="w-2.5 h-2.5" />
+                    Principale
                   </button>
+                ) : (
+                  <span />
                 )}
+
+                <div className="flex items-center gap-0.5">
+                  {index > 0 && !photo.error && (
+                    <button
+                      type="button"
+                      onClick={() => movePhoto(index, "left")}
+                      className="w-6 h-6 bg-background/80 backdrop-blur-sm text-foreground rounded-md flex items-center justify-center hover:bg-background shadow-sm"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  {index < photos.length - 1 && !photo.error && (
+                    <button
+                      type="button"
+                      onClick={() => movePhoto(index, "right")}
+                      className="w-6 h-6 bg-background/80 backdrop-blur-sm text-foreground rounded-md flex items-center justify-center hover:bg-background shadow-sm"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
+
+            {photo.error && (
+              <p className="text-[10px] sm:text-xs text-destructive flex items-start gap-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                {photo.error}
+              </p>
+            )}
           </div>
         );
       })}
