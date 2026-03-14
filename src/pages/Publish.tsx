@@ -142,6 +142,21 @@ const Publish = () => {
     if (safeStep !== step) setStep(safeStep);
   }, [safeStep, step]);
 
+  const validPhotoCount = listingDraft.photos.filter((p) => !p.error && p.validated).length;
+  const hasPhotoErrors = listingDraft.photos.some((p) => !!p.error);
+  const isPhotoStepBlocked = isPhotoProcessing || validPhotoCount < 5 || hasPhotoErrors;
+
+  const mapUploadError = (rawMessage?: string) => {
+    const message = (rawMessage || "").toLowerCase();
+    if (message.includes("mime") || message.includes("content-type")) {
+      return "Format non accepté. Utilisez JPG, PNG ou WEBP.";
+    }
+    if (message.includes("size") || message.includes("too large") || message.includes("file_size_limit")) {
+      return "Image trop lourde. Taille maximale : 2 MB.";
+    }
+    return "Échec d'upload. Vérifiez l'image et réessayez.";
+  };
+
   const validateStep = (s: number): string | null => {
     switch (s) {
       case 0: {
