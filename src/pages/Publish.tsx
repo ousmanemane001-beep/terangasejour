@@ -484,7 +484,17 @@ const Publish = () => {
                     <p className="text-sm text-muted-foreground">
                       Des photos de qualité attirent plus de voyageurs. Ajoutez au moins 5 photos.
                     </p>
-                    <PhotoUploader photos={listingDraft.photos} onChange={setPhotos} />
+                    <PhotoUploader
+                      photos={listingDraft.photos}
+                      onChange={setPhotos}
+                      onProcessingChange={setIsPhotoProcessing}
+                    />
+                    {isPhotoProcessing && (
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                        Traitement des images en cours…
+                      </p>
+                    )}
                   </div>
                 )}
 
