@@ -1,6 +1,5 @@
 /**
- * Simple rule-based image processing: resize, center-crop to 3:2, compress to WebP.
- * No AI, no blur/darkness detection, no perceptual hashing.
+ * Simple rule-based image processing: validate, resize, center-crop to 3:2, compress to WebP.
  */
 
 const OUTPUT_WIDTH = 1500;
@@ -11,6 +10,12 @@ const MIN_HEIGHT = 200;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 
 const SCREENSHOT_PATTERNS = ["screenshot", "screen", "capture"];
+const ACCEPTED_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
+const HEIC_EXTENSIONS = ["heic", "heif"];
+
+function getExtension(fileName: string): string {
+  return fileName.toLowerCase().split(".").pop() || "";
+}
 
 /** Check if a filename looks like a screenshot */
 export function isScreenshot(fileName: string): boolean {
@@ -35,9 +40,54 @@ export function isFileTooLarge(file: File): boolean {
   return file.size > MAX_FILE_SIZE;
 }
 
-/** Simple hash for duplicate detection based on file size + name length */
+/** Accept standard web formats + HEIC/HEIF (converted before processing) */
+export function isAcceptedImageFormat(file: File): boolean {
+  const ext = getExtension(file.name);
+  const type = file.type.toLowerCase();
+
+  if (ACCEPTED_EXTENSIONS.includes(ext) || HEIC_EXTENSIONS.includes(ext)) return true;
+  if (["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"].includes(type)) return true;
+
+  return false;
+}
+
+/** Check HEIC/HEIF formats */
+export function isHeicFormat(file: File): boolean {
+  const ext = getExtension(file.name);
+  const type = file.type.toLowerCase();
+  return HEIC_EXTENSIONS.includes(ext) || type === "image/heic" || type === "image/heif";
+}
+
+/** Convert HEIC/HEIF to JPEG for browser compatibility */
+export async function normalizeImageFile(file: File): Promise<File> {
+  if (!isHeicFormat(file)) return file;
+
+  try {
+    const heic2any = (await import("heic2any")).default as any;
+    const converted = await heic2any({
+      blob: file,
+      toType: "image/jpeg",
+      quality: 0.9,
+    });
+
+    const convertedBlob = Array.isArray(converted) ? converted[0] : converted;
+    if (!(convertedBlob instanceof Blob)) {
+      throw new Error("Conversion HEIC invalide");
+    }
+
+    const fileName = file.name.replace(/\.(heic|heif)$/i, ".jpg");
+    return new File([convertedBlob], fileName, {
+      type: "image/jpeg",
+      lastModified: Date.now(),
+    });
+  } catch {
+    throw new Error("Format HEIC non pris en charge sur cet appareil. Convertissez l'image en JPG ou PNG.");
+  }
+}
+
+/** Simple fingerprint for duplicate detection */
 export function getFileFingerprint(file: File): string {
-  return `${file.size}-${file.name.length}-${file.type}`;
+  return `${file.size}-${file.lastModified}-${file.type}-${file.name.toLowerCase()}`;
 }
 
 /** Load an image from a File */
@@ -45,8 +95,14 @@ function loadImage(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
-    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Impossible de lire cette image.")); };
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Impossible de lire cette image."));
+    };
     img.src = url;
   });
 }
@@ -67,7 +123,10 @@ export async function processImage(file: File): Promise<{ blob: Blob; width: num
   // Calculate center crop for 3:2 ratio on source dimensions
   const targetRatio = 3 / 2;
   const srcRatio = srcW / srcH;
-  let cropX = 0, cropY = 0, cropW = srcW, cropH = srcH;
+  let cropX = 0,
+    cropY = 0,
+    cropW = srcW,
+    cropH = srcH;
 
   if (srcRatio > targetRatio) {
     cropW = Math.round(srcH * targetRatio);
