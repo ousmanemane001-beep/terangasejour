@@ -519,7 +519,12 @@ const Publish = () => {
             )}
 
             {safeStep < STEP_LABELS.length - 1 ? (
-              <Button type="button" onClick={goNext} className="rounded-xl h-12 px-6 bg-primary text-primary-foreground">
+              <Button
+                type="button"
+                onClick={goNext}
+                disabled={safeStep === 1 && (listingDraft.photos.filter(p => !p.error && p.validated).length < 5 || listingDraft.photos.some(p => !!p.error))}
+                className="rounded-xl h-12 px-6 bg-primary text-primary-foreground disabled:opacity-50"
+              >
                 Suivant
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
