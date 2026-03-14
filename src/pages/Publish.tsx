@@ -594,7 +594,7 @@ const Publish = () => {
 
           <div className="flex items-center justify-between mt-6 gap-3">
             {safeStep > 0 ? (
-              <Button type="button" variant="outline" onClick={goBack} className="rounded-xl h-12 px-6">
+              <Button type="button" variant="outline" onClick={goBack} className="rounded-xl h-12 px-6" disabled={loading}>
                 <ChevronLeft className="w-4 h-4 mr-1" />Précédent
               </Button>
             ) : (
@@ -605,17 +605,26 @@ const Publish = () => {
               <Button
                 type="button"
                 onClick={goNext}
-                disabled={safeStep === 1 && (listingDraft.photos.filter(p => !p.error && p.validated).length < 5 || listingDraft.photos.some(p => !!p.error))}
+                disabled={(safeStep === 1 && isPhotoStepBlocked) || loading}
                 className="rounded-xl h-12 px-6 bg-primary text-primary-foreground disabled:opacity-50"
               >
-                Suivant
-                <ChevronRight className="w-4 h-4 ml-1" />
+                {safeStep === 1 && isPhotoProcessing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Traitement…
+                  </>
+                ) : (
+                  <>
+                    Suivant
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </>
+                )}
               </Button>
             ) : (
               <Button
                 type="button"
                 onClick={handleSubmit}
-                disabled={loading}
+                disabled={loading || isPhotoProcessing}
                 className="rounded-xl h-12 px-8 bg-primary text-primary-foreground font-medium"
               >
                 {loading ? (
@@ -629,6 +638,18 @@ const Publish = () => {
               </Button>
             )}
           </div>
+
+          {loading && submitUploadProgress.total > 0 && (
+            <div className="mt-3 bg-muted/50 border border-border rounded-xl p-3 space-y-2">
+              <p className="text-xs text-muted-foreground">
+                Upload des images : {submitUploadProgress.current}/{submitUploadProgress.total}
+              </p>
+              <Progress
+                value={(submitUploadProgress.current / submitUploadProgress.total) * 100}
+                className="h-2"
+              />
+            </div>
+          )}
         </div>
       </div>
 
