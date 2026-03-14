@@ -170,11 +170,14 @@ const Publish = () => {
         return null;
       }
       case 1:
-        if (listingDraft.photos.length < 5) {
-          return `Ajoutez au moins 5 photos (${listingDraft.photos.length}/5).`;
+        if (isPhotoProcessing) {
+          return "Traitement des images en cours. Veuillez patienter.";
         }
-        if (listingDraft.photos.some((p) => !!p.error)) {
-          return "Veuillez remplacer les images non conformes avant de continuer.";
+        if (validPhotoCount < 5) {
+          return `Ajoutez au moins 5 photos (${validPhotoCount}/5).`;
+        }
+        if (hasPhotoErrors) {
+          return "Veuillez corriger les images avant de continuer.";
         }
         return null;
       case 2: {
