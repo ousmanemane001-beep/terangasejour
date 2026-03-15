@@ -106,7 +106,7 @@ function loadDraftFromStorage(): Partial<ListingDraft> | null {
     // Photos with File objects cannot be serialized — we only persist metadata
     // so photos will be empty on reload (File/Blob can't survive localStorage)
     parsed.photos = [];
-    return parsed;
+    return parsed as Partial<ListingDraft> & { _step?: number };
   } catch {
     return null;
   }
