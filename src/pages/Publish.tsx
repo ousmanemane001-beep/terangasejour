@@ -594,24 +594,22 @@ const Publish = () => {
           <div className="flex items-center justify-between mt-6 gap-3">
             {safeStep > 0 ? (
               <Button type="button" variant="outline" onClick={goBack} className="rounded-xl h-12 px-6" disabled={loading}>
-                <ChevronLeft className="w-4 h-4 mr-1" />Précédent
+                <ChevronLeft className="w-4 h-4 mr-1" />Retour
               </Button>
             ) : (
               <div />
             )}
 
             {safeStep < STEP_LABELS.length - 1 ? (
-              !(safeStep === 1 && isPhotoStepBlocked) && (
-                <Button
-                  type="button"
-                  onClick={goNext}
-                  disabled={loading}
-                  className="rounded-xl h-12 px-6 bg-primary text-primary-foreground"
-                >
-                  Suivant
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              )
+              <Button
+                type="button"
+                onClick={goNext}
+                disabled={loading || (safeStep === 1 && (isPhotoProcessing || validPhotoCount < 1 || hasPhotoErrors))}
+                className="rounded-xl h-12 px-6 bg-primary text-primary-foreground"
+              >
+                Suivant
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
             ) : (
               <Button
                 type="button"
