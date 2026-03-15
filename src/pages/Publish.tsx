@@ -152,7 +152,7 @@ const Publish = () => {
       return "Format non accepté. Utilisez JPG, PNG ou WEBP.";
     }
     if (message.includes("size") || message.includes("too large") || message.includes("file_size_limit")) {
-      return "Image trop lourde. Taille maximale : 2 MB.";
+      return "Image trop lourde. Taille maximale : 10 MB.";
     }
     return "Échec d'upload. Vérifiez l'image et réessayez.";
   };
