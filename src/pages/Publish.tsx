@@ -93,6 +93,52 @@ class StepRenderBoundary extends Component<
   }
 }
 
+class PageErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
+    // Top-level recovery — prevents white screen
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 text-center">
+          <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+          <h1 className="text-xl font-bold text-foreground mb-2">Une erreur est survenue</h1>
+          <p className="text-sm text-muted-foreground mb-6 max-w-md">
+            La page de création d'annonce a rencontré un problème. Vos données sont sauvegardées automatiquement.
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="rounded-xl"
+              onClick={() => this.setState({ hasError: false })}
+            >
+              <RefreshCcw className="w-4 h-4 mr-1" /> Réessayer
+            </Button>
+            <Button
+              className="rounded-xl"
+              onClick={() => { window.location.href = "/dashboard"; }}
+            >
+              Retour au tableau de bord
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const DRAFT_STORAGE_KEY = "terangasejour_listing_draft";
 
 function loadDraftFromStorage(): Partial<ListingDraft> | null {
