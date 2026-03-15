@@ -140,10 +140,10 @@ const Publish = () => {
   const queryClient = useQueryClient();
 
   // Load saved draft on mount
-  const savedDraft = useMemo(() => loadDraftFromStorage(), []);
+  const savedDraft = useMemo(() => loadDraftFromStorage(), []) as (Partial<ListingDraft> & { _step?: number }) | null;
 
   const [step, setStep] = useState(() => {
-    const s = savedDraft?._step as number | undefined;
+    const s = savedDraft?._step;
     return Number.isInteger(s) ? Math.min(Math.max(s!, 0), STEP_LABELS.length - 1) : 0;
   });
   const [title, setTitle] = useState(savedDraft?.title ?? "");
