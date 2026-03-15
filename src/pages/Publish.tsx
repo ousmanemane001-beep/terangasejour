@@ -144,7 +144,7 @@ const Publish = () => {
 
   const validPhotoCount = listingDraft.photos.filter((p) => !p.error && p.validated).length;
   const hasPhotoErrors = listingDraft.photos.some((p) => !!p.error);
-  const isPhotoStepBlocked = isPhotoProcessing || validPhotoCount < 5 || hasPhotoErrors;
+  const isPhotoStepBlocked = isPhotoProcessing || validPhotoCount < 1 || hasPhotoErrors;
 
   const mapUploadError = (rawMessage?: string) => {
     const message = (rawMessage || "").toLowerCase();
