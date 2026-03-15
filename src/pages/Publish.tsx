@@ -144,7 +144,7 @@ const Publish = () => {
 
   const validPhotoCount = listingDraft.photos.filter((p) => !p.error && p.validated).length;
   const hasPhotoErrors = listingDraft.photos.some((p) => !!p.error);
-  const isPhotoStepBlocked = isPhotoProcessing || validPhotoCount < 5 || hasPhotoErrors;
+  const isPhotoStepBlocked = isPhotoProcessing || validPhotoCount < 1 || hasPhotoErrors;
 
   const mapUploadError = (rawMessage?: string) => {
     const message = (rawMessage || "").toLowerCase();
@@ -152,7 +152,7 @@ const Publish = () => {
       return "Format non accepté. Utilisez JPG, PNG ou WEBP.";
     }
     if (message.includes("size") || message.includes("too large") || message.includes("file_size_limit")) {
-      return "Image trop lourde. Taille maximale : 2 MB.";
+      return "Image trop lourde. Taille maximale : 10 MB.";
     }
     return "Échec d'upload. Vérifiez l'image et réessayez.";
   };
@@ -173,8 +173,8 @@ const Publish = () => {
         if (isPhotoProcessing) {
           return "Traitement des images en cours. Veuillez patienter.";
         }
-        if (validPhotoCount < 5) {
-          return `Ajoutez au moins 5 photos (${validPhotoCount}/5).`;
+        if (validPhotoCount < 1) {
+          return `Ajoutez au moins 1 photo valide.`;
         }
         if (hasPhotoErrors) {
           return "Veuillez corriger les images avant de continuer.";
@@ -238,8 +238,8 @@ const Publish = () => {
       for (let i = 0; i < validPhotos.length; i++) {
         const photo = validPhotos[i];
 
-        if (photo.file.size > 2 * 1024 * 1024) {
-          const sizeError = "Image trop lourde. Taille maximale : 2 MB.";
+        if (photo.file.size > 10 * 1024 * 1024) {
+          const sizeError = "Image trop lourde. Taille maximale : 10 MB.";
           setPhotos((prev) =>
             prev.map((p) =>
               p.id === photo.id
@@ -602,24 +602,17 @@ const Publish = () => {
             )}
 
             {safeStep < STEP_LABELS.length - 1 ? (
-              <Button
-                type="button"
-                onClick={goNext}
-                disabled={(safeStep === 1 && isPhotoStepBlocked) || loading}
-                className="rounded-xl h-12 px-6 bg-primary text-primary-foreground disabled:opacity-50"
-              >
-                {safeStep === 1 && isPhotoProcessing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Traitement…
-                  </>
-                ) : (
-                  <>
-                    Suivant
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </>
-                )}
-              </Button>
+              !(safeStep === 1 && isPhotoStepBlocked) && (
+                <Button
+                  type="button"
+                  onClick={goNext}
+                  disabled={loading}
+                  className="rounded-xl h-12 px-6 bg-primary text-primary-foreground"
+                >
+                  Suivant
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              )
             ) : (
               <Button
                 type="button"

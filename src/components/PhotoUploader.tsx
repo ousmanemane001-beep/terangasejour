@@ -15,7 +15,7 @@ import {
 } from "./photo-upload/imageProcessor";
 
 const MAX_PHOTOS = 10;
-const MIN_PHOTOS = 5;
+const MIN_PHOTOS = 1;
 const ACCEPTED_INPUT = "image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif";
 
 export interface PhotoItem {
@@ -123,7 +123,7 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
             }
 
             if (isFileTooLarge(normalizedFile)) {
-              addInvalidPhoto(normalizedFile, "Image trop lourde. Taille maximale : 2 MB.");
+              addInvalidPhoto(normalizedFile, "Image trop lourde. Taille maximale : 10 MB.");
               continue;
             }
 
@@ -142,7 +142,7 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
             const dims = await getImageDimensions(normalizedFile);
 
             if (isTooSmall(dims.width, dims.height)) {
-              addInvalidPhoto(normalizedFile, "Image trop petite. Dimension minimale : 300 × 200 px.", fingerprint);
+              addInvalidPhoto(normalizedFile, "Image trop petite. Dimension minimale : 200 × 200 px.", fingerprint);
               continue;
             }
 
@@ -270,14 +270,14 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
             <AlertCircle className="w-4 h-4 shrink-0" />
             {hasErrors
               ? "Veuillez corriger les images avant de continuer."
-              : `Ajoutez au moins ${MIN_PHOTOS} photos pour publier votre logement.`}
+              : "Ajoutez au moins une photo valide pour publier votre logement."}
           </p>
         </div>
       )}
 
       {photos.length === 0 && (
         <p className="text-xs sm:text-sm text-muted-foreground text-center py-2">
-          Ajoutez au moins {MIN_PHOTOS} photos pour publier votre logement.
+          Ajoutez au moins une photo pour publier votre logement.
         </p>
       )}
 

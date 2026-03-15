@@ -5,9 +5,9 @@
 const OUTPUT_WIDTH = 1500;
 const OUTPUT_HEIGHT = 1000;
 const COMPRESSION_QUALITY = 0.75;
-const MIN_WIDTH = 300;
+const MIN_WIDTH = 200;
 const MIN_HEIGHT = 200;
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 const SCREENSHOT_PATTERNS = ["screenshot", "screen", "capture"];
 const ACCEPTED_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
