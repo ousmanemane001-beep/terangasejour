@@ -36,10 +36,8 @@ const DropZone = ({ onFiles, disabled, processing, photoCount, maxPhotos }: Drop
   const instructions = (
     <div className="text-xs text-muted-foreground space-y-0.5 text-center mt-2">
       <p>Formats acceptés : JPG, PNG, HEIC, WEBP</p>
-      <p>HEIC : conversion automatique en WEBP</p>
-      <p>Dimension minimale : 200 × 200 px</p>
-      <p>Taille maximale : 10 MB</p>
-      <p>Redimensionnement auto : 1500 × 1000 px</p>
+      <p>Taille maximale : 20 MB</p>
+      <p>Conversion automatique en WEBP optimisé</p>
       <p>
         {photoCount}/{maxPhotos} photo(s)
       </p>

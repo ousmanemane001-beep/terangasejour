@@ -1,15 +1,12 @@
 /**
- * Simple rule-based image processing: validate, resize, center-crop to 3:2, compress to WebP.
+ * Image processing: resize, convert to WebP, compress.
  */
 
 const OUTPUT_WIDTH = 1500;
 const OUTPUT_HEIGHT = 1000;
-const COMPRESSION_QUALITY = 0.75;
-const MIN_WIDTH = 200;
-const MIN_HEIGHT = 200;
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const COMPRESSION_QUALITY = 0.80;
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
-const SCREENSHOT_PATTERNS = ["screenshot", "screen", "capture"];
 const ACCEPTED_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
 const HEIC_EXTENSIONS = ["heic", "heif"];
 
@@ -17,37 +14,17 @@ function getExtension(fileName: string): string {
   return fileName.toLowerCase().split(".").pop() || "";
 }
 
-/** Check if a filename looks like a screenshot */
-export function isScreenshot(fileName: string): boolean {
-  const lower = fileName.toLowerCase();
-  return SCREENSHOT_PATTERNS.some((p) => lower.includes(p));
-}
-
-/** Check if image dimensions suggest a phone screenshot (9:16 or 19.5:9 style ratios) */
-export function isScreenshotRatio(width: number, height: number): boolean {
-  const ratio = height / width;
-  // Portrait phone screenshots: ratio >= 1.7 (roughly 9:16 = 1.78, 19.5:9 = 2.17)
-  return ratio >= 1.7;
-}
-
-/** Validate minimum dimensions */
-export function isTooSmall(width: number, height: number): boolean {
-  return width < MIN_WIDTH || height < MIN_HEIGHT;
-}
-
 /** Check if file exceeds max size */
 export function isFileTooLarge(file: File): boolean {
   return file.size > MAX_FILE_SIZE;
 }
 
-/** Accept standard web formats + HEIC/HEIF (converted before processing) */
+/** Accept standard web formats + HEIC/HEIF */
 export function isAcceptedImageFormat(file: File): boolean {
   const ext = getExtension(file.name);
   const type = file.type.toLowerCase();
-
   if (ACCEPTED_EXTENSIONS.includes(ext) || HEIC_EXTENSIONS.includes(ext)) return true;
   if (["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"].includes(type)) return true;
-
   return false;
 }
 
@@ -107,14 +84,8 @@ function loadImage(file: File): Promise<HTMLImageElement> {
   });
 }
 
-/** Get image dimensions without full processing */
-export async function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
-  const img = await loadImage(file);
-  return { width: img.naturalWidth, height: img.naturalHeight };
-}
-
 /**
- * Process an image: center-crop to 3:2, resize to 1500×1000, compress to WebP at 75%.
+ * Process an image: center-crop to 3:2, resize to 1500×1000, compress to WebP at 80%.
  */
 export async function processImage(file: File): Promise<{ blob: Blob; width: number; height: number }> {
   const img = await loadImage(file);
