@@ -8,10 +8,9 @@ interface PhotoGridProps {
   onAddMore: () => void;
   onReplace: (index: number) => void;
   maxPhotos: number;
-  minPhotos: number;
 }
 
-const PhotoGrid = ({ photos, onChange, onAddMore, onReplace, maxPhotos, minPhotos }: PhotoGridProps) => {
+const PhotoGrid = ({ photos, onChange, onAddMore, onReplace, maxPhotos }: PhotoGridProps) => {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const handleDragStart = (index: number) => setDragIndex(index);
@@ -50,8 +49,6 @@ const PhotoGrid = ({ photos, onChange, onAddMore, onReplace, maxPhotos, minPhoto
     onChange(updated);
   };
 
-  const emptySlots = Math.max(0, minPhotos - photos.length);
-
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {photos.map((photo, index) => {
@@ -86,7 +83,6 @@ const PhotoGrid = ({ photos, onChange, onAddMore, onReplace, maxPhotos, minPhoto
                 </div>
               )}
 
-              {/* Primary badge */}
               {isPrimary && !photo.error && (
                 <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-md flex items-center gap-1 shadow-sm">
                   <Star className="w-2.5 h-2.5 fill-current" />
@@ -101,7 +97,6 @@ const PhotoGrid = ({ photos, onChange, onAddMore, onReplace, maxPhotos, minPhoto
                 </div>
               )}
 
-              {/* Delete button */}
               <button
                 type="button"
                 onClick={() => removePhoto(index)}
@@ -111,7 +106,6 @@ const PhotoGrid = ({ photos, onChange, onAddMore, onReplace, maxPhotos, minPhoto
                 <X className="w-3.5 h-3.5" />
               </button>
 
-              {/* Reorder + set primary */}
               <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between md:opacity-0 md:group-hover:opacity-100 transition-opacity gap-1">
                 {photo.error ? (
                   <button
@@ -168,21 +162,7 @@ const PhotoGrid = ({ photos, onChange, onAddMore, onReplace, maxPhotos, minPhoto
         );
       })}
 
-      {/* Empty slots */}
-      {Array.from({ length: emptySlots }).map((_, i) => (
-        <div
-          key={`empty-${i}`}
-          onClick={onAddMore}
-          className="rounded-xl bg-muted/50 border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 active:border-accent transition-colors"
-          style={{ aspectRatio: "3/2" }}
-        >
-          <Camera className="w-5 h-5 text-muted-foreground/40 mb-1" />
-          <span className="text-[10px] text-muted-foreground/40">{photos.length + i + 1}</span>
-        </div>
-      ))}
-
-      {/* Add more */}
-      {emptySlots === 0 && photos.length < maxPhotos && (
+      {photos.length < maxPhotos && (
         <div
           onClick={onAddMore}
           className="rounded-xl bg-muted/50 border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-accent/50 active:border-accent transition-colors"

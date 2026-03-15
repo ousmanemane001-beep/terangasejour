@@ -4,10 +4,6 @@ import DropZone from "./photo-upload/DropZone";
 import PhotoGrid from "./photo-upload/PhotoGrid";
 import {
   processImage,
-  getImageDimensions,
-  isScreenshot,
-  isScreenshotRatio,
-  isTooSmall,
   isFileTooLarge,
   getFileFingerprint,
   normalizeImageFile,
@@ -15,7 +11,6 @@ import {
 } from "./photo-upload/imageProcessor";
 
 const MAX_PHOTOS = 10;
-const MIN_PHOTOS = 1;
 const ACCEPTED_INPUT = "image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif";
 
 export interface PhotoItem {
@@ -31,12 +26,10 @@ export interface PhotoItem {
 interface PhotoUploaderProps {
   photos: PhotoItem[];
   onChange: (photos: PhotoItem[]) => void;
-  onValidityChange?: (allValid: boolean) => void;
   onProcessingChange?: (processing: boolean) => void;
 }
 
-const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange }: PhotoUploaderProps) => {
-  const dropZoneRef = useRef<HTMLDivElement>(null);
+const PhotoUploader = ({ photos, onChange, onProcessingChange }: PhotoUploaderProps) => {
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const replaceTargetIndexRef = useRef<number | null>(null);
 
@@ -47,14 +40,6 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
 
   const photosRef = useRef(photos);
   photosRef.current = photos;
-
-  const validCount = photos.filter((p) => !p.error && p.validated).length;
-  const hasErrors = photos.some((p) => !!p.error);
-  const isValid = validCount >= MIN_PHOTOS && !hasErrors;
-
-  useEffect(() => {
-    onValidityChange?.(isValid);
-  }, [isValid, onValidityChange]);
 
   useEffect(() => {
     onProcessingChange?.(processing);
@@ -90,7 +75,6 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
 
       const addInvalidPhoto = (file: File, error: string, fingerprint?: string) => {
         const preview = file.type.startsWith("image/") ? URL.createObjectURL(file) : "";
-
         const invalidPhoto: PhotoItem = {
           id: crypto.randomUUID(),
           file,
@@ -100,7 +84,6 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
           progress: 0,
           fingerprint: fingerprint ?? getFileFingerprint(file),
         };
-
         updatedPhotos = [...updatedPhotos, invalidPhoto];
         onChange(updatedPhotos);
       };
@@ -123,12 +106,7 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
             }
 
             if (isFileTooLarge(normalizedFile)) {
-              addInvalidPhoto(normalizedFile, "Image trop lourde. Taille maximale : 10 MB.");
-              continue;
-            }
-
-            if (isScreenshot(normalizedFile.name)) {
-              addInvalidPhoto(normalizedFile, "Capture d'écran non acceptée.");
+              addInvalidPhoto(normalizedFile, "Image trop lourde. Taille maximale : 20 MB.");
               continue;
             }
 
@@ -136,18 +114,6 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
             const isDuplicate = updatedPhotos.some((p) => p.fingerprint === fingerprint);
             if (isDuplicate) {
               addInvalidPhoto(normalizedFile, "Image dupliquée : cette photo existe déjà.", fingerprint);
-              continue;
-            }
-
-            const dims = await getImageDimensions(normalizedFile);
-
-            if (isTooSmall(dims.width, dims.height)) {
-              addInvalidPhoto(normalizedFile, "Image trop petite. Dimension minimale : 200 × 200 px.", fingerprint);
-              continue;
-            }
-
-            if (isScreenshotRatio(dims.width, dims.height)) {
-              addInvalidPhoto(normalizedFile, "Format vertical type capture d'écran non accepté.", fingerprint);
               continue;
             }
 
@@ -198,8 +164,10 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
     [processing]
   );
 
+  const validCount = photos.filter((p) => !p.error && p.validated).length;
+
   return (
-    <div className="space-y-4" ref={dropZoneRef}>
+    <div className="space-y-4">
       <DropZone
         onFiles={handleFiles}
         disabled={photos.length >= MAX_PHOTOS}
@@ -236,20 +204,11 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
         </div>
       )}
 
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <ImageIcon className="w-4 h-4 text-muted-foreground" />
-          <p className="text-xs sm:text-sm font-medium text-foreground">
-            Photos :{" "}
-            <span className={validCount < MIN_PHOTOS ? "text-destructive" : "text-accent"}>{validCount}</span> / {MAX_PHOTOS}
-          </p>
-        </div>
-        {photos.length > 0 && (validCount < MIN_PHOTOS || hasErrors) && (
-          <p className="text-[10px] sm:text-xs text-destructive font-medium flex items-center gap-1">
-            <AlertCircle className="w-3 h-3" />
-            {hasErrors ? "Corrigez les images invalides" : `Min ${MIN_PHOTOS} photos`}
-          </p>
-        )}
+      <div className="flex items-center gap-2">
+        <ImageIcon className="w-4 h-4 text-muted-foreground" />
+        <p className="text-xs sm:text-sm font-medium text-foreground">
+          Photos : <span className="text-accent">{validCount}</span> / {MAX_PHOTOS}
+        </p>
       </div>
 
       <PhotoGrid
@@ -261,25 +220,7 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
           if (input && photos.length < MAX_PHOTOS && !processing) input.click();
         }}
         maxPhotos={MAX_PHOTOS}
-        minPhotos={MIN_PHOTOS}
       />
-
-      {photos.length > 0 && !isValid && (
-        <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-3">
-          <p className="text-xs sm:text-sm text-destructive font-medium flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            {hasErrors
-              ? "Veuillez corriger les images avant de continuer."
-              : "Ajoutez au moins une photo valide pour publier votre logement."}
-          </p>
-        </div>
-      )}
-
-      {photos.length === 0 && (
-        <p className="text-xs sm:text-sm text-muted-foreground text-center py-2">
-          Ajoutez au moins une photo pour publier votre logement.
-        </p>
-      )}
 
       <input
         ref={replaceInputRef}
@@ -289,11 +230,9 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
         onChange={(e) => {
           const replaceIndex = replaceTargetIndexRef.current;
           replaceTargetIndexRef.current = null;
-
           if (e.target.files?.length && replaceIndex !== null) {
             void processFiles([e.target.files[0]], replaceIndex);
           }
-
           e.target.value = "";
         }}
       />

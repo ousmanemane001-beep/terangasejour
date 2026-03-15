@@ -144,7 +144,6 @@ const Publish = () => {
 
   const validPhotoCount = listingDraft.photos.filter((p) => !p.error && p.validated).length;
   const hasPhotoErrors = listingDraft.photos.some((p) => !!p.error);
-  const isPhotoStepBlocked = isPhotoProcessing || validPhotoCount < 1 || hasPhotoErrors;
 
   const mapUploadError = (rawMessage?: string) => {
     const message = (rawMessage || "").toLowerCase();
@@ -152,7 +151,7 @@ const Publish = () => {
       return "Format non accepté. Utilisez JPG, PNG ou WEBP.";
     }
     if (message.includes("size") || message.includes("too large") || message.includes("file_size_limit")) {
-      return "Image trop lourde. Taille maximale : 10 MB.";
+      return "Image trop lourde. Taille maximale : 20 MB.";
     }
     return "Échec d'upload. Vérifiez l'image et réessayez.";
   };
@@ -238,8 +237,8 @@ const Publish = () => {
       for (let i = 0; i < validPhotos.length; i++) {
         const photo = validPhotos[i];
 
-        if (photo.file.size > 10 * 1024 * 1024) {
-          const sizeError = "Image trop lourde. Taille maximale : 10 MB.";
+        if (photo.file.size > 20 * 1024 * 1024) {
+          const sizeError = "Image trop lourde. Taille maximale : 20 MB.";
           setPhotos((prev) =>
             prev.map((p) =>
               p.id === photo.id
@@ -482,7 +481,7 @@ const Publish = () => {
                       <Camera className="w-5 h-5 inline mr-2" />Ajoutez des photos
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      Des photos de qualité attirent plus de voyageurs. Ajoutez au moins 5 photos.
+                      Ajoutez jusqu'à 10 photos de votre logement. Les images seront optimisées automatiquement.
                     </p>
                     <PhotoUploader
                       photos={listingDraft.photos}
@@ -595,24 +594,22 @@ const Publish = () => {
           <div className="flex items-center justify-between mt-6 gap-3">
             {safeStep > 0 ? (
               <Button type="button" variant="outline" onClick={goBack} className="rounded-xl h-12 px-6" disabled={loading}>
-                <ChevronLeft className="w-4 h-4 mr-1" />Précédent
+                <ChevronLeft className="w-4 h-4 mr-1" />Retour
               </Button>
             ) : (
               <div />
             )}
 
             {safeStep < STEP_LABELS.length - 1 ? (
-              !(safeStep === 1 && isPhotoStepBlocked) && (
-                <Button
-                  type="button"
-                  onClick={goNext}
-                  disabled={loading}
-                  className="rounded-xl h-12 px-6 bg-primary text-primary-foreground"
-                >
-                  Suivant
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
-              )
+              <Button
+                type="button"
+                onClick={goNext}
+                disabled={loading || (safeStep === 1 && (isPhotoProcessing || validPhotoCount < 1 || hasPhotoErrors))}
+                className="rounded-xl h-12 px-6 bg-primary text-primary-foreground"
+              >
+                Suivant
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
             ) : (
               <Button
                 type="button"
