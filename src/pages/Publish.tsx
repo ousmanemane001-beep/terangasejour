@@ -427,13 +427,11 @@ const Publish = () => {
       <div className="flex-1 py-6 sm:py-10">
         <div className="container mx-auto px-4 max-w-2xl">
           <StepRenderBoundary onFallback={goBack}>
-            <AnimatePresence mode="wait">
               <motion.div
                 key={safeStep}
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.15 }}
               >
                 {safeStep === 0 && (
                   <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
