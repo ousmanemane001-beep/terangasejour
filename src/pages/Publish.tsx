@@ -536,62 +536,68 @@ const Publish = () => {
                   />
                 )}
 
-                {safeStep === 4 && (
-                  <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
-                    <h2 className="font-display text-xl font-bold text-foreground">
-                      <CheckCircle className="w-5 h-5 inline mr-2" />Récapitulatif
-                    </h2>
-                    <p className="text-sm text-muted-foreground">Vérifiez les informations avant de publier votre logement.</p>
+                {safeStep === 4 && (() => {
+                  const safePhotos = Array.isArray(listingDraft.photos) ? listingDraft.photos : [];
+                  const safePrice = Number.isFinite(displayedPrice) ? displayedPrice : 0;
+                  const safeBlockedDates = Array.isArray(listingDraft.blockedDates) ? listingDraft.blockedDates : [];
 
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between py-2 border-b border-border">
-                        <span className="text-muted-foreground">Titre</span>
-                        <span className="font-medium text-foreground text-right max-w-[60%]">{listingDraft.title || "—"}</span>
+                  return (
+                    <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
+                      <h2 className="font-display text-xl font-bold text-foreground">
+                        <CheckCircle className="w-5 h-5 inline mr-2" />Récapitulatif
+                      </h2>
+                      <p className="text-sm text-muted-foreground">Vérifiez les informations avant de publier votre logement.</p>
+
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between py-2 border-b border-border">
+                          <span className="text-muted-foreground">Titre</span>
+                          <span className="font-medium text-foreground text-right max-w-[60%]">{listingDraft.title || "—"}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-border">
+                          <span className="text-muted-foreground">Type</span>
+                          <span className="font-medium text-foreground capitalize">{listingDraft.propertyType || "—"}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-border">
+                          <span className="text-muted-foreground">Localisation</span>
+                          <span className="font-medium text-foreground">{listingDraft.location || "—"}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-border">
+                          <span className="text-muted-foreground">Chambres / SdB / Capacité</span>
+                          <span className="font-medium text-foreground">{listingDraft.bedrooms || 1} / {listingDraft.bathrooms || 1} / {listingDraft.capacity || 1}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-border">
+                          <span className="text-muted-foreground">Prix par nuit</span>
+                          <span className="font-bold text-foreground">{safePrice.toLocaleString("fr-FR")} {listingDraft.currency}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-border">
+                          <span className="text-muted-foreground">Photos</span>
+                          <span className="font-medium text-foreground">{safePhotos.length} photo(s)</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-border">
+                          <span className="text-muted-foreground">Disponibilité</span>
+                          <span className="font-medium text-foreground">
+                            {listingDraft.availabilityType === "always" && "Toujours disponible (réservation instantanée)"}
+                            {listingDraft.availabilityType === "request_only" && `Sur demande${safeBlockedDates.length > 0 ? ` (${safeBlockedDates.length} date(s) bloquée(s))` : ""}`}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex justify-between py-2 border-b border-border">
-                        <span className="text-muted-foreground">Type</span>
-                        <span className="font-medium text-foreground capitalize">{listingDraft.propertyType}</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-border">
-                        <span className="text-muted-foreground">Localisation</span>
-                        <span className="font-medium text-foreground">{listingDraft.location || "—"}</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-border">
-                        <span className="text-muted-foreground">Chambres / SdB / Capacité</span>
-                        <span className="font-medium text-foreground">{listingDraft.bedrooms} / {listingDraft.bathrooms} / {listingDraft.capacity}</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-border">
-                        <span className="text-muted-foreground">Prix par nuit</span>
-                        <span className="font-bold text-foreground">{Number.isFinite(displayedPrice) ? displayedPrice.toLocaleString("fr-FR") : "0"} {listingDraft.currency}</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-border">
-                        <span className="text-muted-foreground">Photos</span>
-                        <span className="font-medium text-foreground">{(listingDraft.photos || []).length} photo(s)</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-border">
-                        <span className="text-muted-foreground">Disponibilité</span>
-                        <span className="font-medium text-foreground">
-                          {listingDraft.availabilityType === "always" && "Toujours disponible (réservation instantanée)"}
-                          {listingDraft.availabilityType === "request_only" && `Sur demande${(listingDraft.blockedDates || []).length > 0 ? ` (${listingDraft.blockedDates.length} date(s) bloquée(s))` : ""}`}
-                        </span>
-                      </div>
+
+                      {safePhotos.length > 0 && (
+                        <div className="grid grid-cols-5 gap-2">
+                          {safePhotos.slice(0, 5).map((p, i) => (
+                            <img
+                              key={p?.id || i}
+                              src={p?.preview || ""}
+                              alt={`Photo ${i + 1}`}
+                              className="w-full aspect-[4/3] object-cover rounded-lg border border-border"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
-
-                    {(listingDraft.photos || []).length > 0 && (
-                      <div className="grid grid-cols-5 gap-2">
-                        {(listingDraft.photos || []).slice(0, 5).map((p, i) => (
-                          <img
-                            key={p?.id || i}
-                            src={p?.preview || ""}
-                            alt={`Photo ${i + 1}`}
-                            className="w-full aspect-[4/3] object-cover rounded-lg border border-border"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+                  );
+                })()}
               </motion.div>
             </AnimatePresence>
           </StepRenderBoundary>
