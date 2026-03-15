@@ -327,16 +327,17 @@ const Publish = () => {
   };
 
   const uploadSinglePhoto = async (photo: PhotoItem, userId: string, retries = 2): Promise<string> => {
-    const ext = photo.file.name.split(".").pop() || "webp";
-    const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+    const ext = photo.file.name.split(".").pop() || "jpg";
+    const rawPath = `raw/${userId}/${crypto.randomUUID()}.${ext}`;
 
+    // Step 1: Upload raw file to storage (lightweight, no processing)
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const { error: uploadError } = await withTimeout(
-          supabase.storage.from("listing-photos").upload(path, photo.file, {
-            contentType: photo.file.type || "image/webp",
+          supabase.storage.from("listing-photos").upload(rawPath, photo.file, {
+            contentType: photo.file.type || "image/jpeg",
           }),
-          60_000, // 60s per photo
+          60_000,
           `upload ${photo.file.name}`,
         );
 
@@ -344,16 +345,32 @@ const Publish = () => {
           if (attempt < retries) continue;
           throw uploadError;
         }
-
-        const { data: urlData } = supabase.storage.from("listing-photos").getPublicUrl(path);
-        return urlData.publicUrl;
+        break; // upload succeeded
       } catch (err) {
         if (attempt >= retries) throw err;
-        // Brief pause before retry (iOS WebKit recovery)
         await new Promise((r) => setTimeout(r, 1000));
       }
     }
-    throw new Error("Upload impossible après plusieurs tentatives.");
+
+    // Step 2: Call server-side processing (resize, compress, HEIC convert)
+    try {
+      const { data: fnData, error: fnError } = await withTimeout(
+        supabase.functions.invoke("process-listing-photo", {
+          body: { rawPath },
+        }),
+        90_000,
+        `traitement ${photo.file.name}`,
+      );
+
+      if (fnError) throw fnError;
+      if (fnData?.url) return fnData.url;
+      throw new Error("No URL returned");
+    } catch (processErr) {
+      // Fallback: use raw file URL if server processing fails
+      console.warn("[Publish] Server processing failed, using raw URL:", processErr);
+      const { data: urlData } = supabase.storage.from("listing-photos").getPublicUrl(rawPath);
+      return urlData.publicUrl;
+    }
   };
 
   const handleSubmit = async () => {
