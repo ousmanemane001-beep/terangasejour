@@ -757,4 +757,10 @@ const Publish = () => {
   );
 };
 
-export default Publish;
+const PublishPage = () => (
+  <PageErrorBoundary>
+    <Publish />
+  </PageErrorBoundary>
+);
+
+export default PublishPage;
