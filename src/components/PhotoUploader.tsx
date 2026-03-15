@@ -3,10 +3,8 @@ import { AlertCircle, ImageIcon, Loader2 } from "lucide-react";
 import DropZone from "./photo-upload/DropZone";
 import PhotoGrid from "./photo-upload/PhotoGrid";
 import {
-  processImage,
   isFileTooLarge,
   getFileFingerprint,
-  normalizeImageFile,
   isAcceptedImageFormat,
 } from "./photo-upload/imageProcessor";
 
@@ -98,32 +96,29 @@ const PhotoUploader = ({ photos, onChange, onProcessingChange }: PhotoUploaderPr
           setCurrentFileIndex(fi + 1);
 
           try {
-            const normalizedFile = await normalizeImageFile(rawFile);
-
-            if (!isAcceptedImageFormat(normalizedFile)) {
-              addInvalidPhoto(rawFile, "Format non accepté. Utilisez JPG, PNG ou WEBP.");
+            if (!isAcceptedImageFormat(rawFile)) {
+              addInvalidPhoto(rawFile, "Format non accepté. Utilisez JPG, PNG, HEIC ou WEBP.");
               continue;
             }
 
-            if (isFileTooLarge(normalizedFile)) {
-              addInvalidPhoto(normalizedFile, "Image trop lourde. Taille maximale : 20 MB.");
+            if (isFileTooLarge(rawFile)) {
+              addInvalidPhoto(rawFile, "Image trop lourde. Taille maximale : 20 MB.");
               continue;
             }
 
-            const fingerprint = getFileFingerprint(normalizedFile);
+            const fingerprint = getFileFingerprint(rawFile);
             const isDuplicate = updatedPhotos.some((p) => p.fingerprint === fingerprint);
             if (isDuplicate) {
-              addInvalidPhoto(normalizedFile, "Image dupliquée : cette photo existe déjà.", fingerprint);
+              addInvalidPhoto(rawFile, "Image dupliquée : cette photo existe déjà.", fingerprint);
               continue;
             }
 
-            const { blob } = await processImage(normalizedFile);
-            const optimizedFile = new File([blob], normalizedFile.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" });
-            const preview = URL.createObjectURL(blob);
+            // No client-side processing — just create a preview from the raw file
+            const preview = URL.createObjectURL(rawFile);
 
             const photoItem: PhotoItem = {
               id: crypto.randomUUID(),
-              file: optimizedFile,
+              file: rawFile,
               preview,
               error: null,
               validated: true,
