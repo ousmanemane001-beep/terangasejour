@@ -255,7 +255,7 @@ const Publish = () => {
       }
 
       const nextStep = Math.min(safeStep + 1, STEP_LABELS.length - 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0 });
       setStep(nextStep);
     } catch (err) {
       toast.error("Une erreur est survenue. Veuillez réessayer.");
