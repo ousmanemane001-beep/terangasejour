@@ -417,27 +417,29 @@ const Publish = () => {
       const bookingMode = listingDraft.availabilityType === "request_only" ? "request" : "instant";
       const availabilityMode = listingDraft.availabilityType === "always" ? "always" : "request";
 
+      const insertPromise = supabase
+        .from("listings")
+        .insert({
+          user_id: user.id,
+          title: listingDraft.title.trim(),
+          description: listingDraft.description.trim() || null,
+          property_type: listingDraft.propertyType,
+          location: listingDraft.location.trim(),
+          bedrooms: listingDraft.bedrooms,
+          bathrooms: listingDraft.bathrooms,
+          capacity: listingDraft.capacity,
+          price_per_night: safePrice,
+          photos: photoUrls,
+          status: "published",
+          booking_mode: bookingMode,
+          availability_mode: availabilityMode,
+        })
+        .select("id")
+        .single();
+
       const { data: insertedListing, error: insertError } = await withTimeout(
-        supabase
-          .from("listings")
-          .insert({
-            user_id: user.id,
-            title: listingDraft.title.trim(),
-            description: listingDraft.description.trim() || null,
-            property_type: listingDraft.propertyType,
-            location: listingDraft.location.trim(),
-            bedrooms: listingDraft.bedrooms,
-            bathrooms: listingDraft.bathrooms,
-            capacity: listingDraft.capacity,
-            price_per_night: safePrice,
-            photos: photoUrls,
-            status: "published",
-            booking_mode: bookingMode,
-            availability_mode: availabilityMode,
-          })
-          .select("id")
-          .single(),
-        30_000, // 30s for DB insert
+        insertPromise.then((res) => res),
+        30_000,
         "insertion annonce",
       );
 
@@ -449,7 +451,7 @@ const Publish = () => {
           date: format(d, "yyyy-MM-dd"),
         }));
         await withTimeout(
-          supabase.from("blocked_dates").insert(blockedRows),
+          supabase.from("blocked_dates").insert(blockedRows).then((res) => res),
           15_000,
           "dates bloquées",
         );
