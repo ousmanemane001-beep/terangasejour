@@ -270,7 +270,7 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
             <AlertCircle className="w-4 h-4 shrink-0" />
             {hasErrors
               ? "Veuillez corriger les images avant de continuer."
-              : `Ajoutez au moins ${MIN_PHOTOS} photos pour publier votre logement.`}
+              : "Ajoutez au moins une photo valide pour publier votre logement."}
           </p>
         </div>
       )}
