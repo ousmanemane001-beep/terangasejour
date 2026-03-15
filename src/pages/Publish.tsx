@@ -192,6 +192,11 @@ const Publish = () => {
     if (safeStep !== step) setStep(safeStep);
   }, [safeStep, step]);
 
+  // Auto-save draft to localStorage on every change
+  useEffect(() => {
+    saveDraftToStorage(listingDraft, safeStep);
+  }, [listingDraft, safeStep]);
+
   const validPhotoCount = listingDraft.photos.filter((p) => !p.error && p.validated).length;
   const hasPhotoErrors = listingDraft.photos.some((p) => !!p.error);
 
