@@ -21,6 +21,7 @@ import {
   ChevronRight,
   AlertCircle,
   Clock,
+  RefreshCcw,
 } from "lucide-react";
 import PhotoUploader from "@/components/PhotoUploader";
 import AvailabilityStep, { type AvailabilityType } from "@/components/publish/AvailabilityStep";
