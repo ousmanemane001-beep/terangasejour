@@ -438,7 +438,7 @@ const Publish = () => {
         .single();
 
       const { data: insertedListing, error: insertError } = await withTimeout(
-        insertPromise.then((res) => res),
+        Promise.resolve(insertPromise),
         30_000,
         "insertion annonce",
       );
