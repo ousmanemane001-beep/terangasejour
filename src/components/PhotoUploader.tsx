@@ -123,7 +123,7 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
             }
 
             if (isFileTooLarge(normalizedFile)) {
-              addInvalidPhoto(normalizedFile, "Image trop lourde. Taille maximale : 2 MB.");
+              addInvalidPhoto(normalizedFile, "Image trop lourde. Taille maximale : 10 MB.");
               continue;
             }
 
