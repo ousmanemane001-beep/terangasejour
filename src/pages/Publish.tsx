@@ -427,11 +427,9 @@ const Publish = () => {
       <div className="flex-1 py-6 sm:py-10">
         <div className="container mx-auto px-4 max-w-2xl">
           <StepRenderBoundary onFallback={goBack}>
-              <motion.div
+              <div
                 key={safeStep}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.15 }}
+                className="animate-fade-in"
               >
                 {safeStep === 0 && (
                   <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
