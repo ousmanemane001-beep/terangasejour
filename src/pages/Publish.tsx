@@ -602,24 +602,17 @@ const Publish = () => {
             )}
 
             {safeStep < STEP_LABELS.length - 1 ? (
-              <Button
-                type="button"
-                onClick={goNext}
-                disabled={(safeStep === 1 && isPhotoStepBlocked) || loading}
-                className="rounded-xl h-12 px-6 bg-primary text-primary-foreground disabled:opacity-50"
-              >
-                {safeStep === 1 && isPhotoProcessing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                    Traitement…
-                  </>
-                ) : (
-                  <>
-                    Suivant
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </>
-                )}
-              </Button>
+              !(safeStep === 1 && isPhotoStepBlocked) && (
+                <Button
+                  type="button"
+                  onClick={goNext}
+                  disabled={loading}
+                  className="rounded-xl h-12 px-6 bg-primary text-primary-foreground"
+                >
+                  Suivant
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              )
             ) : (
               <Button
                 type="button"
