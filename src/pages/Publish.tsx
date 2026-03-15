@@ -562,25 +562,26 @@ const Publish = () => {
                       </div>
                       <div className="flex justify-between py-2 border-b border-border">
                         <span className="text-muted-foreground">Photos</span>
-                        <span className="font-medium text-foreground">{listingDraft.photos.length} photo(s)</span>
+                        <span className="font-medium text-foreground">{(listingDraft.photos || []).length} photo(s)</span>
                       </div>
                       <div className="flex justify-between py-2 border-b border-border">
                         <span className="text-muted-foreground">Disponibilité</span>
                         <span className="font-medium text-foreground">
                           {listingDraft.availabilityType === "always" && "Toujours disponible (réservation instantanée)"}
-                          {listingDraft.availabilityType === "request_only" && `Sur demande${listingDraft.blockedDates.length > 0 ? ` (${listingDraft.blockedDates.length} date(s) bloquée(s))` : ""}`}
+                          {listingDraft.availabilityType === "request_only" && `Sur demande${(listingDraft.blockedDates || []).length > 0 ? ` (${listingDraft.blockedDates.length} date(s) bloquée(s))` : ""}`}
                         </span>
                       </div>
                     </div>
 
-                    {listingDraft.photos.length > 0 && (
+                    {(listingDraft.photos || []).length > 0 && (
                       <div className="grid grid-cols-5 gap-2">
-                        {listingDraft.photos.slice(0, 5).map((p, i) => (
+                        {(listingDraft.photos || []).slice(0, 5).map((p, i) => (
                           <img
-                            key={p.id}
-                            src={p.preview}
+                            key={p?.id || i}
+                            src={p?.preview || ""}
                             alt={`Photo ${i + 1}`}
                             className="w-full aspect-[4/3] object-cover rounded-lg border border-border"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                           />
                         ))}
                       </div>
