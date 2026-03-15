@@ -315,6 +315,47 @@ const Publish = () => {
     setStep(previousStep);
   };
 
+  // Timeout wrapper — prevents iOS from hanging indefinitely
+  const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
+    return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error(`Délai dépassé : ${label}`)), ms);
+      promise.then(
+        (val) => { clearTimeout(timer); resolve(val); },
+        (err) => { clearTimeout(timer); reject(err); },
+      );
+    });
+  };
+
+  const uploadSinglePhoto = async (photo: PhotoItem, userId: string, retries = 2): Promise<string> => {
+    const ext = photo.file.name.split(".").pop() || "webp";
+    const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const { error: uploadError } = await withTimeout(
+          supabase.storage.from("listing-photos").upload(path, photo.file, {
+            contentType: photo.file.type || "image/webp",
+          }),
+          60_000, // 60s per photo
+          `upload ${photo.file.name}`,
+        );
+
+        if (uploadError) {
+          if (attempt < retries) continue;
+          throw uploadError;
+        }
+
+        const { data: urlData } = supabase.storage.from("listing-photos").getPublicUrl(path);
+        return urlData.publicUrl;
+      } catch (err) {
+        if (attempt >= retries) throw err;
+        // Brief pause before retry (iOS WebKit recovery)
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+    }
+    throw new Error("Upload impossible après plusieurs tentatives.");
+  };
+
   const handleSubmit = async () => {
     if (!user) {
       toast.error("Veuillez vous connecter pour publier un logement");
@@ -347,45 +388,27 @@ const Publish = () => {
           const sizeError = "Image trop lourde. Taille maximale : 20 MB.";
           setPhotos((prev) =>
             prev.map((p) =>
-              p.id === photo.id
-                ? {
-                    ...p,
-                    error: sizeError,
-                    validated: false,
-                  }
-                : p
+              p.id === photo.id ? { ...p, error: sizeError, validated: false } : p
             )
           );
           setStep(1);
           throw new Error(`"${photo.file.name}" : ${sizeError}`);
         }
 
-        const ext = photo.file.name.split(".").pop() || "webp";
-        const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-
-        const { error: uploadError } = await supabase.storage.from("listing-photos").upload(path, photo.file, {
-          contentType: photo.file.type || "image/webp",
-        });
-
-        if (uploadError) {
-          const friendlyError = mapUploadError(uploadError.message);
+        try {
+          const url = await uploadSinglePhoto(photo, user.id);
+          photoUrls.push(url);
+        } catch (uploadErr: any) {
+          const friendlyError = mapUploadError(uploadErr?.message);
           setPhotos((prev) =>
             prev.map((p) =>
-              p.id === photo.id
-                ? {
-                    ...p,
-                    error: friendlyError,
-                    validated: false,
-                  }
-                : p
+              p.id === photo.id ? { ...p, error: friendlyError, validated: false } : p
             )
           );
           setStep(1);
           throw new Error(`"${photo.file.name}" : ${friendlyError}`);
         }
 
-        const { data: urlData } = supabase.storage.from("listing-photos").getPublicUrl(path);
-        photoUrls.push(urlData.publicUrl);
         setSubmitUploadProgress({ current: i + 1, total: validPhotos.length });
       }
 
@@ -394,7 +417,7 @@ const Publish = () => {
       const bookingMode = listingDraft.availabilityType === "request_only" ? "request" : "instant";
       const availabilityMode = listingDraft.availabilityType === "always" ? "always" : "request";
 
-      const { data: insertedListing, error: insertError } = await supabase
+      const insertPromise = supabase
         .from("listings")
         .insert({
           user_id: user.id,
@@ -414,6 +437,12 @@ const Publish = () => {
         .select("id")
         .single();
 
+      const { data: insertedListing, error: insertError } = await withTimeout(
+        Promise.resolve(insertPromise),
+        30_000,
+        "insertion annonce",
+      );
+
       if (insertError) throw insertError;
 
       if (listingDraft.availabilityType === "request_only" && listingDraft.blockedDates.length > 0 && insertedListing) {
@@ -421,16 +450,31 @@ const Publish = () => {
           listing_id: insertedListing.id,
           date: format(d, "yyyy-MM-dd"),
         }));
-        await supabase.from("blocked_dates").insert(blockedRows);
+        await withTimeout(
+          Promise.resolve(supabase.from("blocked_dates").insert(blockedRows)),
+          15_000,
+          "dates bloquées",
+        );
       }
 
       queryClient.invalidateQueries({ queryKey: ["listings"] });
       queryClient.invalidateQueries({ queryKey: ["owner-listings"] });
       toast.success("Logement publié avec succès !");
       try { localStorage.removeItem(DRAFT_STORAGE_KEY); } catch {}
-      navigate("/dashboard");
+      // Use location.href as fallback for iOS navigation issues
+      try {
+        navigate("/dashboard");
+      } catch {
+        window.location.href = "/dashboard";
+      }
     } catch (err: any) {
-      toast.error(err?.message || "Une erreur est survenue lors de la publication.");
+      console.error("[Publish] submit error:", err);
+      const msg = err?.message || "";
+      if (msg.includes("Délai dépassé")) {
+        toast.error("La connexion a été trop longue. Vérifiez votre réseau et réessayez.");
+      } else {
+        toast.error(msg || "Une erreur est survenue lors de la publication.");
+      }
     } finally {
       setLoading(false);
       setSubmitUploadProgress({ current: 0, total: 0 });
