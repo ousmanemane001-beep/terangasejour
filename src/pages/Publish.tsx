@@ -380,6 +380,7 @@ const Publish = () => {
       queryClient.invalidateQueries({ queryKey: ["listings"] });
       queryClient.invalidateQueries({ queryKey: ["owner-listings"] });
       toast.success("Logement publié avec succès !");
+      try { localStorage.removeItem(DRAFT_STORAGE_KEY); } catch {}
       navigate("/dashboard");
     } catch (err: any) {
       toast.error(err?.message || "Une erreur est survenue lors de la publication.");
