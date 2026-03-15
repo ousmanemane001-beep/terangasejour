@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Component, type ErrorInfo, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
