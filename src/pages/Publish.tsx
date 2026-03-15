@@ -92,23 +92,73 @@ class StepRenderBoundary extends Component<
   }
 }
 
+const DRAFT_STORAGE_KEY = "terangasejour_listing_draft";
+
+function loadDraftFromStorage(): Partial<ListingDraft> | null {
+  try {
+    const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // Restore blockedDates as Date objects
+    if (Array.isArray(parsed.blockedDates)) {
+      parsed.blockedDates = parsed.blockedDates.map((d: string) => new Date(d));
+    }
+    // Photos with File objects cannot be serialized — we only persist metadata
+    // so photos will be empty on reload (File/Blob can't survive localStorage)
+    parsed.photos = [];
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function saveDraftToStorage(draft: ListingDraft, currentStep: number) {
+  try {
+    const serializable = {
+      title: draft.title,
+      description: draft.description,
+      propertyType: draft.propertyType,
+      location: draft.location,
+      bedrooms: draft.bedrooms,
+      bathrooms: draft.bathrooms,
+      capacity: draft.capacity,
+      price: draft.price,
+      currency: draft.currency,
+      availabilityType: draft.availabilityType,
+      blockedDates: draft.blockedDates.map((d) => d.toISOString()),
+      _step: currentStep,
+    };
+    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(serializable));
+  } catch {
+    // Storage full or unavailable — silently ignore
+  }
+}
+
 const Publish = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [step, setStep] = useState(0);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [propertyType, setPropertyType] = useState("villa");
-  const [location, setLocation] = useState("");
-  const [bedrooms, setBedrooms] = useState(1);
-  const [bathrooms, setBathrooms] = useState(1);
-  const [capacity, setCapacity] = useState(2);
-  const [price, setPrice] = useState("0");
+  // Load saved draft on mount
+  const savedDraft = useMemo(() => loadDraftFromStorage(), []);
+
+  const [step, setStep] = useState(() => {
+    const s = savedDraft?._step as number | undefined;
+    return Number.isInteger(s) ? Math.min(Math.max(s!, 0), STEP_LABELS.length - 1) : 0;
+  });
+  const [title, setTitle] = useState(savedDraft?.title ?? "");
+  const [description, setDescription] = useState(savedDraft?.description ?? "");
+  const [propertyType, setPropertyType] = useState(savedDraft?.propertyType ?? "villa");
+  const [location, setLocation] = useState(savedDraft?.location ?? "");
+  const [bedrooms, setBedrooms] = useState(savedDraft?.bedrooms ?? 1);
+  const [bathrooms, setBathrooms] = useState(savedDraft?.bathrooms ?? 1);
+  const [capacity, setCapacity] = useState(savedDraft?.capacity ?? 2);
+  const [price, setPrice] = useState(savedDraft?.price ?? "0");
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
-  const [availabilityType, setAvailabilityType] = useState<AvailabilityType>("always");
-  const [blockedDates, setBlockedDates] = useState<Date[]>([]);
+  const [availabilityType, setAvailabilityType] = useState<AvailabilityType>(savedDraft?.availabilityType ?? "always");
+  const [blockedDates, setBlockedDates] = useState<Date[]>(
+    Array.isArray(savedDraft?.blockedDates) ? savedDraft!.blockedDates : []
+  );
   const [loading, setLoading] = useState(false);
   const [isPhotoProcessing, setIsPhotoProcessing] = useState(false);
   const [submitUploadProgress, setSubmitUploadProgress] = useState({ current: 0, total: 0 });
