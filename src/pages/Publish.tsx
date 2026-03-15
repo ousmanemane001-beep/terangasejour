@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Home,
   Camera,
@@ -255,7 +255,7 @@ const Publish = () => {
       }
 
       const nextStep = Math.min(safeStep + 1, STEP_LABELS.length - 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0 });
       setStep(nextStep);
     } catch (err) {
       toast.error("Une erreur est survenue. Veuillez réessayer.");
@@ -264,7 +264,7 @@ const Publish = () => {
 
   const goBack = () => {
     const previousStep = Math.max(safeStep - 1, 0);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0 });
     setStep(previousStep);
   };
 
@@ -427,13 +427,11 @@ const Publish = () => {
       <div className="flex-1 py-6 sm:py-10">
         <div className="container mx-auto px-4 max-w-2xl">
           <StepRenderBoundary onFallback={goBack}>
-            <AnimatePresence mode="wait">
               <motion.div
                 key={safeStep}
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.15 }}
               >
                 {safeStep === 0 && (
                   <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
@@ -592,70 +590,63 @@ const Publish = () => {
                   />
                 )}
 
-                {safeStep === 4 && (() => {
-                  const safePhotos = Array.isArray(listingDraft.photos) ? listingDraft.photos : [];
-                  const safePrice = Number.isFinite(displayedPrice) ? displayedPrice : 0;
-                  const safeBlockedDates = Array.isArray(listingDraft.blockedDates) ? listingDraft.blockedDates : [];
+                {safeStep === 4 && (
+                  <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
+                    <h2 className="font-display text-xl font-bold text-foreground">
+                      <CheckCircle className="w-5 h-5 inline mr-2" />Récapitulatif
+                    </h2>
+                    <p className="text-sm text-muted-foreground">Vérifiez les informations avant de publier votre logement.</p>
 
-                  return (
-                    <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
-                      <h2 className="font-display text-xl font-bold text-foreground">
-                        <CheckCircle className="w-5 h-5 inline mr-2" />Récapitulatif
-                      </h2>
-                      <p className="text-sm text-muted-foreground">Vérifiez les informations avant de publier votre logement.</p>
-
-                      <div className="space-y-3 text-sm">
-                        <div className="flex justify-between py-2 border-b border-border">
-                          <span className="text-muted-foreground">Titre</span>
-                          <span className="font-medium text-foreground text-right max-w-[60%]">{listingDraft.title || "—"}</span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b border-border">
-                          <span className="text-muted-foreground">Type</span>
-                          <span className="font-medium text-foreground capitalize">{listingDraft.propertyType || "—"}</span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b border-border">
-                          <span className="text-muted-foreground">Localisation</span>
-                          <span className="font-medium text-foreground">{listingDraft.location || "—"}</span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b border-border">
-                          <span className="text-muted-foreground">Chambres / SdB / Capacité</span>
-                          <span className="font-medium text-foreground">{listingDraft.bedrooms || 1} / {listingDraft.bathrooms || 1} / {listingDraft.capacity || 1}</span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b border-border">
-                          <span className="text-muted-foreground">Prix par nuit</span>
-                          <span className="font-bold text-foreground">{safePrice.toLocaleString("fr-FR")} {listingDraft.currency}</span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b border-border">
-                          <span className="text-muted-foreground">Photos</span>
-                          <span className="font-medium text-foreground">{safePhotos.length} photo(s)</span>
-                        </div>
-                        <div className="flex justify-between py-2 border-b border-border">
-                          <span className="text-muted-foreground">Disponibilité</span>
-                          <span className="font-medium text-foreground">
-                            {listingDraft.availabilityType === "always" && "Toujours disponible (réservation instantanée)"}
-                            {listingDraft.availabilityType === "request_only" && `Sur demande${safeBlockedDates.length > 0 ? ` (${safeBlockedDates.length} date(s) bloquée(s))` : ""}`}
-                          </span>
-                        </div>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between py-2 border-b border-border">
+                        <span className="text-muted-foreground">Titre</span>
+                        <span className="font-medium text-foreground text-right max-w-[60%]">{listingDraft.title || "—"}</span>
                       </div>
-
-                      {safePhotos.length > 0 && (
-                        <div className="grid grid-cols-5 gap-2">
-                          {safePhotos.slice(0, 5).map((p, i) => (
-                            <img
-                              key={p?.id || i}
-                              src={p?.preview || ""}
-                              alt={`Photo ${i + 1}`}
-                              className="w-full aspect-[4/3] object-cover rounded-lg border border-border"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                            />
-                          ))}
-                        </div>
-                      )}
+                      <div className="flex justify-between py-2 border-b border-border">
+                        <span className="text-muted-foreground">Type</span>
+                        <span className="font-medium text-foreground capitalize">{listingDraft.propertyType || "—"}</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-border">
+                        <span className="text-muted-foreground">Localisation</span>
+                        <span className="font-medium text-foreground">{listingDraft.location || "—"}</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-border">
+                        <span className="text-muted-foreground">Chambres / SdB / Capacité</span>
+                        <span className="font-medium text-foreground">{listingDraft.bedrooms || 1} / {listingDraft.bathrooms || 1} / {listingDraft.capacity || 1}</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-border">
+                        <span className="text-muted-foreground">Prix par nuit</span>
+                        <span className="font-bold text-foreground">{(Number.isFinite(displayedPrice) ? displayedPrice : 0).toLocaleString("fr-FR")} {listingDraft.currency}</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-border">
+                        <span className="text-muted-foreground">Photos</span>
+                        <span className="font-medium text-foreground">{(listingDraft.photos || []).length} photo(s)</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-border">
+                        <span className="text-muted-foreground">Disponibilité</span>
+                        <span className="font-medium text-foreground">
+                          {listingDraft.availabilityType === "always" && "Toujours disponible (réservation instantanée)"}
+                          {listingDraft.availabilityType === "request_only" && `Sur demande${(listingDraft.blockedDates || []).length > 0 ? ` (${(listingDraft.blockedDates || []).length} date(s) bloquée(s))` : ""}`}
+                        </span>
+                      </div>
                     </div>
-                  );
-                })()}
+
+                    {(listingDraft.photos || []).length > 0 && (
+                      <div className="grid grid-cols-5 gap-2">
+                        {(listingDraft.photos || []).slice(0, 5).map((p, i) => (
+                          <img
+                            key={p?.id || i}
+                            src={p?.preview || ""}
+                            alt={`Photo ${i + 1}`}
+                            className="w-full aspect-[4/3] object-cover rounded-lg border border-border"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </motion.div>
-            </AnimatePresence>
           </StepRenderBoundary>
 
           <div className="flex items-center justify-between mt-6 gap-3">
