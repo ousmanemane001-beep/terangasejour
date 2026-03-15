@@ -451,7 +451,7 @@ const Publish = () => {
           date: format(d, "yyyy-MM-dd"),
         }));
         await withTimeout(
-          supabase.from("blocked_dates").insert(blockedRows).then((res) => res),
+          Promise.resolve(supabase.from("blocked_dates").insert(blockedRows)),
           15_000,
           "dates bloquées",
         );
