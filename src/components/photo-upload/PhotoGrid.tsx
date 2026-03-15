@@ -76,12 +76,20 @@ const PhotoGrid = ({ photos, onChange, onAddMore, onReplace, maxPhotos }: PhotoG
                   alt={`Photo ${index + 1}`}
                   className="w-full h-full object-cover"
                   loading="lazy"
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    img.style.display = "none";
+                    const fallback = img.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = "flex";
+                  }}
                 />
-              ) : (
-                <div className="w-full h-full bg-muted flex items-center justify-center">
-                  <Camera className="w-6 h-6 text-muted-foreground" />
-                </div>
-              )}
+              ) : null}
+              <div
+                className="w-full h-full bg-muted items-center justify-center absolute inset-0"
+                style={{ display: photo.preview ? "none" : "flex" }}
+              >
+                <Camera className="w-6 h-6 text-muted-foreground" />
+              </div>
 
               {isPrimary && !photo.error && (
                 <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-accent text-accent-foreground text-[10px] font-bold rounded-md flex items-center gap-1 shadow-sm">

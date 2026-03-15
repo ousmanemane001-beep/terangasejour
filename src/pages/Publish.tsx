@@ -21,6 +21,7 @@ import {
   ChevronRight,
   AlertCircle,
   Clock,
+  RefreshCcw,
 } from "lucide-react";
 import PhotoUploader from "@/components/PhotoUploader";
 import AvailabilityStep, { type AvailabilityType } from "@/components/publish/AvailabilityStep";
@@ -84,6 +85,52 @@ class StepRenderBoundary extends Component<
           <Button type="button" variant="outline" onClick={this.props.onFallback} className="rounded-xl">
             <ChevronLeft className="w-4 h-4 mr-1" /> Retour
           </Button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+class PageErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
+    // Top-level recovery — prevents white screen
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 text-center">
+          <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+          <h1 className="text-xl font-bold text-foreground mb-2">Une erreur est survenue</h1>
+          <p className="text-sm text-muted-foreground mb-6 max-w-md">
+            La page de création d'annonce a rencontré un problème. Vos données sont sauvegardées automatiquement.
+          </p>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="rounded-xl"
+              onClick={() => this.setState({ hasError: false })}
+            >
+              <RefreshCcw className="w-4 h-4 mr-1" /> Réessayer
+            </Button>
+            <Button
+              className="rounded-xl"
+              onClick={() => { window.location.href = "/dashboard"; }}
+            >
+              Retour au tableau de bord
+            </Button>
+          </div>
         </div>
       );
     }
@@ -632,13 +679,19 @@ const Publish = () => {
                     {(listingDraft.photos || []).length > 0 && (
                       <div className="grid grid-cols-5 gap-2">
                         {(listingDraft.photos || []).slice(0, 5).map((p, i) => (
-                          <img
-                            key={p?.id || i}
-                            src={p?.preview || ""}
-                            alt={`Photo ${i + 1}`}
-                            className="w-full aspect-[4/3] object-cover rounded-lg border border-border"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                          />
+                          <div key={p?.id || i} className="relative w-full aspect-[4/3] rounded-lg border border-border overflow-hidden bg-muted">
+                            {p?.preview ? (
+                              <img
+                                src={p.preview}
+                                alt={`Photo ${i + 1}`}
+                                className="w-full h-full object-cover"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                              />
+                            ) : null}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <Camera className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -704,4 +757,10 @@ const Publish = () => {
   );
 };
 
-export default Publish;
+const PublishPage = () => (
+  <PageErrorBoundary>
+    <Publish />
+  </PageErrorBoundary>
+);
+
+export default PublishPage;
