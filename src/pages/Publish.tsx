@@ -264,7 +264,7 @@ const Publish = () => {
 
   const goBack = () => {
     const previousStep = Math.max(safeStep - 1, 0);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0 });
     setStep(previousStep);
   };
 
