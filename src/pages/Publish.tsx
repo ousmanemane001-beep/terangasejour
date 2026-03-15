@@ -238,8 +238,8 @@ const Publish = () => {
       for (let i = 0; i < validPhotos.length; i++) {
         const photo = validPhotos[i];
 
-        if (photo.file.size > 2 * 1024 * 1024) {
-          const sizeError = "Image trop lourde. Taille maximale : 2 MB.";
+        if (photo.file.size > 10 * 1024 * 1024) {
+          const sizeError = "Image trop lourde. Taille maximale : 10 MB.";
           setPhotos((prev) =>
             prev.map((p) =>
               p.id === photo.id
