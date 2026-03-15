@@ -481,7 +481,7 @@ const Publish = () => {
                       <Camera className="w-5 h-5 inline mr-2" />Ajoutez des photos
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      Des photos de qualité attirent plus de voyageurs. Ajoutez au moins 5 photos.
+                      Ajoutez jusqu'à 10 photos de votre logement. Les images seront optimisées automatiquement.
                     </p>
                     <PhotoUploader
                       photos={listingDraft.photos}
