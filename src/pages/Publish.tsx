@@ -173,8 +173,8 @@ const Publish = () => {
         if (isPhotoProcessing) {
           return "Traitement des images en cours. Veuillez patienter.";
         }
-        if (validPhotoCount < 5) {
-          return `Ajoutez au moins 5 photos (${validPhotoCount}/5).`;
+        if (validPhotoCount < 1) {
+          return `Ajoutez au moins 1 photo valide.`;
         }
         if (hasPhotoErrors) {
           return "Veuillez corriger les images avant de continuer.";
