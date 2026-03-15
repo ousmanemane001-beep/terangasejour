@@ -632,13 +632,19 @@ const Publish = () => {
                     {(listingDraft.photos || []).length > 0 && (
                       <div className="grid grid-cols-5 gap-2">
                         {(listingDraft.photos || []).slice(0, 5).map((p, i) => (
-                          <img
-                            key={p?.id || i}
-                            src={p?.preview || ""}
-                            alt={`Photo ${i + 1}`}
-                            className="w-full aspect-[4/3] object-cover rounded-lg border border-border"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                          />
+                          <div key={p?.id || i} className="relative w-full aspect-[4/3] rounded-lg border border-border overflow-hidden bg-muted">
+                            {p?.preview ? (
+                              <img
+                                src={p.preview}
+                                alt={`Photo ${i + 1}`}
+                                className="w-full h-full object-cover"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                              />
+                            ) : null}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <Camera className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                          </div>
                         ))}
                       </div>
                     )}
