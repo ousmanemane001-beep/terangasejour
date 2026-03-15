@@ -142,7 +142,7 @@ const PhotoUploader = ({ photos, onChange, onValidityChange, onProcessingChange 
             const dims = await getImageDimensions(normalizedFile);
 
             if (isTooSmall(dims.width, dims.height)) {
-              addInvalidPhoto(normalizedFile, "Image trop petite. Dimension minimale : 300 × 200 px.", fingerprint);
+              addInvalidPhoto(normalizedFile, "Image trop petite. Dimension minimale : 200 × 200 px.", fingerprint);
               continue;
             }
 
