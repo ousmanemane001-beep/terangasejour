@@ -192,15 +192,19 @@ const Publish = () => {
   };
 
   const goNext = () => {
-    const error = validateStep(safeStep);
-    if (error) {
-      toast.error(error);
-      return;
-    }
+    try {
+      const error = validateStep(safeStep);
+      if (error) {
+        toast.error(error);
+        return;
+      }
 
-    const nextStep = Math.min(safeStep + 1, STEP_LABELS.length - 1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    setStep(nextStep);
+      const nextStep = Math.min(safeStep + 1, STEP_LABELS.length - 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setStep(nextStep);
+    } catch (err) {
+      toast.error("Une erreur est survenue. Veuillez réessayer.");
+    }
   };
 
   const goBack = () => {
