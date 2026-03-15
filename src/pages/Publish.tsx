@@ -644,7 +644,7 @@ const Publish = () => {
                     )}
                   </div>
                 )}
-              </motion.div>
+              </div>
           </StepRenderBoundary>
 
           <div className="flex items-center justify-between mt-6 gap-3">
