@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Component, type ErrorInfo, useEffect, useMemo, useState, useRef, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { motion } from "framer-motion";
+
 import {
   Home,
   Camera,
@@ -427,11 +427,9 @@ const Publish = () => {
       <div className="flex-1 py-6 sm:py-10">
         <div className="container mx-auto px-4 max-w-2xl">
           <StepRenderBoundary onFallback={goBack}>
-              <motion.div
+              <div
                 key={safeStep}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.15 }}
+                className="animate-fade-in"
               >
                 {safeStep === 0 && (
                   <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
@@ -646,7 +644,7 @@ const Publish = () => {
                     )}
                   </div>
                 )}
-              </motion.div>
+              </div>
           </StepRenderBoundary>
 
           <div className="flex items-center justify-between mt-6 gap-3">
