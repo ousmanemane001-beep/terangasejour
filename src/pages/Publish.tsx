@@ -647,7 +647,6 @@ const Publish = () => {
                   </div>
                 )}
               </motion.div>
-            </AnimatePresence>
           </StepRenderBoundary>
 
           <div className="flex items-center justify-between mt-6 gap-3">
