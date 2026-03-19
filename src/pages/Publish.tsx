@@ -56,6 +56,7 @@ interface ListingDraft {
   currency: string;
   photos: PhotoItem[];
   availabilityType: AvailabilityType;
+  availabilitySubType: AvailabilitySubType;
   blockedDates: Date[];
 }
 
