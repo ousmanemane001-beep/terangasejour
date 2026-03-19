@@ -454,10 +454,14 @@ const Publish = () => {
 
   const displayedPrice = Number.parseInt(listingDraft.price || "0", 10);
 
-  // Steps shown in stepper = only visible steps
-  const displaySteps = useMemo(() => {
-    return ALL_STEPS.filter((s) => visibleSteps.includes(s.id));
+  // Stepper always shows 6 logical steps; skipped steps are visually muted
+  const skippedStepIds = useMemo(() => {
+    return new Set(ALL_STEPS.filter((s) => !visibleSteps.includes(s.id)).map((s) => s.id));
   }, [visibleSteps]);
+
+  const globalCurrentIndex = useMemo(() => {
+    return ALL_STEPS.findIndex((s) => s.id === currentStepId);
+  }, [currentStepId]);
 
   const isLastStep = currentStepId === "summary";
   const isFirstStep = safeStepIndex === 0;
@@ -480,31 +484,54 @@ const Publish = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
-      {/* Step indicator — shows only visible steps */}
+      {/* Step indicator — always 6 steps, with skipped steps dimmed */}
       <div className="sticky top-0 z-30 bg-card border-b border-border">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between max-w-2xl mx-auto">
-            {displaySteps.map((s, i) => (
-              <div key={s.id} className="flex items-center gap-1.5">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                    i < safeStepIndex
-                      ? "bg-accent text-accent-foreground"
-                      : i === safeStepIndex
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {i < safeStepIndex ? <CheckCircle className="w-4 h-4" /> : i + 1}
-                </div>
-                <span className={`text-xs font-medium hidden sm:inline ${i === safeStepIndex ? "text-foreground" : "text-muted-foreground"}`}>
-                  {s.title}
-                </span>
-                {i < displaySteps.length - 1 && (
-                  <div className={`w-6 sm:w-12 h-0.5 mx-1 ${i < safeStepIndex ? "bg-accent" : "bg-border"}`} />
-                )}
-              </div>
-            ))}
+          <div className="max-w-2xl mx-auto overflow-x-auto scrollbar-none">
+            <div className="flex items-center gap-1.5 min-w-max md:min-w-0 md:justify-between px-1">
+              {ALL_STEPS.map((s, i) => {
+                const isSkipped = skippedStepIds.has(s.id);
+                const isCompleted = !isSkipped && i < globalCurrentIndex;
+                const isActive = !isSkipped && i === globalCurrentIndex;
+                const nextIsSkipped = i < ALL_STEPS.length - 1 ? skippedStepIds.has(ALL_STEPS[i + 1].id) : false;
+
+                return (
+                  <div key={s.id} className="flex items-center gap-1.5">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                        isCompleted
+                          ? "bg-accent text-accent-foreground"
+                          : isActive
+                          ? "bg-primary text-primary-foreground"
+                          : isSkipped
+                          ? "bg-muted text-muted-foreground/70 border border-dashed border-border"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {isCompleted ? <CheckCircle className="w-4 h-4" /> : i + 1}
+                    </div>
+                    <span
+                      className={`text-xs font-medium hidden md:inline whitespace-nowrap ${
+                        isActive
+                          ? "text-foreground"
+                          : isSkipped
+                          ? "text-muted-foreground/70"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {s.title}
+                    </span>
+                    {i < ALL_STEPS.length - 1 && (
+                      <div
+                        className={`w-5 md:w-10 h-0.5 mx-1 ${
+                          isCompleted && !nextIsSkipped ? "bg-accent" : "bg-border"
+                        } ${isSkipped || nextIsSkipped ? "opacity-60" : ""}`}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
