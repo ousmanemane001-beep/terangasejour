@@ -737,8 +737,9 @@ const Publish = () => {
                       <div className="flex justify-between py-2 border-b border-border">
                         <span className="text-muted-foreground">Disponibilité</span>
                         <span className="font-medium text-foreground">
-                          {listingDraft.availabilityType === "always" && "Toujours disponible (réservation instantanée)"}
-                          {listingDraft.availabilityType === "request_only" && `Sur demande${(listingDraft.blockedDates || []).length > 0 ? ` (${(listingDraft.blockedDates || []).length} date(s) bloquée(s))` : ""}`}
+                          {listingDraft.availabilityType === "always" && "Disponible tout le temps (réservation instantanée)"}
+                          {listingDraft.availabilityType === "request_only" && listingDraft.availabilitySubType === "contact" && "Sur demande (contact par messagerie)"}
+                          {listingDraft.availabilityType === "request_only" && listingDraft.availabilitySubType === "calendar" && `Sur demande (calendrier)${(listingDraft.blockedDates || []).length > 0 ? ` — ${(listingDraft.blockedDates || []).length} date(s) occupée(s)` : ""}`}
                         </span>
                       </div>
                     </div>
