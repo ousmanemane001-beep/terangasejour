@@ -694,8 +694,10 @@ const Publish = () => {
                 {safeStep === 3 && (
                   <AvailabilityStep
                     availabilityType={listingDraft.availabilityType}
+                    availabilitySubType={listingDraft.availabilitySubType}
                     blockedDates={listingDraft.blockedDates}
                     onChangeType={setAvailabilityType}
+                    onChangeSubType={setAvailabilitySubType}
                     onChangeBlockedDates={setBlockedDates}
                   />
                 )}
