@@ -313,18 +313,7 @@ const Publish = () => {
     try {
       const error = validateStep(currentStepId);
       if (error) { toast.error(error); return; }
-
-      // If instant booking and we're on booking_mode step, skip availability
-      if (currentStepId === "booking_mode" && bookingMode === "instant") {
-        // Jump to summary (skip availability step)
-        const summaryIdx = visibleSteps.indexOf("summary");
-        if (summaryIdx >= 0) {
-          window.scrollTo({ top: 0 });
-          setStepIndex(summaryIdx);
-          return;
-        }
-      }
-
+      console.log("bookingMode:", bookingMode, "availabilitySubType:", availabilitySubType, "currentStep:", currentStepId);
       const nextStep = Math.min(safeStepIndex + 1, totalSteps - 1);
       window.scrollTo({ top: 0 });
       setStepIndex(nextStep);
@@ -334,16 +323,7 @@ const Publish = () => {
   };
 
   const goBack = () => {
-    // If we're on summary and came from instant booking, go back to booking_mode
-    if (currentStepId === "summary" && bookingMode === "instant") {
-      const bmIdx = visibleSteps.indexOf("booking_mode");
-      if (bmIdx >= 0) {
-        window.scrollTo({ top: 0 });
-        setStepIndex(bmIdx);
-        return;
-      }
-    }
-
+    console.log("bookingMode:", bookingMode, "availabilitySubType:", availabilitySubType, "currentStep:", currentStepId);
     const previousStep = Math.max(safeStepIndex - 1, 0);
     window.scrollTo({ top: 0 });
     setStepIndex(previousStep);
