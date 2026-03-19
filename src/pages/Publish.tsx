@@ -219,6 +219,16 @@ const Publish = () => {
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [bookingMode, setBookingMode] = useState<BookingMode>(savedDraft?.bookingMode ?? "instant");
   const [availabilitySubType, setAvailabilitySubType] = useState<AvailabilitySubType>(savedDraft?.availabilitySubType ?? "contact");
+
+  // When booking mode changes, reset availability sub-type and clamp step index
+  const handleBookingModeChange = (mode: BookingMode) => {
+    console.log("bookingMode:", mode);
+    setBookingMode(mode);
+    if (mode === "instant") {
+      setAvailabilitySubType("contact");
+      setBlockedDates([]);
+    }
+  };
   const [blockedDates, setBlockedDates] = useState<Date[]>(
     Array.isArray(savedDraft?.blockedDates) ? savedDraft!.blockedDates : []
   );
