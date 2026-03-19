@@ -205,6 +205,7 @@ const Publish = () => {
   const [price, setPrice] = useState(savedDraft?.price ?? "0");
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [availabilityType, setAvailabilityType] = useState<AvailabilityType>(savedDraft?.availabilityType ?? "always");
+  const [availabilitySubType, setAvailabilitySubType] = useState<AvailabilitySubType>(savedDraft?.availabilitySubType ?? "contact");
   const [blockedDates, setBlockedDates] = useState<Date[]>(
     Array.isArray(savedDraft?.blockedDates) ? savedDraft!.blockedDates : []
   );
