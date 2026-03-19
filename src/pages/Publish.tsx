@@ -173,6 +173,7 @@ function saveDraftToStorage(draft: ListingDraft, currentStep: number) {
       price: draft.price,
       currency: draft.currency,
       availabilityType: draft.availabilityType,
+      availabilitySubType: draft.availabilitySubType,
       blockedDates: draft.blockedDates.map((d) => d.toISOString()),
       _step: currentStep,
     };
