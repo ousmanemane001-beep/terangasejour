@@ -604,7 +604,7 @@ const Publish = () => {
               )}
 
               {currentStepId === "booking_mode" && (
-                <BookingModeStep bookingMode={listingDraft.bookingMode} onChangeMode={setBookingMode} />
+                <BookingModeStep bookingMode={listingDraft.bookingMode} onChangeMode={handleBookingModeChange} />
               )}
 
               {currentStepId === "availability" && (
