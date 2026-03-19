@@ -464,19 +464,10 @@ const Publish = () => {
 
   const displayedPrice = Number.parseInt(listingDraft.price || "0", 10);
 
-  // Determine which steps to show in the stepper (for instant booking, show fewer)
+  // Use visibleSteps directly for stepper display
   const displaySteps = useMemo(() => {
-    if (bookingMode === "instant") {
-      return ALL_STEPS.filter((s) => s.id !== "availability");
-    }
-    return [...ALL_STEPS];
-  }, [bookingMode]);
-
-  // Map current logical step index to display step index
-  const displayStepIndex = useMemo(() => {
-    const currentId = visibleSteps[safeStepIndex];
-    return displaySteps.findIndex((s) => s.id === currentId);
-  }, [safeStepIndex, visibleSteps, displaySteps]);
+    return ALL_STEPS.filter((s) => visibleSteps.includes(s.id));
+  }, [visibleSteps]);
 
   const isLastStep = currentStepId === "summary";
   const isFirstStep = safeStepIndex === 0;
