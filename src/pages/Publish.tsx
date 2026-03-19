@@ -487,8 +487,8 @@ const Publish = () => {
       {/* Step indicator — always 6 steps, with skipped steps dimmed */}
       <div className="sticky top-0 z-30 bg-card border-b border-border">
         <div className="container mx-auto px-4 py-3">
-          <div className="max-w-2xl mx-auto overflow-x-auto scrollbar-none">
-            <div className="flex items-center gap-1.5 min-w-max md:min-w-0 md:justify-between px-1">
+          <div className="max-w-2xl mx-auto">
+            <div className="flex items-center justify-between">
               {ALL_STEPS.map((s, i) => {
                 const isSkipped = skippedStepIds.has(s.id);
                 const isCompleted = !isSkipped && i < globalCurrentIndex;
