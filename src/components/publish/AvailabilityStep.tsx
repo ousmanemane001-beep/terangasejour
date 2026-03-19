@@ -1,22 +1,26 @@
-import { useState } from "react";
-import { Calendar as CalendarIcon, Globe, MessageSquare } from "lucide-react";
+import { Calendar as CalendarIcon, Globe, MessageSquare, CalendarDays, Phone } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 export type AvailabilityType = "always" | "request_only";
+export type AvailabilitySubType = "contact" | "calendar";
 
 interface AvailabilityStepProps {
   availabilityType: AvailabilityType;
+  availabilitySubType: AvailabilitySubType;
   blockedDates: Date[];
   onChangeType: (type: AvailabilityType) => void;
+  onChangeSubType: (sub: AvailabilitySubType) => void;
   onChangeBlockedDates: (dates: Date[]) => void;
 }
 
 const AvailabilityStep = ({
   availabilityType,
+  availabilitySubType,
   blockedDates,
   onChangeType,
+  onChangeSubType,
   onChangeBlockedDates,
 }: AvailabilityStepProps) => {
   const toggleDate = (date: Date | undefined) => {
@@ -30,6 +34,13 @@ const AvailabilityStep = ({
     }
   };
 
+  const handleTypeChange = (type: AvailabilityType) => {
+    onChangeType(type);
+    if (type === "always") {
+      onChangeBlockedDates([]);
+    }
+  };
+
   return (
     <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-6">
       <div>
@@ -37,15 +48,15 @@ const AvailabilityStep = ({
           Disponibilité
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Ce logement est-il toujours disponible à la réservation ?
+          Comment souhaitez-vous gérer la disponibilité de votre logement ?
         </p>
       </div>
 
+      {/* Main choice */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {/* Option 1: Toujours disponible */}
         <button
           type="button"
-          onClick={() => onChangeType("always")}
+          onClick={() => handleTypeChange("always")}
           className={cn(
             "flex flex-col items-center gap-3 rounded-xl border-2 p-6 transition-all",
             availabilityType === "always"
@@ -55,17 +66,16 @@ const AvailabilityStep = ({
         >
           <Globe className={cn("w-10 h-10", availabilityType === "always" ? "text-primary" : "text-muted-foreground")} />
           <div className="text-center">
-            <p className="font-semibold text-foreground">Toujours disponible</p>
+            <p className="font-semibold text-foreground">Disponible tout le temps</p>
             <p className="text-xs text-muted-foreground mt-1">
               Réservation instantanée toute l'année
             </p>
           </div>
         </button>
 
-        {/* Option 2: Disponible sur demande */}
         <button
           type="button"
-          onClick={() => onChangeType("request_only")}
+          onClick={() => handleTypeChange("request_only")}
           className={cn(
             "flex flex-col items-center gap-3 rounded-xl border-2 p-6 transition-all",
             availabilityType === "request_only"
@@ -77,59 +87,119 @@ const AvailabilityStep = ({
           <div className="text-center">
             <p className="font-semibold text-foreground">Disponible sur demande</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Les voyageurs envoient une demande que vous acceptez ou refusez
+              Vous contrôlez les réservations
             </p>
           </div>
         </button>
       </div>
 
-      {/* Info box for "always" */}
+      {/* Info for "always" */}
       {availabilityType === "always" && (
         <div className="bg-muted rounded-xl p-4 text-sm text-muted-foreground">
-          <p>
-            ✅ Votre logement sera réservable immédiatement par les voyageurs. Vous pourrez modifier la disponibilité à tout moment depuis votre tableau de bord.
-          </p>
+          ✅ Votre logement sera réservable immédiatement. Vous pourrez modifier la disponibilité à tout moment depuis votre tableau de bord.
         </div>
       )}
 
-      {/* Calendar + info for "request_only" */}
+      {/* Sub-options for "request_only" */}
       {availabilityType === "request_only" && (
-        <div className="space-y-4">
-          <div className="bg-muted rounded-xl p-4 text-sm text-muted-foreground space-y-2">
-            <p className="font-medium text-foreground">Comment ça fonctionne :</p>
-            <ol className="list-decimal list-inside space-y-1 text-xs">
-              <li>Le voyageur sélectionne ses dates et clique sur <strong>"Envoyer une demande"</strong></li>
-              <li>Vous recevez une notification avec les dates et le nombre de voyageurs</li>
-              <li>Vous pouvez <strong>accepter</strong> ou <strong>refuser</strong> chaque demande</li>
-            </ol>
+        <div className="space-y-4 animate-fade-in">
+          <p className="text-sm font-medium text-foreground">
+            Comment souhaitez-vous gérer les demandes ?
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                onChangeSubType("contact");
+                onChangeBlockedDates([]);
+              }}
+              className={cn(
+                "flex flex-col items-center gap-3 rounded-xl border-2 p-5 transition-all",
+                availabilitySubType === "contact"
+                  ? "border-primary bg-primary/5 shadow-sm"
+                  : "border-border hover:border-primary/40"
+              )}
+            >
+              <Phone className={cn("w-8 h-8", availabilitySubType === "contact" ? "text-primary" : "text-muted-foreground")} />
+              <div className="text-center">
+                <p className="font-semibold text-foreground text-sm">Les voyageurs doivent me contacter</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Pas de calendrier, vous gérez par messagerie
+                </p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onChangeSubType("calendar")}
+              className={cn(
+                "flex flex-col items-center gap-3 rounded-xl border-2 p-5 transition-all",
+                availabilitySubType === "calendar"
+                  ? "border-primary bg-primary/5 shadow-sm"
+                  : "border-border hover:border-primary/40"
+              )}
+            >
+              <CalendarDays className={cn("w-8 h-8", availabilitySubType === "calendar" ? "text-primary" : "text-muted-foreground")} />
+              <div className="text-center">
+                <p className="font-semibold text-foreground text-sm">Je définis mes disponibilités</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Marquez les dates occupées sur un calendrier
+                </p>
+              </div>
+            </button>
           </div>
 
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-foreground flex items-center gap-2">
-              <CalendarIcon className="w-4 h-4 text-primary" />
-              Bloquer des dates (optionnel)
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Cliquez sur les dates que vous souhaitez <strong>bloquer</strong>. Les dates non sélectionnées restent ouvertes aux demandes.
-            </p>
-            <Calendar
-              mode="single"
-              selected={undefined}
-              onSelect={toggleDate}
-              disabled={(date) => date < new Date()}
-              modifiers={{ blocked: blockedDates }}
-              modifiersClassNames={{
-                blocked: "!bg-destructive/20 !text-destructive line-through",
-              }}
-              className={cn("rounded-xl border border-border p-3 pointer-events-auto")}
-              numberOfMonths={1}
-            />
-            {blockedDates.length > 0 && (
-              <p className="text-xs text-muted-foreground">
-                {blockedDates.length} date(s) bloquée(s). Vous pourrez les modifier depuis votre tableau de bord.
-              </p>
-            )}
-          </div>
+          {/* Info for contact mode */}
+          {availabilitySubType === "contact" && (
+            <div className="bg-muted rounded-xl p-4 text-sm text-muted-foreground animate-fade-in">
+              📩 Les voyageurs vous enverront un message pour vérifier la disponibilité. Vous pourrez accepter ou refuser chaque demande.
+            </div>
+          )}
+
+          {/* Calendar for "calendar" sub-type */}
+          {availabilitySubType === "calendar" && (
+            <div className="space-y-3 animate-fade-in">
+              <div className="bg-muted rounded-xl p-4 text-sm text-muted-foreground space-y-2">
+                <p className="font-medium text-foreground">Comment ça fonctionne :</p>
+                <ul className="list-disc list-inside space-y-1 text-xs">
+                  <li>Par défaut, toutes les dates sont <strong>disponibles</strong> (en blanc)</li>
+                  <li>Cliquez sur une date pour la marquer comme <strong>occupée</strong> (en rouge)</li>
+                  <li>Cliquez à nouveau pour la rendre disponible</li>
+                </ul>
+              </div>
+
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-sm bg-card border border-border" />
+                  Disponible
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-sm bg-destructive/20 border border-destructive/40" />
+                  Occupé
+                </span>
+              </div>
+
+              <Calendar
+                mode="single"
+                selected={undefined}
+                onSelect={toggleDate}
+                disabled={(date) => date < new Date(new Date().toDateString())}
+                modifiers={{ blocked: blockedDates }}
+                modifiersClassNames={{
+                  blocked: "!bg-destructive/20 !text-destructive line-through",
+                }}
+                className={cn("rounded-xl border border-border p-3 pointer-events-auto")}
+                numberOfMonths={1}
+              />
+
+              {blockedDates.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {blockedDates.length} date(s) marquée(s) comme occupée(s).
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
