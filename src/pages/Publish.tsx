@@ -23,10 +23,12 @@ import {
   Clock,
   RefreshCcw,
   Zap,
+  CalendarDays,
 } from "lucide-react";
 import PhotoUploader from "@/components/PhotoUploader";
 import BookingModeStep, { type BookingMode } from "@/components/publish/BookingModeStep";
-import AvailabilityStep, { type AvailabilitySubType } from "@/components/publish/AvailabilityStep";
+import AvailabilityTypeStep, { type AvailabilitySubType } from "@/components/publish/AvailabilityTypeStep";
+import CalendarStep from "@/components/publish/CalendarStep";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,14 +36,14 @@ import { toast } from "sonner";
 import { validateListingText } from "@/lib/contentFilter";
 import { useQueryClient } from "@tanstack/react-query";
 
-// 6 logical steps — some may be skipped dynamically
+// 6 logical steps — some skipped dynamically based on bookingMode + availabilitySubType
 const ALL_STEPS = [
-  { id: "description", icon: Home, title: "Description" },
-  { id: "photos", icon: Camera, title: "Photos" },
-  { id: "price", icon: DollarSign, title: "Tarif" },
-  { id: "booking_mode", icon: Zap, title: "Réservation" },
-  { id: "availability", icon: Clock, title: "Disponibilité" },
-  { id: "summary", icon: CheckCircle, title: "Publier" },
+  { id: "booking_mode",     icon: Zap,          title: "Réservation" },
+  { id: "availability_type", icon: Clock,        title: "Disponibilité" },
+  { id: "calendar",         icon: CalendarDays,  title: "Calendrier" },
+  { id: "description",      icon: Home,          title: "Détails" },
+  { id: "photos",           icon: Camera,        title: "Photos" },
+  { id: "summary",          icon: CheckCircle,   title: "Publier" },
 ] as const;
 
 type StepId = (typeof ALL_STEPS)[number]["id"];
@@ -71,15 +73,8 @@ class StepRenderBoundary extends Component<
   { hasError: boolean }
 > {
   state = { hasError: false };
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
-    // Render-safe fallback only
-  }
-
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {}
   render() {
     if (this.state.hasError) {
       return (
@@ -88,32 +83,21 @@ class StepRenderBoundary extends Component<
             <AlertCircle className="w-5 h-5" />
             <p className="font-medium">Une erreur est survenue sur cette étape.</p>
           </div>
-          <p className="text-sm text-muted-foreground">Retour à l'étape précédente pour continuer.</p>
+          <p className="text-sm text-muted-foreground">Retour à l&apos;étape précédente pour continuer.</p>
           <Button type="button" variant="outline" onClick={this.props.onFallback} className="rounded-xl">
             <ChevronLeft className="w-4 h-4 mr-1" /> Retour
           </Button>
         </div>
       );
     }
-
     return this.props.children;
   }
 }
 
-class PageErrorBoundary extends Component<
-  { children: ReactNode },
-  { hasError: boolean }
-> {
+class PageErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
   state = { hasError: false };
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
-    // Top-level recovery — prevents white screen
-  }
-
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {}
   render() {
     if (this.state.hasError) {
       return (
@@ -121,27 +105,19 @@ class PageErrorBoundary extends Component<
           <AlertCircle className="w-12 h-12 text-destructive mb-4" />
           <h1 className="text-xl font-bold text-foreground mb-2">Une erreur est survenue</h1>
           <p className="text-sm text-muted-foreground mb-6 max-w-md">
-            La page de création d'annonce a rencontré un problème. Vos données sont sauvegardées automatiquement.
+            La page de création d&apos;annonce a rencontré un problème. Vos données sont sauvegardées automatiquement.
           </p>
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              className="rounded-xl"
-              onClick={() => this.setState({ hasError: false })}
-            >
+            <Button variant="outline" className="rounded-xl" onClick={() => this.setState({ hasError: false })}>
               <RefreshCcw className="w-4 h-4 mr-1" /> Réessayer
             </Button>
-            <Button
-              className="rounded-xl"
-              onClick={() => { window.location.href = "/dashboard"; }}
-            >
+            <Button className="rounded-xl" onClick={() => { window.location.href = "/dashboard"; }}>
               Retour au tableau de bord
             </Button>
           </div>
         </div>
       );
     }
-
     return this.props.children;
   }
 }
@@ -156,7 +132,6 @@ function loadDraftFromStorage(): Partial<ListingDraft> | null {
     if (Array.isArray(parsed.blockedDates)) {
       parsed.blockedDates = parsed.blockedDates.map((d: string) => new Date(d));
     }
-    // Migrate old field names
     if (parsed.availabilityType && !parsed.bookingMode) {
       parsed.bookingMode = parsed.availabilityType === "always" ? "instant" : "request";
     }
@@ -188,13 +163,25 @@ function saveDraftToStorage(draft: ListingDraft, currentStep: number) {
   } catch {}
 }
 
-/** Compute visible steps based on booking mode */
-function getVisibleSteps(bookingMode: BookingMode): StepId[] {
-  if (bookingMode === "instant") {
-    // Skip availability step entirely for instant booking
-    return ALL_STEPS.filter((s) => s.id !== "availability").map((s) => s.id);
+/**
+ * Dynamic step visibility:
+ * - instant booking → skip availability_type + calendar
+ * - request + contact → skip calendar
+ * - request + calendar → show all
+ */
+function getVisibleSteps(bookingMode: BookingMode, availabilitySubType: AvailabilitySubType): StepId[] {
+  const steps: StepId[] = ["booking_mode"];
+
+  if (bookingMode === "request") {
+    steps.push("availability_type");
+    if (availabilitySubType === "calendar") {
+      steps.push("calendar");
+    }
   }
-  return ALL_STEPS.map((s) => s.id);
+  // instant → skip availability_type and calendar entirely
+
+  steps.push("description", "photos", "summary");
+  return steps;
 }
 
 const Publish = () => {
@@ -219,16 +206,6 @@ const Publish = () => {
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [bookingMode, setBookingMode] = useState<BookingMode>(savedDraft?.bookingMode ?? "instant");
   const [availabilitySubType, setAvailabilitySubType] = useState<AvailabilitySubType>(savedDraft?.availabilitySubType ?? "contact");
-
-  // When booking mode changes, reset availability sub-type and clamp step index
-  const handleBookingModeChange = (mode: BookingMode) => {
-    console.log("bookingMode:", mode);
-    setBookingMode(mode);
-    if (mode === "instant") {
-      setAvailabilitySubType("contact");
-      setBlockedDates([]);
-    }
-  };
   const [blockedDates, setBlockedDates] = useState<Date[]>(
     Array.isArray(savedDraft?.blockedDates) ? savedDraft!.blockedDates : []
   );
@@ -236,7 +213,24 @@ const Publish = () => {
   const [isPhotoProcessing, setIsPhotoProcessing] = useState(false);
   const [submitUploadProgress, setSubmitUploadProgress] = useState({ current: 0, total: 0 });
 
-  const visibleSteps = useMemo(() => getVisibleSteps(bookingMode), [bookingMode]);
+  const handleBookingModeChange = (mode: BookingMode) => {
+    console.log("bookingMode changed:", mode);
+    setBookingMode(mode);
+    if (mode === "instant") {
+      setAvailabilitySubType("contact");
+      setBlockedDates([]);
+    }
+  };
+
+  const handleAvailabilitySubTypeChange = (sub: AvailabilitySubType) => {
+    console.log("availabilitySubType changed:", sub);
+    setAvailabilitySubType(sub);
+    if (sub === "contact") {
+      setBlockedDates([]);
+    }
+  };
+
+  const visibleSteps = useMemo(() => getVisibleSteps(bookingMode, availabilitySubType), [bookingMode, availabilitySubType]);
   const totalSteps = visibleSteps.length;
 
   const safeStepIndex = useMemo(() => {
@@ -288,6 +282,7 @@ const Publish = () => {
       case "description": {
         if (!listingDraft.title.trim()) return "Veuillez saisir un titre pour votre annonce.";
         if (!listingDraft.location.trim()) return "Veuillez indiquer la localisation.";
+        if (!listingDraft.price || Number.parseInt(listingDraft.price, 10) <= 0) return "Veuillez indiquer un prix valide.";
         const titleCheck = validateListingText(listingDraft.title);
         if (titleCheck) return titleCheck;
         const descCheck = validateListingText(listingDraft.description);
@@ -299,11 +294,6 @@ const Publish = () => {
         if (validPhotoCount < 1) return "Ajoutez au moins 1 photo valide.";
         if (hasPhotoErrors) return "Veuillez corriger les images avant de continuer.";
         return null;
-      case "price": {
-        const parsedPrice = Number.parseInt(listingDraft.price || "0", 10);
-        if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) return "Veuillez indiquer un prix valide.";
-        return null;
-      }
       default:
         return null;
     }
@@ -313,7 +303,7 @@ const Publish = () => {
     try {
       const error = validateStep(currentStepId);
       if (error) { toast.error(error); return; }
-      console.log("bookingMode:", bookingMode, "availabilitySubType:", availabilitySubType, "currentStep:", currentStepId);
+      console.log("currentStep:", currentStepId, "bookingMode:", bookingMode, "availabilitySubType:", availabilitySubType);
       const nextStep = Math.min(safeStepIndex + 1, totalSteps - 1);
       window.scrollTo({ top: 0 });
       setStepIndex(nextStep);
@@ -323,7 +313,7 @@ const Publish = () => {
   };
 
   const goBack = () => {
-    console.log("bookingMode:", bookingMode, "availabilitySubType:", availabilitySubType, "currentStep:", currentStepId);
+    console.log("currentStep:", currentStepId, "bookingMode:", bookingMode, "availabilitySubType:", availabilitySubType);
     const previousStep = Math.max(safeStepIndex - 1, 0);
     window.scrollTo({ top: 0 });
     setStepIndex(previousStep);
@@ -376,7 +366,7 @@ const Publish = () => {
     if (!user) { toast.error("Veuillez vous connecter pour publier un logement"); navigate("/login"); return; }
     if (isPhotoProcessing) { toast.error("Traitement des images en cours. Veuillez patienter."); return; }
 
-    const error = validateStep("description") || validateStep("photos") || validateStep("price");
+    const error = validateStep("description") || validateStep("photos");
     if (error) { toast.error(error); return; }
 
     setLoading(true);
@@ -464,7 +454,7 @@ const Publish = () => {
 
   const displayedPrice = Number.parseInt(listingDraft.price || "0", 10);
 
-  // Use visibleSteps directly for stepper display
+  // Steps shown in stepper = only visible steps
   const displaySteps = useMemo(() => {
     return ALL_STEPS.filter((s) => visibleSteps.includes(s.id));
   }, [visibleSteps]);
@@ -472,17 +462,16 @@ const Publish = () => {
   const isLastStep = currentStepId === "summary";
   const isFirstStep = safeStepIndex === 0;
 
-  // Determine if Next should be disabled
   const isNextDisabled = useMemo(() => {
     if (loading) return true;
     if (currentStepId === "photos" && (isPhotoProcessing || validPhotoCount < 1 || hasPhotoErrors)) return true;
     return false;
   }, [loading, currentStepId, isPhotoProcessing, validPhotoCount, hasPhotoErrors]);
 
-  // CTA text for booking mode step when instant is selected
+  // Dynamic CTA text
   const nextButtonText = useMemo(() => {
     if (currentStepId === "booking_mode" && bookingMode === "instant") {
-      return "Soumettre pour approbation";
+      return "Continuer";
     }
     return "Suivant";
   }, [currentStepId, bookingMode]);
@@ -491,7 +480,7 @@ const Publish = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
-      {/* Step indicator */}
+      {/* Step indicator — shows only visible steps */}
       <div className="sticky top-0 z-30 bg-card border-b border-border">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between max-w-2xl mx-auto">
@@ -525,6 +514,28 @@ const Publish = () => {
           <StepRenderBoundary onFallback={goBack}>
             <div key={currentStepId} className="animate-fade-in">
 
+              {/* STEP 1: Booking Mode */}
+              {currentStepId === "booking_mode" && (
+                <BookingModeStep bookingMode={listingDraft.bookingMode} onChangeMode={handleBookingModeChange} />
+              )}
+
+              {/* STEP 2: Availability Type (only for request mode) */}
+              {currentStepId === "availability_type" && (
+                <AvailabilityTypeStep
+                  availabilitySubType={listingDraft.availabilitySubType}
+                  onChangeSubType={handleAvailabilitySubTypeChange}
+                />
+              )}
+
+              {/* STEP 3: Calendar (only for request + calendar) */}
+              {currentStepId === "calendar" && (
+                <CalendarStep
+                  blockedDates={listingDraft.blockedDates}
+                  onChangeBlockedDates={setBlockedDates}
+                />
+              )}
+
+              {/* STEP 4: Listing Details (description + price combined) */}
               {currentStepId === "description" && (
                 <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
                   <h2 className="font-display text-xl font-bold text-foreground">Décrivez votre logement</h2>
@@ -537,7 +548,7 @@ const Publish = () => {
                     <Textarea placeholder="Décrivez votre logement en détail..." rows={4} className="rounded-xl" value={listingDraft.description} onChange={(e) => setDescription(e.target.value)} />
                     <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
                       <AlertCircle className="w-3 h-3 shrink-0" />
-                      Ne partagez pas vos coordonnées personnelles. Les échanges avec les voyageurs se feront via la plateforme.
+                      Ne partagez pas vos coordonnées personnelles.
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -571,9 +582,27 @@ const Publish = () => {
                       <Input type="number" min={1} className="rounded-xl h-12" value={listingDraft.capacity} onChange={(e) => setCapacity(Number(e.target.value) || 1)} />
                     </div>
                   </div>
+                  {/* Price section integrated */}
+                  <div className="border-t border-border pt-5">
+                    <h3 className="font-display text-lg font-semibold text-foreground mb-3">
+                      <DollarSign className="w-4 h-4 inline mr-1" />Prix par nuit
+                    </h3>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">
+                        Tarif ({listingDraft.currency}) *
+                      </label>
+                      <Input type="number" placeholder="Ex: 45000" className="rounded-xl h-14 text-lg font-semibold" value={listingDraft.price} onChange={(e) => setPrice(e.target.value || "0")} />
+                    </div>
+                    {Number.isFinite(displayedPrice) && displayedPrice > 0 && (
+                      <div className="bg-muted rounded-xl p-4 text-sm text-muted-foreground mt-3">
+                        Tarif affiché : <strong className="text-foreground">{displayedPrice.toLocaleString("fr-FR")} {listingDraft.currency} / nuit</strong>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
+              {/* STEP 5: Photos */}
               {currentStepId === "photos" && (
                 <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
                   <h2 className="font-display text-xl font-bold text-foreground"><Camera className="w-5 h-5 inline mr-2" />Ajoutez des photos</h2>
@@ -587,42 +616,27 @@ const Publish = () => {
                 </div>
               )}
 
-              {currentStepId === "price" && (
-                <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
-                  <h2 className="font-display text-xl font-bold text-foreground"><DollarSign className="w-5 h-5 inline mr-2" />Fixez votre prix</h2>
-                  <p className="text-sm text-muted-foreground">Définissez un tarif compétitif par nuit.</p>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Prix par nuit ({listingDraft.currency}) *</label>
-                    <Input type="number" placeholder="Ex: 45000" className="rounded-xl h-14 text-lg font-semibold" value={listingDraft.price} onChange={(e) => setPrice(e.target.value || "0")} />
-                  </div>
-                  {Number.isFinite(displayedPrice) && displayedPrice > 0 && (
-                    <div className="bg-muted rounded-xl p-4 text-sm text-muted-foreground">
-                      Tarif affiché : <strong className="text-foreground">{displayedPrice.toLocaleString("fr-FR")} {listingDraft.currency} / nuit</strong>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {currentStepId === "booking_mode" && (
-                <BookingModeStep bookingMode={listingDraft.bookingMode} onChangeMode={handleBookingModeChange} />
-              )}
-
-              {currentStepId === "availability" && (
-                <AvailabilityStep
-                  bookingMode={listingDraft.bookingMode}
-                  availabilitySubType={listingDraft.availabilitySubType}
-                  blockedDates={listingDraft.blockedDates}
-                  onChangeSubType={setAvailabilitySubType}
-                  onChangeBlockedDates={setBlockedDates}
-                />
-              )}
-
+              {/* STEP 6: Summary & Submit */}
               {currentStepId === "summary" && (
                 <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
                   <h2 className="font-display text-xl font-bold text-foreground"><CheckCircle className="w-5 h-5 inline mr-2" />Récapitulatif</h2>
                   <p className="text-sm text-muted-foreground">Vérifiez les informations avant de publier votre logement.</p>
 
                   <div className="space-y-3 text-sm">
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span className="text-muted-foreground">Mode de réservation</span>
+                      <span className="font-medium text-foreground">
+                        {listingDraft.bookingMode === "instant" ? "Réservation instantanée" : "Demande de disponibilité"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between py-2 border-b border-border">
+                      <span className="text-muted-foreground">Disponibilité</span>
+                      <span className="font-medium text-foreground">
+                        {listingDraft.bookingMode === "instant" && "Toujours disponible"}
+                        {listingDraft.bookingMode === "request" && listingDraft.availabilitySubType === "contact" && "Sur demande (contact)"}
+                        {listingDraft.bookingMode === "request" && listingDraft.availabilitySubType === "calendar" && `Calendrier — ${(listingDraft.blockedDates || []).length} date(s) occupée(s)`}
+                      </span>
+                    </div>
                     <div className="flex justify-between py-2 border-b border-border">
                       <span className="text-muted-foreground">Titre</span>
                       <span className="font-medium text-foreground text-right max-w-[60%]">{listingDraft.title || "—"}</span>
@@ -647,20 +661,6 @@ const Publish = () => {
                       <span className="text-muted-foreground">Photos</span>
                       <span className="font-medium text-foreground">{(listingDraft.photos || []).length} photo(s)</span>
                     </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Mode de réservation</span>
-                      <span className="font-medium text-foreground">
-                        {listingDraft.bookingMode === "instant" ? "Réservation instantanée" : "Demande de disponibilité"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Disponibilité</span>
-                      <span className="font-medium text-foreground">
-                        {listingDraft.bookingMode === "instant" && "Toujours disponible"}
-                        {listingDraft.bookingMode === "request" && listingDraft.availabilitySubType === "contact" && "Sur demande (contact par messagerie)"}
-                        {listingDraft.bookingMode === "request" && listingDraft.availabilitySubType === "calendar" && `Sur demande (calendrier)${(listingDraft.blockedDates || []).length > 0 ? ` — ${(listingDraft.blockedDates || []).length} date(s) occupée(s)` : ""}`}
-                      </span>
-                    </div>
                   </div>
 
                   {(listingDraft.photos || []).length > 0 && (
@@ -682,7 +682,7 @@ const Publish = () => {
             </div>
           </StepRenderBoundary>
 
-          {/* Navigation buttons */}
+          {/* Navigation */}
           <div className="flex items-center justify-between mt-6 gap-3">
             {!isFirstStep ? (
               <Button type="button" variant="outline" onClick={goBack} className="rounded-xl h-12 px-6" disabled={loading}>
@@ -700,7 +700,7 @@ const Publish = () => {
                 className="rounded-xl h-12 px-6 bg-primary text-primary-foreground"
               >
                 {nextButtonText}
-                {nextButtonText === "Suivant" && <ChevronRight className="w-4 h-4 ml-1" />}
+                <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             ) : (
               <Button
