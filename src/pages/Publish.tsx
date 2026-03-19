@@ -499,20 +499,20 @@ const Publish = () => {
               <div key={s.id} className="flex items-center gap-1.5">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                    i < displayStepIndex
+                    i < safeStepIndex
                       ? "bg-accent text-accent-foreground"
-                      : i === displayStepIndex
+                      : i === safeStepIndex
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  {i < displayStepIndex ? <CheckCircle className="w-4 h-4" /> : i + 1}
+                  {i < safeStepIndex ? <CheckCircle className="w-4 h-4" /> : i + 1}
                 </div>
-                <span className={`text-xs font-medium hidden sm:inline ${i === displayStepIndex ? "text-foreground" : "text-muted-foreground"}`}>
+                <span className={`text-xs font-medium hidden sm:inline ${i === safeStepIndex ? "text-foreground" : "text-muted-foreground"}`}>
                   {s.title}
                 </span>
                 {i < displaySteps.length - 1 && (
-                  <div className={`w-6 sm:w-12 h-0.5 mx-1 ${i < displayStepIndex ? "bg-accent" : "bg-border"}`} />
+                  <div className={`w-6 sm:w-12 h-0.5 mx-1 ${i < safeStepIndex ? "bg-accent" : "bg-border"}`} />
                 )}
               </div>
             ))}
