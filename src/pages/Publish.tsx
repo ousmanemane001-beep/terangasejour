@@ -24,7 +24,7 @@ import {
   RefreshCcw,
 } from "lucide-react";
 import PhotoUploader from "@/components/PhotoUploader";
-import AvailabilityStep, { type AvailabilityType } from "@/components/publish/AvailabilityStep";
+import AvailabilityStep, { type AvailabilityType, type AvailabilitySubType } from "@/components/publish/AvailabilityStep";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -56,6 +56,7 @@ interface ListingDraft {
   currency: string;
   photos: PhotoItem[];
   availabilityType: AvailabilityType;
+  availabilitySubType: AvailabilitySubType;
   blockedDates: Date[];
 }
 
@@ -172,6 +173,7 @@ function saveDraftToStorage(draft: ListingDraft, currentStep: number) {
       price: draft.price,
       currency: draft.currency,
       availabilityType: draft.availabilityType,
+      availabilitySubType: draft.availabilitySubType,
       blockedDates: draft.blockedDates.map((d) => d.toISOString()),
       _step: currentStep,
     };
@@ -203,6 +205,7 @@ const Publish = () => {
   const [price, setPrice] = useState(savedDraft?.price ?? "0");
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [availabilityType, setAvailabilityType] = useState<AvailabilityType>(savedDraft?.availabilityType ?? "always");
+  const [availabilitySubType, setAvailabilitySubType] = useState<AvailabilitySubType>(savedDraft?.availabilitySubType ?? "contact");
   const [blockedDates, setBlockedDates] = useState<Date[]>(
     Array.isArray(savedDraft?.blockedDates) ? savedDraft!.blockedDates : []
   );
@@ -225,9 +228,10 @@ const Publish = () => {
         ? photos.filter((p) => !!p?.id && !!p?.file && !!p?.preview)
         : [],
       availabilityType: availabilityType ?? "always",
+      availabilitySubType: availabilitySubType ?? "contact",
       blockedDates: Array.isArray(blockedDates) ? blockedDates : [],
     }),
-    [title, description, propertyType, location, bedrooms, bathrooms, capacity, price, photos, availabilityType, blockedDates]
+    [title, description, propertyType, location, bedrooms, bathrooms, capacity, price, photos, availabilityType, availabilitySubType, blockedDates]
   );
 
   const safeStep = useMemo(() => {
@@ -690,8 +694,10 @@ const Publish = () => {
                 {safeStep === 3 && (
                   <AvailabilityStep
                     availabilityType={listingDraft.availabilityType}
+                    availabilitySubType={listingDraft.availabilitySubType}
                     blockedDates={listingDraft.blockedDates}
                     onChangeType={setAvailabilityType}
+                    onChangeSubType={setAvailabilitySubType}
                     onChangeBlockedDates={setBlockedDates}
                   />
                 )}
@@ -731,8 +737,9 @@ const Publish = () => {
                       <div className="flex justify-between py-2 border-b border-border">
                         <span className="text-muted-foreground">Disponibilité</span>
                         <span className="font-medium text-foreground">
-                          {listingDraft.availabilityType === "always" && "Toujours disponible (réservation instantanée)"}
-                          {listingDraft.availabilityType === "request_only" && `Sur demande${(listingDraft.blockedDates || []).length > 0 ? ` (${(listingDraft.blockedDates || []).length} date(s) bloquée(s))` : ""}`}
+                          {listingDraft.availabilityType === "always" && "Disponible tout le temps (réservation instantanée)"}
+                          {listingDraft.availabilityType === "request_only" && listingDraft.availabilitySubType === "contact" && "Sur demande (contact par messagerie)"}
+                          {listingDraft.availabilityType === "request_only" && listingDraft.availabilitySubType === "calendar" && `Sur demande (calendrier)${(listingDraft.blockedDates || []).length > 0 ? ` — ${(listingDraft.blockedDates || []).length} date(s) occupée(s)` : ""}`}
                         </span>
                       </div>
                     </div>
