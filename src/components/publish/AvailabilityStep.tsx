@@ -21,6 +21,8 @@ const AvailabilityStep = ({
   onChangeSubType,
   onChangeBlockedDates,
 }: AvailabilityStepProps) => {
+  console.log("AvailabilityStep render — bookingMode:", bookingMode, "availabilitySubType:", availabilitySubType);
+
   const toggleDate = (date: Date | undefined) => {
     if (!date) return;
     const dateStr = format(date, "yyyy-MM-dd");

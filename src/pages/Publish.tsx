@@ -190,8 +190,10 @@ function saveDraftToStorage(draft: ListingDraft, currentStep: number) {
 
 /** Compute visible steps based on booking mode */
 function getVisibleSteps(bookingMode: BookingMode): StepId[] {
-  // Instant booking: skip availability config (auto "always available")
-  // But we still show availability step with "always available" confirmation
+  if (bookingMode === "instant") {
+    // Skip availability step entirely for instant booking
+    return ALL_STEPS.filter((s) => s.id !== "availability").map((s) => s.id);
+  }
   return ALL_STEPS.map((s) => s.id);
 }
 
@@ -217,6 +219,16 @@ const Publish = () => {
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [bookingMode, setBookingMode] = useState<BookingMode>(savedDraft?.bookingMode ?? "instant");
   const [availabilitySubType, setAvailabilitySubType] = useState<AvailabilitySubType>(savedDraft?.availabilitySubType ?? "contact");
+
+  // When booking mode changes, reset availability sub-type and clamp step index
+  const handleBookingModeChange = (mode: BookingMode) => {
+    console.log("bookingMode:", mode);
+    setBookingMode(mode);
+    if (mode === "instant") {
+      setAvailabilitySubType("contact");
+      setBlockedDates([]);
+    }
+  };
   const [blockedDates, setBlockedDates] = useState<Date[]>(
     Array.isArray(savedDraft?.blockedDates) ? savedDraft!.blockedDates : []
   );
@@ -301,18 +313,7 @@ const Publish = () => {
     try {
       const error = validateStep(currentStepId);
       if (error) { toast.error(error); return; }
-
-      // If instant booking and we're on booking_mode step, skip availability
-      if (currentStepId === "booking_mode" && bookingMode === "instant") {
-        // Jump to summary (skip availability step)
-        const summaryIdx = visibleSteps.indexOf("summary");
-        if (summaryIdx >= 0) {
-          window.scrollTo({ top: 0 });
-          setStepIndex(summaryIdx);
-          return;
-        }
-      }
-
+      console.log("bookingMode:", bookingMode, "availabilitySubType:", availabilitySubType, "currentStep:", currentStepId);
       const nextStep = Math.min(safeStepIndex + 1, totalSteps - 1);
       window.scrollTo({ top: 0 });
       setStepIndex(nextStep);
@@ -322,16 +323,7 @@ const Publish = () => {
   };
 
   const goBack = () => {
-    // If we're on summary and came from instant booking, go back to booking_mode
-    if (currentStepId === "summary" && bookingMode === "instant") {
-      const bmIdx = visibleSteps.indexOf("booking_mode");
-      if (bmIdx >= 0) {
-        window.scrollTo({ top: 0 });
-        setStepIndex(bmIdx);
-        return;
-      }
-    }
-
+    console.log("bookingMode:", bookingMode, "availabilitySubType:", availabilitySubType, "currentStep:", currentStepId);
     const previousStep = Math.max(safeStepIndex - 1, 0);
     window.scrollTo({ top: 0 });
     setStepIndex(previousStep);
@@ -472,19 +464,10 @@ const Publish = () => {
 
   const displayedPrice = Number.parseInt(listingDraft.price || "0", 10);
 
-  // Determine which steps to show in the stepper (for instant booking, show fewer)
+  // Use visibleSteps directly for stepper display
   const displaySteps = useMemo(() => {
-    if (bookingMode === "instant") {
-      return ALL_STEPS.filter((s) => s.id !== "availability");
-    }
-    return [...ALL_STEPS];
-  }, [bookingMode]);
-
-  // Map current logical step index to display step index
-  const displayStepIndex = useMemo(() => {
-    const currentId = visibleSteps[safeStepIndex];
-    return displaySteps.findIndex((s) => s.id === currentId);
-  }, [safeStepIndex, visibleSteps, displaySteps]);
+    return ALL_STEPS.filter((s) => visibleSteps.includes(s.id));
+  }, [visibleSteps]);
 
   const isLastStep = currentStepId === "summary";
   const isFirstStep = safeStepIndex === 0;
@@ -516,20 +499,20 @@ const Publish = () => {
               <div key={s.id} className="flex items-center gap-1.5">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                    i < displayStepIndex
+                    i < safeStepIndex
                       ? "bg-accent text-accent-foreground"
-                      : i === displayStepIndex
+                      : i === safeStepIndex
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  {i < displayStepIndex ? <CheckCircle className="w-4 h-4" /> : i + 1}
+                  {i < safeStepIndex ? <CheckCircle className="w-4 h-4" /> : i + 1}
                 </div>
-                <span className={`text-xs font-medium hidden sm:inline ${i === displayStepIndex ? "text-foreground" : "text-muted-foreground"}`}>
+                <span className={`text-xs font-medium hidden sm:inline ${i === safeStepIndex ? "text-foreground" : "text-muted-foreground"}`}>
                   {s.title}
                 </span>
                 {i < displaySteps.length - 1 && (
-                  <div className={`w-6 sm:w-12 h-0.5 mx-1 ${i < displayStepIndex ? "bg-accent" : "bg-border"}`} />
+                  <div className={`w-6 sm:w-12 h-0.5 mx-1 ${i < safeStepIndex ? "bg-accent" : "bg-border"}`} />
                 )}
               </div>
             ))}
@@ -621,7 +604,7 @@ const Publish = () => {
               )}
 
               {currentStepId === "booking_mode" && (
-                <BookingModeStep bookingMode={listingDraft.bookingMode} onChangeMode={setBookingMode} />
+                <BookingModeStep bookingMode={listingDraft.bookingMode} onChangeMode={handleBookingModeChange} />
               )}
 
               {currentStepId === "availability" && (
