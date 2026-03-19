@@ -190,8 +190,10 @@ function saveDraftToStorage(draft: ListingDraft, currentStep: number) {
 
 /** Compute visible steps based on booking mode */
 function getVisibleSteps(bookingMode: BookingMode): StepId[] {
-  // Instant booking: skip availability config (auto "always available")
-  // But we still show availability step with "always available" confirmation
+  if (bookingMode === "instant") {
+    // Skip availability step entirely for instant booking
+    return ALL_STEPS.filter((s) => s.id !== "availability").map((s) => s.id);
+  }
   return ALL_STEPS.map((s) => s.id);
 }
 
