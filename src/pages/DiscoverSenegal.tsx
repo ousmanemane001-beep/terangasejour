@@ -16,8 +16,8 @@ const DESTINATION_IMAGES: Record<string, string> = {
   // Dakar
   "dakar": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
   "almadies": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
-  "ancienne gare de dakar": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Gare_de_Dakar.jpg/1280px-Gare_de_Dakar.jpg",
-  "gare de dakar": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Gare_de_Dakar.jpg/1280px-Gare_de_Dakar.jpg",
+  "ancienne gare de dakar": "/images/destinations/gare-dakar.png",
+  "gare de dakar": "/images/destinations/gare-dakar.png",
   // Gorée
   "île de gorée": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg/1040px-Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg",
   "gorée": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg/1040px-Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg",
