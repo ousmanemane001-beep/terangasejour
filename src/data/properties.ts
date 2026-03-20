@@ -1,15 +1,34 @@
-import property1 from "@/assets/property-1.jpg";
-import property2 from "@/assets/property-2.jpg";
-import property3 from "@/assets/property-3.jpg";
-import property4 from "@/assets/property-4.jpg";
-import property5 from "@/assets/property-5.jpg";
+// Real Unsplash photos — Senegal destinations
+// Dakar
+const dakar1 = "https://images.unsplash.com/photo-1611258490565-4a06c019e631?w=800&q=80&auto=format";
+const dakar2 = "https://images.unsplash.com/photo-1611258490622-458315cddc61?w=800&q=80&auto=format";
+const dakar3 = "https://images.unsplash.com/photo-1603646681390-bb763559f730?w=800&q=80&auto=format";
+const dakar4 = "https://images.unsplash.com/photo-1648504735618-6b60e3651a2a?w=800&q=80&auto=format";
 
-// Villa Saly images (public folder)
-const villaSaly1 = "/images/villa-saly-1.jpg";
-const villaSaly2 = "/images/villa-saly-2.jfif";
-const villaSaly3 = "/images/villa-saly-3.jfif";
-const villaSaly4 = "/images/villa-saly-4.jfif";
-const villaSaly5 = "/images/villa-saly-5.jfif";
+// Saly
+const saly1 = "https://images.unsplash.com/photo-1743518576305-652c0e1a6fdb?w=800&q=80&auto=format";
+const saly2 = "https://images.unsplash.com/photo-1743518576324-c0e2c7cf5368?w=800&q=80&auto=format";
+const saly3 = "https://images.unsplash.com/photo-1743518576341-565e14b77dcc?w=800&q=80&auto=format";
+const saly4 = "https://images.unsplash.com/photo-1657302699239-c350f0372260?w=800&q=80&auto=format";
+const saly5 = "https://images.unsplash.com/photo-1686217099527-f94a0b22ad20?w=800&q=80&auto=format";
+
+// Somone
+const somone1 = "https://images.unsplash.com/photo-1569103470612-0414542f9355?w=800&q=80&auto=format";
+const somone2 = "https://images.unsplash.com/photo-1570651403445-54c2b0f568c0?w=800&q=80&auto=format";
+const somone3 = "https://images.unsplash.com/photo-1644772019005-5dc8e8ad66b7?w=800&q=80&auto=format";
+
+// Saint-Louis
+const stlouis1 = "https://images.unsplash.com/photo-1590232071814-92dcbf0ed8cd?w=800&q=80&auto=format";
+const stlouis2 = "https://images.unsplash.com/photo-1590232087224-5d421218d69a?w=800&q=80&auto=format";
+const stlouis3 = "https://images.unsplash.com/photo-1615486905505-7863587b1c3f?w=800&q=80&auto=format";
+
+// Cap Skirring / Casamance
+const capskirring1 = "https://images.unsplash.com/photo-1588262830598-726eaaed0b63?w=800&q=80&auto=format";
+const capskirring2 = "https://images.unsplash.com/photo-1630675827442-ad4b02c360e1?w=800&q=80&auto=format";
+
+// Gorée
+const goree1 = "https://images.unsplash.com/photo-1629300678017-eb3cb4eb4b77?w=800&q=80&auto=format";
+const goree2 = "https://images.unsplash.com/photo-1615478507721-6a0c31244ed1?w=800&q=80&auto=format";
 
 export interface Property {
   id: number;
