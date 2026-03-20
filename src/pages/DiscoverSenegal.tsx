@@ -81,9 +81,9 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "kedougou": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Dindefelo.jpg/800px-Dindefelo.jpg",
   "kédougou": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Dindefelo.jpg/800px-Dindefelo.jpg",
   "bandafassi": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Dindefelo.jpg/800px-Dindefelo.jpg",
-  "cases à impluvium": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Dindefelo.jpg/800px-Dindefelo.jpg",
-  "cases a impluvium": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Dindefelo.jpg/800px-Dindefelo.jpg",
-  "impluvium": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Dindefelo.jpg/800px-Dindefelo.jpg",
+  "cases à impluvium": "/images/destinations/cases-impluvium.png",
+  "cases a impluvium": "/images/destinations/cases-impluvium.png",
+  "impluvium": "/images/destinations/cases-impluvium.png",
   // Autres
   "centre culturel blaise senghor": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
   "blaise senghor": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
