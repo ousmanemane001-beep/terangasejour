@@ -18,14 +18,14 @@ import DestinationCard from "@/components/DestinationCard";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const DESTINATIONS = [
-  { name: "Dakar", image: "/images/dest-dakar.jpg" },
-  { name: "Saly", image: "/images/dest-saly.jpg" },
-  { name: "Mbour", image: "/images/dest-mbour.jpg" },
-  { name: "Somone", image: "/images/dest-somone.jpg" },
-  { name: "Ngaparou", image: "/images/dest-ngaparou.jpg" },
-  { name: "Popenguine", image: "/images/dest-popenguine.jpg" },
-  { name: "Pointe Sarene", image: "/images/dest-pointe-sarene.jpg" },
-  { name: "Cap Skirring", image: "/images/dest-cap-skirring.jpg" },
+  { name: "Dakar", image: "https://images.unsplash.com/photo-1611258490565-4a06c019e631?w=600&q=80&auto=format" },
+  { name: "Saly", image: "https://images.unsplash.com/photo-1743518576305-652c0e1a6fdb?w=600&q=80&auto=format" },
+  { name: "Mbour", image: "https://images.unsplash.com/photo-1657302699239-c350f0372260?w=600&q=80&auto=format" },
+  { name: "Somone", image: "https://images.unsplash.com/photo-1569103470612-0414542f9355?w=600&q=80&auto=format" },
+  { name: "Ngaparou", image: "https://images.unsplash.com/photo-1570651403445-54c2b0f568c0?w=600&q=80&auto=format" },
+  { name: "Popenguine", image: "https://images.unsplash.com/photo-1644772019005-5dc8e8ad66b7?w=600&q=80&auto=format" },
+  { name: "Saint-Louis", image: "https://images.unsplash.com/photo-1590232071814-92dcbf0ed8cd?w=600&q=80&auto=format" },
+  { name: "Cap Skirring", image: "https://images.unsplash.com/photo-1588262830598-726eaaed0b63?w=600&q=80&auto=format" },
 ];
 
 const DESTINATION_CITIES = DESTINATIONS.map((d) => d.name);
