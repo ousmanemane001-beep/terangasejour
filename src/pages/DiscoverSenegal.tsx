@@ -22,14 +22,15 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "île de gorée": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg/1040px-Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg",
   "gorée": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg/1040px-Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg",
   "goree": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg/1040px-Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg",
-  "fort d'estrées": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg/1040px-Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg",
-  "fort d'estrees": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg/1040px-Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg",
+  "fort d'estrées": "/images/destinations/fort-estrees-1.png",
+  "fort d'estrees": "/images/destinations/fort-estrees-2.png",
+  "fort d estrees": "/images/destinations/fort-estrees-3.png",
   // Saint-Louis
   "île saint-louis": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
   "saint-louis": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
   "saint louis": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
-  "fort de podor": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
-  "podor": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
+  "fort de podor": "/images/destinations/fort-podor.png",
+  "podor": "/images/destinations/fort-podor.png",
   // Touba
   "grande mosquée de touba": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Touba.jpg/1280px-Touba.jpg",
   "grande mosquee de touba": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Touba.jpg/1280px-Touba.jpg",
@@ -41,13 +42,17 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "lac rose": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Lac_Rose_in_Senegal.jpg/1280px-Lac_Rose_in_Senegal.jpg",
   "lac retba": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Lac_Rose_in_Senegal.jpg/1280px-Lac_Rose_in_Senegal.jpg",
   // Lompoul
-  "désert de lompoul": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/2017-06_Lompoul_Desert_4.jpg/1280px-2017-06_Lompoul_Desert_4.jpg",
-  "lompoul": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/2017-06_Lompoul_Desert_4.jpg/1280px-2017-06_Lompoul_Desert_4.jpg",
+  "désert de lompoul": "/images/destinations/lompoul-1.png",
+  "lompoul": "/images/destinations/lompoul-2.png",
+  "dunes de lompoul": "/images/destinations/lompoul-3.png",
   // Somone
   "somone": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
   // Saly / Mbour
   "saly": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Saly_mbour.jpg/800px-Saly_mbour.jpg",
   "mbour": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Saly_mbour.jpg/800px-Saly_mbour.jpg",
+  "cimetière des pêcheurs de mbour": "/images/destinations/cimetiere-mbour-1.png",
+  "cimetiere des pecheurs de mbour": "/images/destinations/cimetiere-mbour-2.png",
+  "cimetière catholique de mbour": "/images/destinations/cimetiere-mbour-3.png",
   // Casamance / Ziguinchor
   "casamance": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
   "ziguinchor": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
