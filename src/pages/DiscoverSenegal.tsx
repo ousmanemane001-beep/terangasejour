@@ -103,24 +103,23 @@ const DiscoverSenegal = () => {
     if (!allDestinations || !listings) return meta;
 
     for (const dest of allDestinations) {
+      // Priority: fixed image map → DB image → nearby listing photo
+      const fixedImg = getFixedImage(dest.name);
+      
       if (!dest.latitude || !dest.longitude) {
-        meta[dest.id] = { nearbyCount: 0, coverImage: dest.image1 || null };
+        meta[dest.id] = { nearbyCount: 0, coverImage: fixedImg || dest.image1 || null };
         continue;
       }
-      const nearby = listings.filter(l =>
-        l.latitude && l.longitude &&
-        haversineKm(dest.latitude!, dest.longitude!, l.latitude, l.longitude) <= PROXIMITY_KM &&
-        l.photos && l.photos.length > 0
-      );
       const nearbyAll = listings.filter(l =>
         l.latitude && l.longitude &&
         haversineKm(dest.latitude!, dest.longitude!, l.latitude, l.longitude) <= PROXIMITY_KM
       );
-      // Pick a random cover image from nearby listings
-      let coverImage: string | null = dest.image1 || null;
-      if (nearby.length > 0) {
-        const randomListing = nearby[Math.floor(Math.random() * nearby.length)];
-        coverImage = randomListing.photos![0];
+      let coverImage = fixedImg || dest.image1 || null;
+      if (!coverImage) {
+        const nearbyWithPhotos = nearbyAll.filter(l => l.photos && l.photos.length > 0);
+        if (nearbyWithPhotos.length > 0) {
+          coverImage = nearbyWithPhotos[0].photos![0];
+        }
       }
       meta[dest.id] = { nearbyCount: nearbyAll.length, coverImage };
     }
