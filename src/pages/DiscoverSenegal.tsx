@@ -34,9 +34,9 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "grande mosquée de touba": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Touba.jpg/1280px-Touba.jpg",
   "grande mosquee de touba": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Touba.jpg/1280px-Touba.jpg",
   "touba": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Touba.jpg/1280px-Touba.jpg",
-  "cathédrale du souvenir africain": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Touba.jpg/1280px-Touba.jpg",
-  "cathedrale du souvenir africain": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Touba.jpg/1280px-Touba.jpg",
-  "cathédrale": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Touba.jpg/1280px-Touba.jpg",
+  "cathédrale du souvenir africain": "/images/destinations/cathedrale-souvenir.png",
+  "cathedrale du souvenir africain": "/images/destinations/cathedrale-souvenir.png",
+  "cathédrale": "/images/destinations/cathedrale-souvenir.png",
   // Lac Rose
   "lac rose": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Lac_Rose_in_Senegal.jpg/1280px-Lac_Rose_in_Senegal.jpg",
   "lac retba": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Lac_Rose_in_Senegal.jpg/1280px-Lac_Rose_in_Senegal.jpg",
