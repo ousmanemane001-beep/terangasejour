@@ -85,8 +85,8 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "cases a impluvium": "/images/destinations/cases-impluvium.png",
   "impluvium": "/images/destinations/cases-impluvium.png",
   // Autres
-  "centre culturel blaise senghor": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
-  "blaise senghor": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
+  "centre culturel blaise senghor": "/images/destinations/centre-blaise-senghor.png",
+  "blaise senghor": "/images/destinations/centre-blaise-senghor.png",
   "fathala": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
   "abéné": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
   "abene": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
