@@ -11,6 +11,69 @@ import { MapPin, Search, ChevronRight, Star, Users, BedDouble, Home } from "luci
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+// Fixed high-quality Unsplash images mapped by destination name (lowercase)
+const DESTINATION_IMAGES: Record<string, string> = {
+  "dakar": "https://images.unsplash.com/photo-1590080875515-8b4c3a6d3f0f?w=800&q=80&auto=format",
+  "cap skirring": "https://images.unsplash.com/photo-1583244532610-7a1e9f1a2d2b?w=800&q=80&auto=format",
+  "abéné": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80&auto=format",
+  "abene": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80&auto=format",
+  "bandafassi": "https://images.unsplash.com/photo-1543248939-ff40856f65d4?w=800&q=80&auto=format",
+  "bignona": "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=800&q=80&auto=format",
+  "diembering": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80&auto=format",
+  "djiffer": "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80&auto=format",
+  "dionewar": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80&auto=format",
+  "fatick": "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80&auto=format",
+  "foundiougne": "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80&auto=format",
+  "joal-fadiouth": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=80&auto=format",
+  "joal": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=80&auto=format",
+  "fadiouth": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=80&auto=format",
+  "kafountine": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80&auto=format",
+  "gandiol": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80&auto=format",
+  "dindefelo": "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80&auto=format",
+  "sine saloum": "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80&auto=format",
+  "delta du saloum": "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80&auto=format",
+  "saloum": "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80&auto=format",
+  "kedougou": "https://images.unsplash.com/photo-1543248939-ff40856f65d4?w=800&q=80&auto=format",
+  "kédougou": "https://images.unsplash.com/photo-1543248939-ff40856f65d4?w=800&q=80&auto=format",
+  "fathala": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=80&auto=format",
+  "casamance": "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&q=80&auto=format",
+  "ziguinchor": "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&q=80&auto=format",
+  "saint-louis": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80&auto=format",
+  "saint louis": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80&auto=format",
+  "saly": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80&auto=format",
+  "mbour": "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=800&q=80&auto=format",
+  "somone": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80&auto=format",
+  "ngaparou": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80&auto=format",
+  "popenguine": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=80&auto=format",
+  "gorée": "https://images.unsplash.com/photo-1590080875515-8b4c3a6d3f0f?w=800&q=80&auto=format",
+  "goree": "https://images.unsplash.com/photo-1590080875515-8b4c3a6d3f0f?w=800&q=80&auto=format",
+  "île de gorée": "https://images.unsplash.com/photo-1590080875515-8b4c3a6d3f0f?w=800&q=80&auto=format",
+  "lac rose": "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80&auto=format",
+  "lac retba": "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80&auto=format",
+  "ngor": "https://images.unsplash.com/photo-1590080875515-8b4c3a6d3f0f?w=800&q=80&auto=format",
+  "almadies": "https://images.unsplash.com/photo-1590080875515-8b4c3a6d3f0f?w=800&q=80&auto=format",
+  "toubab dialaw": "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80&auto=format",
+  "palmarin": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80&auto=format",
+  "nianing": "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=800&q=80&auto=format",
+  "toubacouta": "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&q=80&auto=format",
+  "oussouye": "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&q=80&auto=format",
+  "tambacounda": "https://images.unsplash.com/photo-1543248939-ff40856f65d4?w=800&q=80&auto=format",
+  "thiès": "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=800&q=80&auto=format",
+  "thies": "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=800&q=80&auto=format",
+  "kaolack": "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80&auto=format",
+  "louga": "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=800&q=80&auto=format",
+  "richard toll": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80&auto=format",
+};
+
+function getFixedImage(name: string): string | null {
+  const lower = name.toLowerCase().trim();
+  if (DESTINATION_IMAGES[lower]) return DESTINATION_IMAGES[lower];
+  for (const [key, url] of Object.entries(DESTINATION_IMAGES)) {
+    if (lower.includes(key) || key.includes(lower)) return url;
+  }
+  return null;
+}
+
 const CATEGORY_INFO: Record<string, { label: string; emoji: string; color: string }> = {
   plage: { label: "Plages", emoji: "🏖️", color: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" },
   ville: { label: "Villes", emoji: "🏙️", color: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" },
