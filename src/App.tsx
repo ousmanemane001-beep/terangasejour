@@ -65,6 +65,8 @@ const App = () => (
               <Route path="/admin/verification" element={<AdminVerification />} />
               <Route path="/admin" element={<AdminPanel />} />
               <Route path="/messages" element={<Messages />} />
+              <Route path="/cgu" element={<CGU />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
