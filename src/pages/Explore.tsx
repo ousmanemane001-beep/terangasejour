@@ -91,10 +91,16 @@ const Explore = () => {
     // Sort by distance if available
     if (hasDestCoords) {
       results.sort((a, b) => (a.distanceKm ?? 999) - (b.distanceKm ?? 999));
+    } else if (sortBy === "price_asc") {
+      results.sort((a, b) => a.listing.price_per_night - b.listing.price_per_night);
+    } else if (sortBy === "price_desc") {
+      results.sort((a, b) => b.listing.price_per_night - a.listing.price_per_night);
+    } else if (sortBy === "newest") {
+      results.sort((a, b) => new Date(b.listing.created_at).getTime() - new Date(a.listing.created_at).getTime());
     }
 
     return results;
-  }, [listingsWithDistance, destination, priceRange, bedroomFilter, guestFilter, selectedTypes, hasDestCoords]);
+  }, [listingsWithDistance, destination, priceRange, bedroomFilter, guestFilter, selectedTypes, hasDestCoords, sortBy]);
 
   const filteredProperties = useMemo(() => {
     return properties.filter((p) => {
