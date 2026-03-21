@@ -608,6 +608,27 @@ export type Database = {
         Returns: string
       }
       expire_pending_bookings: { Args: never; Returns: undefined }
+      get_host_bookings: {
+        Args: { _host_user_id: string }
+        Returns: {
+          check_in: string
+          check_out: string
+          created_at: string
+          guest_id: string
+          guest_name: string
+          guests: number
+          id: string
+          listing_id: string
+          nights: number
+          payment_method: string
+          payment_status: string
+          price_per_night: number
+          service_fee: number
+          status: string
+          total_price: number
+          updated_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
