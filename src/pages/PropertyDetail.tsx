@@ -76,6 +76,7 @@ const PropertyDetail = () => {
         reviewCount: staticProperty.reviewCount, isDB: false, verified: false,
         latitude: null as number | null, longitude: null as number | null,
         address: null as string | null, city: null as string | null,
+        cancellationPolicy: "flexible",
       }
     : null;
 
