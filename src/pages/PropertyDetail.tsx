@@ -63,6 +63,7 @@ const PropertyDetail = () => {
         rating: dbRating?.avg ?? null, reviewCount: dbRating?.count ?? null, isDB: true, verified: dbListing.verified,
         latitude: dbListing.latitude, longitude: dbListing.longitude,
         address: dbListing.address, city: dbListing.city,
+        cancellationPolicy: (dbListing as any).cancellation_policy || "flexible",
       }
     : staticProperty
     ? {
