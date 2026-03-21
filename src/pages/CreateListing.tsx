@@ -647,7 +647,7 @@ const CreateListing = () => {
               <ChevronLeft className="w-4 h-4" />
               Précédent
             </Button>
-            {activeStep < totalSteps ? (
+            {!canPublishNow ? (
               <Button
                 className="rounded-full bg-primary text-primary-foreground gap-1"
                 onClick={() => setStep((s) => Math.min(totalSteps, Math.min(s, totalSteps) + 1))}
