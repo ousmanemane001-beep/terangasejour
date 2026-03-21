@@ -5,6 +5,7 @@ import ReviewSection from "@/components/ReviewSection";
 import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import PropertyMap from "@/components/PropertyMap";
+import PhotoLightbox from "@/components/PhotoLightbox";
 import { motion } from "framer-motion";
 import { useListingRating } from "@/hooks/useReviews";
 import { useParams, Link, useNavigate } from "react-router-dom";
@@ -18,8 +19,9 @@ import {
   Star, MapPin, Heart, Share2, Bed, Bath, Users,
   Wifi, Car, AirVent, ChefHat, Waves, ArrowLeft, Loader2,
   Tv, Lock, Flower2, ShieldCheck, MessageCircle, CheckCircle, AlertTriangle,
+  Eye, Clock, ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 const amenityMap: Record<string, { icon: typeof Wifi; label: string }> = {
   wifi: { icon: Wifi, label: "Wi-Fi" },
