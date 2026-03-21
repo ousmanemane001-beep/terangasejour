@@ -63,11 +63,11 @@ const Messages = () => {
     queryFn: async () => {
       if (participantIds.length === 0) return {};
       const { data } = await supabase
-        .from("profiles")
+        .from("safe_profiles" as any)
         .select("id, first_name, last_name")
         .in("id", participantIds);
       const map: Record<string, { first_name: string | null; last_name: string | null }> = {};
-      data?.forEach((p) => { map[p.id] = p; });
+      data?.forEach((p: any) => { map[p.id] = p; });
       return map;
     },
     enabled: participantIds.length > 0,
