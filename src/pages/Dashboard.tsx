@@ -225,7 +225,7 @@ const Dashboard = () => {
                   {ownerBookings && ownerBookings.length > 0 ? (
                     <div className="space-y-3">
                       {ownerBookings.slice(0, 5).map((b) => (
-                        <div key={b.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/50 cursor-pointer hover:bg-muted transition-colors" onClick={() => navigate("/dashboard/reservations")}>
+                        <div key={b.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/50 cursor-pointer hover:bg-muted transition-colors" onClick={() => navigate("/dashboard/bookings")}>
                           <div>
                             <p className="font-medium text-foreground text-sm">
                               {format(new Date(b.check_in), "d MMM", { locale: fr })} → {format(new Date(b.check_out), "d MMM", { locale: fr })}
