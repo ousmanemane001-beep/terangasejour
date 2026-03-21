@@ -32,9 +32,9 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "fort de podor": "/images/destinations/fort-podor.png",
   "podor": "/images/destinations/fort-podor.png",
   // Touba
-  "grande mosquée de touba": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Touba.jpg/1280px-Touba.jpg",
-  "grande mosquee de touba": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Touba.jpg/1280px-Touba.jpg",
-  "touba": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Touba.jpg/1280px-Touba.jpg",
+  "grande mosquée de touba": "/images/destinations/mosquee-touba.png",
+  "grande mosquee de touba": "/images/destinations/mosquee-touba.png",
+  "touba": "/images/destinations/mosquee-touba.png",
   "cathédrale du souvenir africain": "/images/destinations/cathedrale-souvenir.png",
   "cathedrale du souvenir africain": "/images/destinations/cathedrale-souvenir.png",
   "cathédrale": "/images/destinations/cathedrale-souvenir.png",
