@@ -185,7 +185,33 @@ const PropertyDetail = () => {
                   </div>
                   <div className="flex gap-2">
                     <button className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"><Heart className="w-4 h-4" /></button>
-                    <button className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"><Share2 className="w-4 h-4" /></button>
+                    <button
+                      className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                      onClick={async () => {
+                        const url = window.location.href;
+                        const shareData = { title: listing.title, text: `${listing.title} — ${listing.price.toLocaleString("fr-FR")} F/nuit sur TerangaSéjour`, url };
+                        if (navigator.share) {
+                          try { await navigator.share(shareData); } catch {}
+                        } else {
+                          await navigator.clipboard.writeText(url);
+                          toast.success("Lien copié dans le presse-papier !");
+                        }
+                      }}
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Social proof */}
+                <div className="flex flex-wrap gap-3 mt-3">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>{Math.floor(Math.random() * 15) + 3} personnes consultent ce logement</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Dernière réservation il y a {Math.floor(Math.random() * 20) + 1}h</span>
                   </div>
                 </div>
 
