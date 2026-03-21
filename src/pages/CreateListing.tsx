@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
+import CalendarStep from "@/components/publish/CalendarStep";
+import { format } from "date-fns";
 import {
   MapPin, DollarSign, Bed, Bath, Users,
   ChevronLeft, ChevronRight, Wifi, Car, Waves, Wind,
@@ -47,18 +49,45 @@ const rulesList = [
   "Arrivée autonome (serrure connectée)",
 ];
 
-const bookingModes = [
-  { value: "instant", label: "Réservation instantanée", icon: "⚡", desc: "Les voyageurs réservent et paient directement." },
-  { value: "request", label: "Demande de disponibilité", icon: "📩", desc: "Les voyageurs demandent d'abord, vous approuvez." },
+const bookingModes: Array<{
+  value: "instant" | "request";
+  label: string;
+  icon: string;
+  desc: string;
+}> = [
+  {
+    value: "instant",
+    label: "Toujours disponible",
+    icon: "🟢",
+    desc: "Le logement reste réservable en continu, sans validation manuelle.",
+  },
+  {
+    value: "request",
+    label: "Disponible sur demande",
+    icon: "📩",
+    desc: "Le voyageur envoie une demande et vous choisissez ensuite le type de disponibilité.",
+  },
 ];
 
-const availabilityModes = [
-  { value: "always", label: "Toujours disponible", icon: "🟢", desc: "Disponible toute l'année sauf dates réservées." },
-  { value: "calendar", label: "Calendrier personnalisé", icon: "📅", desc: "Vous définissez les dates disponibles manuellement." },
-  { value: "request_only", label: "Sur demande uniquement", icon: "📞", desc: "Les voyageurs doivent demander la disponibilité." },
+const availabilityModes: Array<{
+  value: "contact" | "calendar";
+  label: string;
+  icon: string;
+  desc: string;
+}> = [
+  {
+    value: "contact",
+    label: "Me contacter pour demander disponibilité",
+    icon: "📞",
+    desc: "Les voyageurs doivent vous écrire pour vérifier les dates.",
+  },
+  {
+    value: "calendar",
+    label: "Calendrier personnalisé",
+    icon: "📅",
+    desc: "Vous définissez les périodes occupées pour afficher vos disponibilités réelles.",
+  },
 ];
-
-const TOTAL_STEPS = 5;
 
 const CreateListing = () => {
   const { user, isHost } = useAuth();
@@ -90,9 +119,10 @@ const CreateListing = () => {
   const [monthDiscount, setMonthDiscount] = useState("");
   const [selectedRules, setSelectedRules] = useState<string[]>([]);
 
-  // Step 5 - Booking settings
-  const [bookingMode, setBookingMode] = useState("instant");
-  const [availabilityMode, setAvailabilityMode] = useState("always");
+  // Step 5 + 6
+  const [bookingMode, setBookingMode] = useState<"instant" | "request">("instant");
+  const [availabilityMode, setAvailabilityMode] = useState<"contact" | "calendar">("contact");
+  const [blockedDates, setBlockedDates] = useState<Date[]>([]);
 
   // UI state
   const [step, setStep] = useState(1);
@@ -113,14 +143,25 @@ const CreateListing = () => {
     );
   };
 
-  const progress = (step / TOTAL_STEPS) * 100;
+  const totalSteps = bookingMode === "request" ? 6 : 5;
+  const activeStep = Math.min(step, totalSteps);
+  const progress = (activeStep / totalSteps) * 100;
+
+  const handleBookingModeChange = (mode: "instant" | "request") => {
+    setBookingMode(mode);
+    if (mode === "instant") {
+      setAvailabilityMode("contact");
+      setBlockedDates([]);
+      if (step > 5) setStep(5);
+    }
+  };
 
   const canGoNext = useCallback(() => {
-    if (step === 1) return !!title.trim() && !!description.trim() && !!location.trim();
-    if (step === 3) return photos.length >= 5;
-    if (step === 4) return !!price && parseInt(price) > 0;
+    if (activeStep === 1) return !!title.trim() && !!description.trim() && !!location.trim();
+    if (activeStep === 3) return photos.length >= 5;
+    if (activeStep === 4) return !!price && parseInt(price) > 0;
     return true;
-  }, [step, title, description, location, photos.length, price]);
+  }, [activeStep, title, description, location, photos.length, price]);
 
   // Redirect non-hosts to become-host page
   if (!isHost && user) {
@@ -165,6 +206,12 @@ const CreateListing = () => {
         photoUrls.push(urlData.publicUrl);
       }
 
+      const dbAvailabilityMode = bookingMode === "instant"
+        ? "always"
+        : availabilityMode === "calendar"
+          ? "calendar"
+          : "request";
+
       // Insert listing with pending_approval status
       const { data, error: insertError } = await supabase
         .from("listings")
@@ -185,12 +232,21 @@ const CreateListing = () => {
           photos: photoUrls,
           status: "pending_approval",
           booking_mode: bookingMode,
-          availability_mode: availabilityMode,
+          availability_mode: dbAvailabilityMode,
         } as any)
         .select("id")
         .single();
 
       if (insertError) throw insertError;
+
+      if (bookingMode === "request" && availabilityMode === "calendar" && blockedDates.length > 0) {
+        const blockedRows = blockedDates.map((d) => ({
+          listing_id: data.id,
+          date: format(d, "yyyy-MM-dd"),
+        }));
+        const { error: blockedInsertError } = await supabase.from("blocked_dates").insert(blockedRows as any);
+        if (blockedInsertError) throw blockedInsertError;
+      }
 
       setPublishedId(data.id);
       queryClient.invalidateQueries({ queryKey: ["listings"] });
@@ -282,14 +338,14 @@ const CreateListing = () => {
                   Retour
                 </Button>
               </Link>
-              <span className="text-sm text-muted-foreground">Étape {step} sur {TOTAL_STEPS}</span>
+              <span className="text-sm text-muted-foreground">Étape {activeStep} sur {totalSteps}</span>
             </div>
             <Progress value={progress} className="h-1.5" />
           </div>
 
           <AnimatePresence mode="wait">
             {/* Step 1: Type & Basic Info */}
-            {step === 1 && (
+            {activeStep === 1 && (
               <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
                   Quel type de logement proposez-vous ?
@@ -357,7 +413,7 @@ const CreateListing = () => {
             )}
 
             {/* Step 2: Details & Amenities */}
-            {step === 2 && (
+            {activeStep === 2 && (
               <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
                   Détails de votre logement
@@ -413,7 +469,7 @@ const CreateListing = () => {
             )}
 
             {/* Step 3: Photos */}
-            {step === 3 && (
+            {activeStep === 3 && (
               <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
                   Ajoutez vos photos
@@ -430,7 +486,7 @@ const CreateListing = () => {
             )}
 
             {/* Step 4: Pricing & Rules */}
-            {step === 4 && (
+            {activeStep === 4 && (
               <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
                   Fixez votre tarif
@@ -481,22 +537,22 @@ const CreateListing = () => {
               </motion.div>
             )}
 
-            {/* Step 5: Booking Settings */}
-            {step === 5 && (
+            {/* Step 5: Booking Mode */}
+            {activeStep === 5 && (
               <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
-                  Paramètres de réservation
+                  Mode de réservation
                 </h1>
-                <p className="text-muted-foreground mb-8">Choisissez comment les voyageurs peuvent réserver votre logement.</p>
+                <p className="text-muted-foreground mb-8">Choisissez entre disponibilité continue ou gestion sur demande.</p>
 
-                <Card className="border-none shadow-[var(--shadow-card)] mb-8">
+                <Card className="border-none shadow-[var(--shadow-card)]">
                   <CardContent className="p-6">
-                    <h3 className="font-display font-semibold text-foreground mb-4">Mode de réservation</h3>
+                    <h3 className="font-display font-semibold text-foreground mb-4">Choix de l'hôte</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {bookingModes.map((mode) => (
                         <div
                           key={mode.value}
-                          onClick={() => setBookingMode(mode.value)}
+                          onClick={() => handleBookingModeChange(mode.value)}
                           className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                             bookingMode === mode.value ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"
                           }`}
@@ -507,17 +563,42 @@ const CreateListing = () => {
                         </div>
                       ))}
                     </div>
+
+                    {bookingMode === "instant" && (
+                      <div className="mt-5 rounded-xl bg-accent/10 border border-accent/20 p-4 text-sm text-foreground">
+                        ✅ Avec <strong>Toujours disponible</strong>, vous publierez directement après cette étape (pas d'étape disponibilité).
+                      </div>
+                    )}
+
+                    {bookingMode === "request" && (
+                      <div className="mt-5 rounded-xl bg-accent/10 border border-accent/20 p-4 text-sm text-foreground">
+                        📌 Étape suivante : choisissez entre <strong>Me contacter</strong> ou <strong>Calendrier personnalisé</strong>.
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
+              </motion.div>
+            )}
 
-                <Card className="border-none shadow-[var(--shadow-card)]">
+            {/* Step 6: Availability (only when booking mode is request) */}
+            {activeStep === 6 && bookingMode === "request" && (
+              <motion.div key="step6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
+                  Disponibilité
+                </h1>
+                <p className="text-muted-foreground mb-8">Définissez comment le voyageur voit vos dates avant réservation.</p>
+
+                <Card className="border-none shadow-[var(--shadow-card)] mb-8">
                   <CardContent className="p-6">
-                    <h3 className="font-display font-semibold text-foreground mb-4">Disponibilité</h3>
+                    <h3 className="font-display font-semibold text-foreground mb-4">Mode de disponibilité</h3>
                     <div className="grid grid-cols-1 gap-4">
                       {availabilityModes.map((mode) => (
                         <div
                           key={mode.value}
-                          onClick={() => setAvailabilityMode(mode.value)}
+                          onClick={() => {
+                            setAvailabilityMode(mode.value);
+                            if (mode.value === "contact") setBlockedDates([]);
+                          }}
                           className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                             availabilityMode === mode.value ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"
                           }`}
@@ -534,6 +615,13 @@ const CreateListing = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {availabilityMode === "calendar" && (
+                  <CalendarStep
+                    blockedDates={blockedDates}
+                    onChangeBlockedDates={setBlockedDates}
+                  />
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -543,16 +631,16 @@ const CreateListing = () => {
             <Button
               variant="outline"
               className="rounded-full gap-1"
-              onClick={() => setStep((s) => Math.max(1, s - 1))}
-              disabled={step === 1 || loading}
+              onClick={() => setStep((s) => Math.max(1, Math.min(s, totalSteps) - 1))}
+              disabled={activeStep === 1 || loading}
             >
               <ChevronLeft className="w-4 h-4" />
               Précédent
             </Button>
-            {step < TOTAL_STEPS ? (
+            {activeStep < totalSteps ? (
               <Button
                 className="rounded-full bg-primary text-primary-foreground gap-1"
-                onClick={() => setStep((s) => Math.min(TOTAL_STEPS, s + 1))}
+                onClick={() => setStep((s) => Math.min(totalSteps, Math.min(s, totalSteps) + 1))}
                 disabled={!canGoNext()}
               >
                 Suivant
