@@ -1,26 +1,23 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Check, X, Clock, Users, CalendarDays, MapPin, Flame,
-  AlertTriangle, Loader2, Inbox, CheckCircle2, XCircle, CreditCard, MessageCircle, ChevronDown, ChevronUp,
+  AlertTriangle, Loader2, Inbox, CheckCircle2, XCircle, CreditCard, MessageCircle,
+  ChevronDown, ChevronUp, TrendingUp,
 } from "lucide-react";
-import { format, differenceInHours, differenceInMinutes, isPast } from "date-fns";
+import { format, differenceInHours, differenceInMinutes, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useBookingRequests, useRespondToRequest, type BookingRequest } from "@/hooks/useAdmin";
 import { useOwnerListings, useOwnerBookings, type OwnerBooking } from "@/hooks/useOwnerData";
-import CountdownTimer from "@/components/booking/CountdownTimer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-const EXPIRY_HOURS = 24;
 
 interface GuestProfile {
   first_name: string | null;
@@ -44,21 +41,16 @@ function useGuestProfiles(guestIds: string[]) {
   });
 }
 
-// For requests: expires 24h after creation. For bookings: use expires_at field (null = no expiry).
-function getTimeLeft(item: { type?: string; created_at: string; expires_at?: string | null }) {
-  let expiresAt: Date;
-  if (item.type === "booking") {
-    if (!item.expires_at) return { expired: false, text: "", hours: 99, minutes: 0, urgent: false, hasTimer: false };
-    expiresAt = new Date(item.expires_at);
-  } else {
-    expiresAt = new Date(new Date(item.created_at).getTime() + EXPIRY_HOURS * 60 * 60 * 1000);
-  }
-  const now = new Date();
-  if (isPast(expiresAt)) return { expired: true, text: "Expirée", hours: 0, minutes: 0, urgent: false, hasTimer: true };
-  const hours = differenceInHours(expiresAt, now);
-  const minutes = differenceInMinutes(expiresAt, now) % 60;
-  const urgent = hours < 2;
-  return { expired: false, text: `${hours}h ${minutes}min`, hours, minutes, urgent, hasTimer: true };
+// ─── Urgency helpers (no expiration, just visual urgency) ───
+function getUrgency(createdAt: string): { level: "normal" | "warning" | "urgent"; hoursAgo: number } {
+  const hours = differenceInHours(new Date(), new Date(createdAt));
+  if (hours >= 12) return { level: "urgent", hoursAgo: hours };
+  if (hours >= 6) return { level: "warning", hoursAgo: hours };
+  return { level: "normal", hoursAgo: hours };
+}
+
+function getTimeSince(createdAt: string): string {
+  return formatDistanceToNow(new Date(createdAt), { addSuffix: true, locale: fr });
 }
 
 function getGuestName(id: string, profiles: Record<string, GuestProfile> | undefined) {
@@ -68,6 +60,11 @@ function getGuestName(id: string, profiles: Record<string, GuestProfile> | undef
 
 function getInitials(name: string) {
   return name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "V";
+}
+
+// ─── Check date overlap ───
+function datesOverlap(a: { check_in: string; check_out: string }, b: { check_in: string; check_out: string }) {
+  return new Date(a.check_in) < new Date(b.check_out) && new Date(a.check_out) > new Date(b.check_in);
 }
 
 // ─── Unified Item type ───
@@ -81,7 +78,7 @@ interface UnifiedBooking {
   guests: number;
   nights: number;
   total_price: number;
-  status: string; // pending | confirmed | cancelled | expired | approved | rejected
+  status: string;
   created_at: string;
   expires_at?: string | null;
   message?: string | null;
@@ -137,7 +134,6 @@ const statusBadgeConfig: Record<string, { label: string; color: string }> = {
   confirmed: { label: "Confirmée", color: "bg-green-500/10 text-green-700 border-green-500/20" },
   cancelled: { label: "Refusée", color: "bg-destructive/10 text-destructive border-destructive/20" },
   declined: { label: "Refusée", color: "bg-destructive/10 text-destructive border-destructive/20" },
-  expired: { label: "Expirée", color: "bg-muted text-muted-foreground border-border" },
 };
 
 // ─── Unified Booking Card ───
@@ -145,30 +141,27 @@ function UnifiedBookingCard({
   item,
   listingTitle,
   guestName,
-  profiles,
   onAccept,
   onDecline,
   loading,
+  isHighDemand,
 }: {
   item: UnifiedBooking;
   listingTitle: string;
   guestName: string;
-  profiles: Record<string, GuestProfile> | undefined;
   onAccept: () => void;
   onDecline: (reason: string) => void;
   loading: boolean;
+  isHighDemand?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [showDeclineForm, setShowDeclineForm] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
 
-  // Check if actually expired
-  const isPendingStatus = item.status === "pending";
-  const timeLeft = isPendingStatus ? getTimeLeft(item) : null;
-  const isExpired = timeLeft?.expired;
-  const effectiveStatus = isExpired ? "expired" : item.status;
-  const badge = statusBadgeConfig[effectiveStatus] || statusBadgeConfig.pending;
-  const canAct = isPendingStatus && !isExpired;
+  const isPending = item.status === "pending";
+  const badge = statusBadgeConfig[item.status] || statusBadgeConfig.pending;
+  const urgency = isPending ? getUrgency(item.created_at) : null;
+  const timeSince = getTimeSince(item.created_at);
 
   return (
     <motion.div
@@ -181,11 +174,12 @@ function UnifiedBookingCard({
       <div
         className={cn(
           "rounded-xl border transition-all cursor-pointer group",
-          canAct
+          isPending
             ? "border-amber-500/30 bg-amber-500/5 hover:border-amber-500/50 hover:shadow-md"
             : "border-border bg-card hover:bg-muted/30",
           expanded && "shadow-sm",
-          timeLeft?.urgent && canAct && "ring-1 ring-destructive/30"
+          urgency?.level === "urgent" && "ring-1 ring-destructive/30 border-destructive/30",
+          urgency?.level === "warning" && "ring-1 ring-amber-500/30"
         )}
       >
         {/* Summary row */}
@@ -200,7 +194,14 @@ function UnifiedBookingCard({
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="font-semibold text-foreground text-sm truncate">{guestName}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-foreground text-sm truncate">{guestName}</p>
+                {isHighDemand && (
+                  <Badge className="text-[9px] h-4 px-1.5 bg-primary/10 text-primary border-primary/20 shrink-0" variant="outline">
+                    <TrendingUp className="w-2.5 h-2.5 mr-0.5" /> Forte demande
+                  </Badge>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {format(new Date(item.check_in), "d MMM", { locale: fr })} → {format(new Date(item.check_out), "d MMM", { locale: fr })}
                 {" · "}{item.nights} nuit{item.nights > 1 ? "s" : ""} · {item.guests} voyageur{item.guests > 1 ? "s" : ""}
@@ -221,11 +222,16 @@ function UnifiedBookingCard({
                 </p>
               )}
             </div>
-            {canAct && (
+            {isPending && (
               <div className="flex items-center gap-2">
-                {timeLeft?.urgent && (
+                {urgency?.level === "urgent" && (
                   <Badge variant="destructive" className="text-[10px] gap-1 animate-pulse shrink-0">
                     <Flame className="w-3 h-3" /> Urgent
+                  </Badge>
+                )}
+                {urgency?.level === "warning" && (
+                  <Badge variant="outline" className="text-[10px] gap-1 shrink-0 bg-amber-500/10 text-amber-700 border-amber-500/20">
+                    <AlertTriangle className="w-3 h-3" /> Action requise
                   </Badge>
                 )}
                 {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
@@ -234,17 +240,19 @@ function UnifiedBookingCard({
           </div>
         </button>
 
-        {/* Timer bar for pending */}
-        {canAct && timeLeft && timeLeft.hasTimer && (
+        {/* Time since request */}
+        {isPending && (
           <div className="px-4 pb-2">
             <div className={cn(
               "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full w-fit",
-              timeLeft.urgent
+              urgency?.level === "urgent"
                 ? "bg-destructive/10 text-destructive"
-                : "bg-amber-500/10 text-amber-600"
+                : urgency?.level === "warning"
+                  ? "bg-amber-500/10 text-amber-600"
+                  : "bg-muted text-muted-foreground"
             )}>
               <Clock className="w-3 h-3" />
-              Expire dans {timeLeft.text}
+              Demandé {timeSince}
             </div>
           </div>
         )}
@@ -277,13 +285,8 @@ function UnifiedBookingCard({
                   </p>
                 )}
 
-                {/* Countdown for booking with expires_at */}
-                {item.expires_at && isPendingStatus && (
-                  <CountdownTimer expiresAt={item.expires_at} variant="banner" />
-                )}
-
                 {/* Actions */}
-                {canAct && !showDeclineForm && (
+                {isPending && !showDeclineForm && (
                   <div className="flex gap-2">
                     <Button
                       size="sm"
@@ -307,7 +310,7 @@ function UnifiedBookingCard({
                   </div>
                 )}
 
-                {canAct && showDeclineForm && (
+                {isPending && showDeclineForm && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm font-medium text-destructive">
                       <MessageCircle className="w-4 h-4" />
@@ -355,15 +358,15 @@ function UnifiedBookingCard({
 
 // ─── Swipeable wrapper for mobile ───
 function SwipeableBookingCard({
-  item, listingTitle, guestName, profiles, onAccept, onDecline, loading,
+  item, listingTitle, guestName, onAccept, onDecline, loading, isHighDemand,
 }: {
   item: UnifiedBooking;
   listingTitle: string;
   guestName: string;
-  profiles: Record<string, GuestProfile> | undefined;
   onAccept: () => void;
   onDecline: (reason: string) => void;
   loading: boolean;
+  isHighDemand?: boolean;
 }) {
   const x = useMotionValue(0);
   const bgColor = useTransform(x, [-150, -50, 0, 50, 150], [
@@ -373,7 +376,7 @@ function SwipeableBookingCard({
   const leftIcon = useTransform(x, [-150, -30, 0], [1, 0, 0]);
   const rightIcon = useTransform(x, [0, 30, 150], [0, 0, 1]);
 
-  const canSwipe = item.status === "pending" && !getTimeLeft(item).expired;
+  const canSwipe = item.status === "pending";
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     if (!canSwipe) return;
@@ -387,10 +390,10 @@ function SwipeableBookingCard({
         item={item}
         listingTitle={listingTitle}
         guestName={guestName}
-        profiles={profiles}
         onAccept={onAccept}
         onDecline={onDecline}
         loading={loading}
+        isHighDemand={isHighDemand}
       />
     );
   }
@@ -420,10 +423,10 @@ function SwipeableBookingCard({
           item={item}
           listingTitle={listingTitle}
           guestName={guestName}
-          profiles={profiles}
           onAccept={onAccept}
           onDecline={onDecline}
           loading={loading}
+          isHighDemand={isHighDemand}
         />
       </motion.div>
     </motion.div>
@@ -439,6 +442,7 @@ export default function HostBookingManager() {
   const isMobile = useIsMobile();
   const qc = useQueryClient();
   const [activeFilter, setActiveFilter] = useState<"pending" | "confirmed" | "declined">("pending");
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Real-time subscription
   useEffect(() => {
@@ -465,35 +469,109 @@ export default function HostBookingManager() {
   const guestIds = [...new Set(allItems.map((i) => i.guest_id))];
   const { data: guestProfiles } = useGuestProfiles(guestIds);
 
-  // Filter by status
-  const pendingItems = allItems.filter((i) => {
-    if (i.status !== "pending") return false;
-    const tl = getTimeLeft(i);
-    return !tl.expired;
-  }).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  // Filter by status - NO automatic expiration
+  const pendingItems = allItems
+    .filter((i) => i.status === "pending")
+    .sort((a, b) => {
+      // Sort by urgency: oldest first (most urgent)
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    });
 
   const confirmedItems = allItems.filter((i) => i.status === "confirmed");
+  const declinedItems = allItems.filter((i) =>
+    i.status === "cancelled" || i.status === "expired" || i.status === "declined"
+  );
 
-  const declinedItems = allItems.filter((i) => {
-    if (i.status === "cancelled" || i.status === "expired" || i.status === "declined") return true;
-    if (i.status === "pending") return getTimeLeft(i).expired;
-    return false;
-  });
+  // Detect high-demand dates: dates with 2+ pending bookings for same listing
+  const highDemandIds = new Set<string>();
+  for (let i = 0; i < pendingItems.length; i++) {
+    for (let j = i + 1; j < pendingItems.length; j++) {
+      if (
+        pendingItems[i].listing_id === pendingItems[j].listing_id &&
+        datesOverlap(pendingItems[i], pendingItems[j])
+      ) {
+        highDemandIds.add(pendingItems[i].id);
+        highDemandIds.add(pendingItems[j].id);
+      }
+    }
+  }
 
-  const handleAction = async (item: UnifiedBooking, action: "accept" | "decline", reason?: string) => {
-    if (item.type === "request") {
-      respondToRequest.mutate(
-        { requestId: item.id, status: action === "accept" ? "approved" : "rejected", response: reason },
-        { onSuccess: () => toast.success(action === "accept" ? "Demande acceptée !" : "Demande refusée.") }
-      );
-    } else {
-      const newStatus = action === "accept" ? "confirmed" : "cancelled";
-      const { error } = await supabase.from("bookings").update({
-        status: newStatus, updated_at: new Date().toISOString(),
-      } as any).eq("id", item.id);
-      if (error) { toast.error(error.message); return; }
-      toast.success(action === "accept" ? "Réservation confirmée !" : "Réservation refusée.");
-      qc.invalidateQueries({ queryKey: ["owner-bookings"] });
+  // Accept: confirm booking + auto-decline conflicting pending ones
+  const handleAccept = async (item: UnifiedBooking) => {
+    setActionLoading(true);
+    try {
+      if (item.type === "request") {
+        respondToRequest.mutate(
+          { requestId: item.id, status: "approved" },
+          {
+            onSuccess: async () => {
+              toast.success("Demande acceptée !");
+              // Auto-decline conflicting requests
+              const conflicting = pendingItems.filter(
+                (p) => p.id !== item.id && p.listing_id === item.listing_id && datesOverlap(p, item)
+              );
+              for (const c of conflicting) {
+                if (c.type === "request") {
+                  respondToRequest.mutate({ requestId: c.id, status: "rejected", response: "Dates réservées par un autre voyageur" });
+                } else {
+                  await supabase.from("bookings").update({ status: "cancelled", updated_at: new Date().toISOString() } as any).eq("id", c.id);
+                }
+              }
+              if (conflicting.length > 0) {
+                toast.info(`${conflicting.length} demande${conflicting.length > 1 ? "s" : ""} conflictuelle${conflicting.length > 1 ? "s" : ""} automatiquement refusée${conflicting.length > 1 ? "s" : ""}`);
+              }
+              qc.invalidateQueries({ queryKey: ["owner-bookings"] });
+              qc.invalidateQueries({ queryKey: ["booking-requests"] });
+            },
+          }
+        );
+      } else {
+        const { error } = await supabase.from("bookings").update({
+          status: "confirmed", updated_at: new Date().toISOString(),
+        } as any).eq("id", item.id);
+        if (error) { toast.error(error.message); return; }
+        toast.success("Réservation confirmée !");
+
+        // Auto-decline conflicting pending bookings
+        const conflicting = pendingItems.filter(
+          (p) => p.id !== item.id && p.listing_id === item.listing_id && datesOverlap(p, item)
+        );
+        for (const c of conflicting) {
+          if (c.type === "request") {
+            respondToRequest.mutate({ requestId: c.id, status: "rejected", response: "Dates réservées par un autre voyageur" });
+          } else {
+            await supabase.from("bookings").update({ status: "cancelled", updated_at: new Date().toISOString() } as any).eq("id", c.id);
+          }
+        }
+        if (conflicting.length > 0) {
+          toast.info(`${conflicting.length} réservation${conflicting.length > 1 ? "s" : ""} conflictuelle${conflicting.length > 1 ? "s" : ""} automatiquement refusée${conflicting.length > 1 ? "s" : ""}`);
+        }
+        qc.invalidateQueries({ queryKey: ["owner-bookings"] });
+        qc.invalidateQueries({ queryKey: ["booking-requests"] });
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDecline = async (item: UnifiedBooking, reason: string) => {
+    setActionLoading(true);
+    try {
+      if (item.type === "request") {
+        respondToRequest.mutate(
+          { requestId: item.id, status: "rejected", response: reason },
+          { onSuccess: () => toast.success("Demande refusée.") }
+        );
+      } else {
+        const { error } = await supabase.from("bookings").update({
+          status: "cancelled", updated_at: new Date().toISOString(),
+        } as any).eq("id", item.id);
+        if (error) { toast.error(error.message); return; }
+        toast.success("Réservation refusée.");
+        qc.invalidateQueries({ queryKey: ["owner-bookings"] });
+      }
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -508,9 +586,9 @@ export default function HostBookingManager() {
   }
 
   const filters = [
-    { key: "pending" as const, label: "En attente", count: pendingItems.length, icon: Clock, color: "bg-amber-500/10 text-amber-600" },
-    { key: "confirmed" as const, label: "Confirmées", count: confirmedItems.length, icon: CheckCircle2, color: "bg-green-500/10 text-green-600" },
-    { key: "declined" as const, label: "Refusées / Expirées", count: declinedItems.length, icon: XCircle, color: "bg-destructive/10 text-destructive" },
+    { key: "pending" as const, label: "En attente", count: pendingItems.length, icon: Clock },
+    { key: "confirmed" as const, label: "Confirmées", count: confirmedItems.length, icon: CheckCircle2 },
+    { key: "declined" as const, label: "Refusées", count: declinedItems.length, icon: XCircle },
   ];
 
   const currentItems = activeFilter === "pending" ? pendingItems : activeFilter === "confirmed" ? confirmedItems : declinedItems;
@@ -571,10 +649,10 @@ export default function HostBookingManager() {
                   item={item}
                   listingTitle={listingsMap[item.listing_id] || "Logement"}
                   guestName={getGuestName(item.guest_id, guestProfiles)}
-                  profiles={guestProfiles}
-                  onAccept={() => handleAction(item, "accept")}
-                  onDecline={(reason) => handleAction(item, "decline", reason)}
-                  loading={respondToRequest.isPending}
+                  onAccept={() => handleAccept(item)}
+                  onDecline={(reason) => handleDecline(item, reason)}
+                  loading={actionLoading || respondToRequest.isPending}
+                  isHighDemand={highDemandIds.has(item.id)}
                 />
               ) : (
                 <UnifiedBookingCard
@@ -582,10 +660,10 @@ export default function HostBookingManager() {
                   item={item}
                   listingTitle={listingsMap[item.listing_id] || "Logement"}
                   guestName={getGuestName(item.guest_id, guestProfiles)}
-                  profiles={guestProfiles}
-                  onAccept={() => handleAction(item, "accept")}
-                  onDecline={(reason) => handleAction(item, "decline", reason)}
-                  loading={respondToRequest.isPending}
+                  onAccept={() => handleAccept(item)}
+                  onDecline={(reason) => handleDecline(item, reason)}
+                  loading={actionLoading || respondToRequest.isPending}
+                  isHighDemand={highDemandIds.has(item.id)}
                 />
               )
             )
