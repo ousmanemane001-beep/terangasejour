@@ -1,5 +1,4 @@
-import { useState, useMemo } from "react";
-import { motion } from "framer-motion";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
@@ -7,23 +6,12 @@ import MobileSearchPill from "@/components/MobileSearchPill";
 import ListingCard from "@/components/ListingCard";
 import Footer from "@/components/Footer";
 import OusmaneChatbot from "@/components/OusmaneChatbot";
-import CategoryFilter, { type CategoryKey } from "@/components/CategoryFilter";
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
-import { useIsMobile } from "@/hooks/use-mobile";
 import {
-  Loader2, CreditCard, BadgeCheck, Headphones,
-  Home, Shield, ArrowRight, ShieldX
+  Loader2, Home, Shield, ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-/* ── Trust ── */
-const trustPoints = [
-  { icon: CreditCard, title: "Paiement sécurisé", desc: "Wave, Orange Money et carte bancaire." },
-  { icon: BadgeCheck, title: "Hôtes vérifiés", desc: "Chaque logement est inspecté par notre équipe." },
-  { icon: Headphones, title: "Assistance 24h/24", desc: "Notre équipe locale vous accompagne." },
-  { icon: ShieldX, title: "Zéro arnaque", desc: "Annonces authentiques et vérifiées." },
-];
 
 const COASTAL_CITIES = ["saly", "somone", "mbour", "cap skirring", "gorée", "saint-louis", "ziguinchor"];
 const REGION_CITIES = ["ziguinchor", "tambacounda", "kaolack", "thiès", "kédougou", "fatick", "kolda"];
@@ -31,9 +19,7 @@ const REGION_CITIES = ["ziguinchor", "tambacounda", "kaolack", "thiès", "kédou
 /* ══════════════════════════════════════════════════════════ */
 
 const Index = () => {
-  const { data: dbListings, isLoading } = useListings(12);
-  const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
-  const isMobile = useIsMobile();
+  const { data: dbListings, isLoading } = useListings();
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
