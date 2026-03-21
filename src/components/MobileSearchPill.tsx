@@ -134,19 +134,42 @@ const MobileSearchPill = () => {
         )}
 
         {step === "when" && (
-          <div className="flex flex-col items-center">
-            <CalendarComponent
-              mode="range"
-              selected={dateRange.from ? { from: dateRange.from, to: dateRange.to } : undefined}
-              onSelect={(range) => {
-                setDateRange({ from: range?.from, to: range?.to });
-                if (range?.to) setStep("who");
-              }}
-              numberOfMonths={1}
-              disabled={(date) => date < new Date()}
-              locale={fr}
-              className={cn("p-3 pointer-events-auto")}
-            />
+          <div className="space-y-4">
+            {/* Date labels */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className={cn(
+                "rounded-xl border p-3 text-center transition-colors",
+                !dateRange.from ? "border-primary bg-primary/5" : "border-border"
+              )}>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Arrivée</p>
+                <p className="text-sm font-semibold text-foreground mt-0.5">
+                  {dateRange.from ? format(dateRange.from, "d MMM yyyy", { locale: fr }) : "Choisir"}
+                </p>
+              </div>
+              <div className={cn(
+                "rounded-xl border p-3 text-center transition-colors",
+                dateRange.from && !dateRange.to ? "border-primary bg-primary/5" : "border-border"
+              )}>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Départ</p>
+                <p className="text-sm font-semibold text-foreground mt-0.5">
+                  {dateRange.to ? format(dateRange.to, "d MMM yyyy", { locale: fr }) : "Choisir"}
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <CalendarComponent
+                mode="range"
+                selected={dateRange.from ? { from: dateRange.from, to: dateRange.to } : undefined}
+                onSelect={(range) => {
+                  setDateRange({ from: range?.from, to: range?.to });
+                  if (range?.to) setStep("who");
+                }}
+                numberOfMonths={1}
+                disabled={(date) => date < new Date()}
+                locale={fr}
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </div>
           </div>
         )}
 
