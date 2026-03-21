@@ -299,6 +299,7 @@ const PropertyDetail = () => {
                   maxGuests={listing.guests}
                   bookingMode={dbListing ? (dbListing as any).booking_mode : "instant"}
                   hostId={dbListing?.user_id}
+                  cancellationPolicy={listing.cancellationPolicy}
                 />
               ) : (
                 <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6">
