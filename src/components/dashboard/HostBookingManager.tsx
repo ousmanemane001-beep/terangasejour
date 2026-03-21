@@ -235,7 +235,7 @@ function UnifiedBookingCard({
         </button>
 
         {/* Timer bar for pending */}
-        {canAct && timeLeft && (
+        {canAct && timeLeft && timeLeft.hasTimer && (
           <div className="px-4 pb-2">
             <div className={cn(
               "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full w-fit",
