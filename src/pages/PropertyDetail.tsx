@@ -122,35 +122,43 @@ const PropertyDetail = () => {
           </nav>
 
           {/* Image Gallery */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8 relative">
             {listing.images.length > 1 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 rounded-2xl overflow-hidden">
-                <div className="aspect-[4/3] md:aspect-auto md:row-span-2">
-                  <img src={listing.images[selectedImage]} alt={listing.title} className="w-full h-full object-cover cursor-pointer" loading="lazy" />
+                <div className="aspect-[4/3] md:aspect-auto md:row-span-2 cursor-pointer" onClick={() => { setSelectedImage(0); setLightboxOpen(true); }}>
+                  <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {listing.images.slice(0, 4).map((img, i) => (
-                    <div key={i} className={`aspect-[4/3] cursor-pointer overflow-hidden ${selectedImage === i ? "ring-2 ring-primary rounded-lg" : ""}`} onClick={() => setSelectedImage(i)}>
+                  {listing.images.slice(1, 5).map((img, i) => (
+                    <div key={i} className="aspect-[4/3] cursor-pointer overflow-hidden" onClick={() => { setSelectedImage(i + 1); setLightboxOpen(true); }}>
                       <img src={img} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform" loading="lazy" />
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="rounded-2xl overflow-hidden">
+              <div className="rounded-2xl overflow-hidden cursor-pointer" onClick={() => setLightboxOpen(true)}>
                 <img src={listing.coverImage} alt={listing.title} className="w-full h-64 md:h-96 object-cover" loading="lazy" />
               </div>
             )}
-            {listing.images.length > 4 && (
-              <div className="flex gap-2 mt-2 overflow-x-auto pb-2">
-                {listing.images.map((img, i) => (
-                  <button key={i} className={`w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 ${selectedImage === i ? "border-primary" : "border-transparent"}`} onClick={() => setSelectedImage(i)}>
-                    <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
-                  </button>
-                ))}
-              </div>
+            {listing.images.length > 5 && (
+              <button
+                onClick={() => { setSelectedImage(0); setLightboxOpen(true); }}
+                className="absolute bottom-3 right-3 bg-card/90 backdrop-blur-sm border border-border px-3 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-card transition-colors"
+              >
+                <Eye className="w-3.5 h-3.5 inline mr-1" />
+                Voir les {listing.images.length} photos
+              </button>
             )}
           </motion.div>
+
+          {/* Lightbox */}
+          <PhotoLightbox
+            images={listing.images}
+            initialIndex={selectedImage}
+            open={lightboxOpen}
+            onClose={() => setLightboxOpen(false)}
+          />
 
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
