@@ -311,32 +311,8 @@ const Dashboard = () => {
             </>
           )}
 
-          {isHost && activeTab === "reservations" && (
-            <Card className="border-none shadow-[var(--shadow-card)]">
-              <CardHeader><CardTitle className="font-display text-lg">Réservations reçues</CardTitle></CardHeader>
-              <CardContent>
-                {bookingsLoading ? (
-                  <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-                ) : ownerBookings && ownerBookings.length > 0 ? (
-                  <div className="space-y-4">
-                    {ownerBookings.map((b) => (
-                      <BookingActionCard
-                        key={b.id}
-                        booking={b}
-                        onStatusChange={() => qc.invalidateQueries({ queryKey: ["owner-bookings"] })}
-                      />
-                    ))}
-                  </div>
-                ) : <p className="text-center text-muted-foreground py-8">Aucune réservation reçue.</p>}
-              </CardContent>
-            </Card>
-          )}
-
-          {isHost && activeTab === "requests" && (
-            <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-4">Gestion des demandes</h2>
-              <HostBookingManager />
-            </div>
+          {isHost && activeTab === "bookings" && (
+            <HostBookingManager />
           )}
 
           {isHost && activeTab === "revenue" && (
