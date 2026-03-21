@@ -14,8 +14,10 @@ import { Badge } from "@/components/ui/badge";
 // Verified real images from Wikimedia Commons - actual Senegal locations
 const DESTINATION_IMAGES: Record<string, string> = {
   // Dakar
-  "dakar": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
-  "almadies": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
+  "dakar": "/images/destinations/dakar-1.png",
+  "almadies": "/images/destinations/dakar-2.png",
+  // Dagana
+  "dagana": "/images/destinations/dagana-1.png",
   "ancienne gare de dakar": "/images/destinations/gare-dakar.png",
   "gare de dakar": "/images/destinations/gare-dakar.png",
   // Gorée
@@ -119,11 +121,11 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "nianing": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Saly_mbour.jpg/800px-Saly_mbour.jpg",
   "toubab dialaw": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Saly_mbour.jpg/800px-Saly_mbour.jpg",
   "tambacounda": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Dindefelo.jpg/800px-Dindefelo.jpg",
-  "thiès": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
-  "thies": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
+  "thiès": "/images/destinations/dakar-1.png",
+  "thies": "/images/destinations/dakar-1.png",
   "kaolack": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
-  "louga": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
-  "richard toll": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
+  "louga": "/images/destinations/dagana-2.png",
+  "richard toll": "/images/destinations/dagana-3.png",
 };
 
 function getFixedImage(name: string): string | null {
