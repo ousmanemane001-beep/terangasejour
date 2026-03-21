@@ -49,7 +49,10 @@ const Navbar = () => {
   // Mobile menu items with icons — Booking.com style
   const mobileMenuItems = [
     { label: "Accueil", path: "/", icon: Home },
-    { label: "Destinations", path: "/explore", icon: MapPin },
+    { label: "Explorer", path: "/explore", icon: Search },
+    { label: "Carte", path: "/explore-senegal", icon: MapIcon },
+    { label: "À propos", path: "/about", icon: Info },
+    { label: "Contact", path: "/contact", icon: Headphones },
     ...(user ? [{ label: "Publier un logement", path: isHost ? "/create-listing" : "/become-host", icon: PlusCircle }] : []),
   ];
 
