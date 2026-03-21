@@ -274,7 +274,7 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
           <div className="flex justify-between text-sm"><span className="text-muted-foreground">Nuits</span><span className="text-foreground">{nights}</span></div>
         </div>
         <Button className="rounded-full bg-primary text-primary-foreground w-full" onClick={() => navigate("/dashboard/my-bookings")}>
-          Voir mes réservations
+          Voir mes voyages
         </Button>
       </div>
     );

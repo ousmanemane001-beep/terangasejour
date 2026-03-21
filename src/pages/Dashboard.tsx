@@ -122,7 +122,7 @@ const Dashboard = () => {
   ];
 
   const commonTabs = [
-    { id: "my-bookings", label: "Mes réservations", icon: CalendarDays },
+    { id: "my-bookings", label: "Mes voyages", icon: CalendarDays },
     { id: "favorites", label: "Favoris", icon: Heart },
   ];
 
@@ -420,7 +420,7 @@ const Dashboard = () => {
 
           {activeTab === "my-bookings" && (
             <Card className="border-none shadow-[var(--shadow-card)]">
-              <CardHeader><CardTitle className="font-display text-lg">Mes réservations</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="font-display text-lg">Mes voyages</CardTitle></CardHeader>
               <CardContent>
                 {guestBookings && guestBookings.length > 0 ? (
                   <div className="space-y-4">
