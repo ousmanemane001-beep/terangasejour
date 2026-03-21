@@ -14,8 +14,10 @@ import { Badge } from "@/components/ui/badge";
 // Verified real images from Wikimedia Commons - actual Senegal locations
 const DESTINATION_IMAGES: Record<string, string> = {
   // Dakar
-  "dakar": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
-  "almadies": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
+  "dakar": "/images/destinations/dakar-1.png",
+  "almadies": "/images/destinations/dakar-2.png",
+  // Dagana
+  "dagana": "/images/destinations/dagana-1.png",
   "ancienne gare de dakar": "/images/destinations/gare-dakar.png",
   "gare de dakar": "/images/destinations/gare-dakar.png",
   // Gorée
