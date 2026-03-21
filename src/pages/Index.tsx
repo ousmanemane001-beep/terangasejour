@@ -60,6 +60,17 @@ const Index = () => {
       {/* ═══ LISTINGS ═══ */}
       <section className="flex-1 py-4 md:py-6">
         <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base md:text-xl font-bold text-foreground">
+              Logements populaires · Sénégal
+            </h2>
+            <Link to="/explore">
+              <Button variant="ghost" size="icon" className="rounded-full border border-border w-8 h-8">
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+
           {isLoading ? (
             <div className="flex justify-center py-16">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
