@@ -77,12 +77,6 @@ const Index = () => {
           isLoading={isLoading}
         />
         <CategorySection
-          title="Logements vérifiés"
-          listings={dbListings}
-          filterFn={(l) => l.verified}
-          isLoading={isLoading}
-        />
-        <CategorySection
           title="Logements en région"
           listings={dbListings}
           filterFn={(l) => {
