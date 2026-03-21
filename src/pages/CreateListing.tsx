@@ -163,6 +163,8 @@ const CreateListing = () => {
     return true;
   }, [activeStep, title, description, location, photos.length, price]);
 
+  const canPublishNow = activeStep === 6 || (activeStep === 5 && bookingMode === "instant");
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
