@@ -268,6 +268,7 @@ const CreateListing = () => {
           status: "pending_approval",
           booking_mode: bookingMode,
           availability_mode: dbAvailabilityMode,
+          cancellation_policy: cancellationPolicy,
         } as any)
         .select("id")
         .single();
