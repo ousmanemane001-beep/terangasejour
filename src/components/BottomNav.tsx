@@ -1,12 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Search, Map, Building2, Headphones } from "lucide-react";
+import { Home, Search, Heart, LogIn } from "lucide-react";
 
 const items = [
   { label: "Accueil", path: "/", icon: Home },
   { label: "Explorer", path: "/explore", icon: Search },
-  { label: "Carte", path: "/explore-senegal", icon: Map },
-  { label: "À propos", path: "/about", icon: Building2 },
-  { label: "Contact", path: "/contact", icon: Headphones },
+  { label: "Favoris", path: "/favorites", icon: Heart },
+  { label: "Connexion", path: "/login", icon: LogIn },
 ];
 
 const BottomNav = () => {
