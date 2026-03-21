@@ -79,9 +79,13 @@ export function useCreateNotification() {
       message: string;
       data?: Record<string, any>;
     }) => {
-      const { error } = await supabase
-        .from("notifications")
-        .insert(notification as any);
+      const { error } = await supabase.rpc("create_notification", {
+        _user_id: notification.user_id,
+        _type: notification.type,
+        _title: notification.title,
+        _message: notification.message,
+        _data: (notification.data || {}) as any,
+      });
       if (error) throw error;
     },
     onSuccess: () => {

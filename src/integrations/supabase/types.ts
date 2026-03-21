@@ -46,6 +46,36 @@ export type Database = {
           },
         ]
       }
+      booking_guest_details: {
+        Row: {
+          booking_id: string
+          created_at: string
+          guest_email: string | null
+          guest_phone: string | null
+          id: string
+          nationality: string | null
+          passport_number: string | null
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          guest_email?: string | null
+          guest_phone?: string | null
+          id?: string
+          nationality?: string | null
+          passport_number?: string | null
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          guest_email?: string | null
+          guest_phone?: string | null
+          id?: string
+          nationality?: string | null
+          passport_number?: string | null
+        }
+        Relationships: []
+      }
       booking_requests: {
         Row: {
           check_in: string
@@ -565,10 +595,70 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      safe_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          first_name: string | null
+          id: string | null
+          is_host: boolean | null
+          last_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          id?: string | null
+          is_host?: boolean | null
+          last_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          id?: string | null
+          is_host?: boolean | null
+          last_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      create_notification: {
+        Args: {
+          _data?: Json
+          _message: string
+          _title: string
+          _type: string
+          _user_id: string
+        }
+        Returns: string
+      }
       expire_pending_bookings: { Args: never; Returns: undefined }
+      get_host_bookings: {
+        Args: { _host_user_id: string }
+        Returns: {
+          check_in: string
+          check_out: string
+          created_at: string
+          guest_id: string
+          guest_name: string
+          guests: number
+          id: string
+          listing_id: string
+          nights: number
+          payment_method: string
+          payment_status: string
+          price_per_night: number
+          service_fee: number
+          status: string
+          total_price: number
+          updated_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
