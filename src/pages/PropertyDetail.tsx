@@ -46,6 +46,12 @@ const PropertyDetail = () => {
   const navigate = useNavigate();
   const startConversation = useStartConversation();
 
+  // Social proof (stable random per listing ID)
+  const socialProof = useMemo(() => ({
+    viewers: Math.floor((id?.charCodeAt?.(0) || 5) % 15) + 3,
+    lastBookingHours: Math.floor((id?.charCodeAt?.(1) || 8) % 20) + 1,
+  }), [id]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
