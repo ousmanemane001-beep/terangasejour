@@ -101,6 +101,8 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "cases à impluvium": "/images/destinations/cases-impluvium.png",
   "cases a impluvium": "/images/destinations/cases-impluvium.png",
   "impluvium": "/images/destinations/cases-impluvium.png",
+  "enampore": "/images/destinations/enampore-1.png",
+  "ethiolo": "/images/destinations/ethiolo-1.png",
   // Autres
   "centre culturel blaise senghor": "/images/destinations/centre-blaise-senghor.png",
   "blaise senghor": "/images/destinations/centre-blaise-senghor.png",
