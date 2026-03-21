@@ -122,7 +122,7 @@ const Dashboard = () => {
   ];
 
   const commonTabs = [
-    { id: "my-bookings", label: "Mes réservations", icon: CalendarDays },
+    { id: "my-bookings", label: "Mes voyages", icon: CalendarDays },
     { id: "favorites", label: "Favoris", icon: Heart },
   ];
 
