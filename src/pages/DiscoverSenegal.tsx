@@ -19,9 +19,9 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "ancienne gare de dakar": "/images/destinations/gare-dakar.png",
   "gare de dakar": "/images/destinations/gare-dakar.png",
   // Gorée
-  "île de gorée": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg/1040px-Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg",
-  "gorée": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg/1040px-Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg",
-  "goree": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg/1040px-Ile_de_Gor%C3%A9e_depuis_la_chaloupe_Coumba_Castel.jpg",
+  "île de gorée": "/images/destinations/ile-goree.png",
+  "gorée": "/images/destinations/ile-goree.png",
+  "goree": "/images/destinations/ile-goree.png",
   "fort d'estrées": "/images/destinations/fort-estrees-1.png",
   "fort d'estrees": "/images/destinations/fort-estrees-2.png",
   "fort d estrees": "/images/destinations/fort-estrees-3.png",
