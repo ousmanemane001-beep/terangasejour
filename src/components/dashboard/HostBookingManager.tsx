@@ -373,7 +373,7 @@ function SwipeableBookingCard({
   const leftIcon = useTransform(x, [-150, -30, 0], [1, 0, 0]);
   const rightIcon = useTransform(x, [0, 30, 150], [0, 0, 1]);
 
-  const canSwipe = item.status === "pending" && !getTimeLeft(item.created_at).expired;
+  const canSwipe = item.status === "pending" && !getTimeLeft(item).expired;
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     if (!canSwipe) return;
