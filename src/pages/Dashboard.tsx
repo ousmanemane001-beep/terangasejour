@@ -24,6 +24,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import BlockedDatesCalendar from "@/components/BlockedDatesCalendar";
 import HostBookingManager from "@/components/dashboard/HostBookingManager";
+import BookingActionCard from "@/components/dashboard/BookingActionCard";
 
 const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   confirmed: { label: "Confirmée", variant: "default" },
