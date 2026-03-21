@@ -278,7 +278,7 @@ function UnifiedBookingCard({
                 )}
 
                 {/* Countdown for booking with expires_at */}
-                {item.expires_at && isPending && (
+                {item.expires_at && isPendingStatus && (
                   <CountdownTimer expiresAt={item.expires_at} variant="banner" />
                 )}
 
