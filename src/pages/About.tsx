@@ -13,14 +13,14 @@ const About = () => {
             animate={{ opacity: 1, y: 0 }}
             className="font-display text-3xl md:text-4xl font-bold text-foreground mb-6"
           >
-            À propos de VotreSéjour
+            À propos de TerangaSéjour
           </motion.h1>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              VotreSéjour est la première plateforme de réservation de logements dédiée au Sénégal. Notre mission est de connecter les voyageurs avec des hébergements authentiques et de qualité à travers tout le pays.
+              TerangaSéjour est la première plateforme de réservation de logements dédiée au Sénégal. Notre mission est de connecter les voyageurs avec des hébergements authentiques et de qualité à travers tout le pays.
             </p>
             <p>
-              Que vous cherchiez une villa avec piscine à Saly, un appartement moderne à Dakar, ou un éco-lodge en Casamance, VotreSéjour vous offre une sélection variée pour tous les budgets et tous les goûts.
+              Que vous cherchiez une villa avec piscine à Saly, un appartement moderne à Dakar, ou un éco-lodge en Casamance, TerangaSéjour vous offre une sélection variée pour tous les budgets et tous les goûts.
             </p>
             <p>
               Nous croyons en un tourisme responsable qui bénéficie aux communautés locales. Chaque réservation contribue directement à l'économie sénégalaise et soutient les hôtes locaux.
