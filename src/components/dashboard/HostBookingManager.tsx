@@ -44,14 +44,21 @@ function useGuestProfiles(guestIds: string[]) {
   });
 }
 
-function getTimeLeft(createdAt: string) {
-  const expiresAt = new Date(new Date(createdAt).getTime() + EXPIRY_HOURS * 60 * 60 * 1000);
+// For requests: expires 24h after creation. For bookings: use expires_at field (null = no expiry).
+function getTimeLeft(item: { type?: string; created_at: string; expires_at?: string | null }) {
+  let expiresAt: Date;
+  if (item.type === "booking") {
+    if (!item.expires_at) return { expired: false, text: "", hours: 99, minutes: 0, urgent: false, hasTimer: false };
+    expiresAt = new Date(item.expires_at);
+  } else {
+    expiresAt = new Date(new Date(item.created_at).getTime() + EXPIRY_HOURS * 60 * 60 * 1000);
+  }
   const now = new Date();
-  if (isPast(expiresAt)) return { expired: true, text: "Expirée", hours: 0, minutes: 0, urgent: false };
+  if (isPast(expiresAt)) return { expired: true, text: "Expirée", hours: 0, minutes: 0, urgent: false, hasTimer: true };
   const hours = differenceInHours(expiresAt, now);
   const minutes = differenceInMinutes(expiresAt, now) % 60;
   const urgent = hours < 2;
-  return { expired: false, text: `${hours}h ${minutes}min`, hours, minutes, urgent };
+  return { expired: false, text: `${hours}h ${minutes}min`, hours, minutes, urgent, hasTimer: true };
 }
 
 function getGuestName(id: string, profiles: Record<string, GuestProfile> | undefined) {
@@ -156,12 +163,12 @@ function UnifiedBookingCard({
   const [declineReason, setDeclineReason] = useState("");
 
   // Check if actually expired
-  const isPending = item.status === "pending";
-  const timeLeft = isPending ? getTimeLeft(item.created_at) : null;
+  const isPendingStatus = item.status === "pending";
+  const timeLeft = isPendingStatus ? getTimeLeft(item) : null;
   const isExpired = timeLeft?.expired;
   const effectiveStatus = isExpired ? "expired" : item.status;
   const badge = statusBadgeConfig[effectiveStatus] || statusBadgeConfig.pending;
-  const canAct = isPending && !isExpired;
+  const canAct = isPendingStatus && !isExpired;
 
   return (
     <motion.div
@@ -228,7 +235,7 @@ function UnifiedBookingCard({
         </button>
 
         {/* Timer bar for pending */}
-        {canAct && timeLeft && (
+        {canAct && timeLeft && timeLeft.hasTimer && (
           <div className="px-4 pb-2">
             <div className={cn(
               "flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full w-fit",
@@ -271,7 +278,7 @@ function UnifiedBookingCard({
                 )}
 
                 {/* Countdown for booking with expires_at */}
-                {item.expires_at && isPending && (
+                {item.expires_at && isPendingStatus && (
                   <CountdownTimer expiresAt={item.expires_at} variant="banner" />
                 )}
 
@@ -366,7 +373,7 @@ function SwipeableBookingCard({
   const leftIcon = useTransform(x, [-150, -30, 0], [1, 0, 0]);
   const rightIcon = useTransform(x, [0, 30, 150], [0, 0, 1]);
 
-  const canSwipe = item.status === "pending" && !getTimeLeft(item.created_at).expired;
+  const canSwipe = item.status === "pending" && !getTimeLeft(item).expired;
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     if (!canSwipe) return;
@@ -461,7 +468,7 @@ export default function HostBookingManager() {
   // Filter by status
   const pendingItems = allItems.filter((i) => {
     if (i.status !== "pending") return false;
-    const tl = getTimeLeft(i.created_at);
+    const tl = getTimeLeft(i);
     return !tl.expired;
   }).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
@@ -469,7 +476,7 @@ export default function HostBookingManager() {
 
   const declinedItems = allItems.filter((i) => {
     if (i.status === "cancelled" || i.status === "expired" || i.status === "declined") return true;
-    if (i.status === "pending") return getTimeLeft(i.created_at).expired;
+    if (i.status === "pending") return getTimeLeft(i).expired;
     return false;
   });
 
