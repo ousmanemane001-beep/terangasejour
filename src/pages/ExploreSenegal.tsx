@@ -29,6 +29,7 @@ const CATEGORY_COLOR: Record<string, string> = {
 const PROXIMITY_KM = 20;
 
 const ExploreSenegal = () => {
+  const navigate = useNavigate();
   const { data: listings, isLoading: loadingListings } = useListings();
   const { data: destinations, isLoading: loadingDest } = useDestinations();
   const [showFilters, setShowFilters] = useState(false);
