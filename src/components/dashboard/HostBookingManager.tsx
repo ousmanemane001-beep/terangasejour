@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,15 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Check, X, Clock, Users, CalendarDays, MapPin, Flame,
-  AlertTriangle, Loader2, Inbox, CheckCircle2, XCircle,
+  AlertTriangle, Loader2, Inbox, CheckCircle2, XCircle, CreditCard,
 } from "lucide-react";
 import { format, differenceInHours, differenceInMinutes, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useBookingRequests, useRespondToRequest, type BookingRequest } from "@/hooks/useAdmin";
-import { useOwnerListings } from "@/hooks/useOwnerData";
+import { useOwnerListings, useOwnerBookings } from "@/hooks/useOwnerData";
+import CountdownTimer from "@/components/booking/CountdownTimer";
+import BookingStatusBadge from "@/components/booking/BookingStatusBadge";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
 
