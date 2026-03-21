@@ -72,7 +72,7 @@ const Index = () => {
           listings={dbListings}
           filterFn={(l) => {
             const type = l.property_type.toLowerCase();
-            return type.includes("hotel") || type.includes("hôtel") || type.includes("résidence") || type.includes("residence");
+            return type.includes("hotel") || type.includes("hôtel") || type.includes("résidence") || type.includes("residence") || type.includes("villa") || type.includes("loft");
           }}
           isLoading={isLoading}
         />
