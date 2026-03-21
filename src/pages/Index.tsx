@@ -126,8 +126,15 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ═══ CATÉGORIES ═══ */}
+      <section className="border-b border-border sticky top-0 z-20 bg-background">
+        <div className="container mx-auto px-4">
+          <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
+        </div>
+      </section>
+
       {/* Listings grid directly below */}
-      <section className="pb-8">
+      <section className="py-6 pb-8">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-base md:text-xl font-bold text-foreground">
@@ -145,7 +152,7 @@ const Index = () => {
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
           ) : dbListings && dbListings.length > 0 ? (
-            <ListingsGrid listings={dbListings} />
+            <ListingsGrid listings={dbListings} activeCategory={activeCategory} />
           ) : (
             <p className="text-center text-muted-foreground py-12">Aucun logement disponible pour le moment.</p>
           )}
