@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useListingsRatings } from "@/hooks/useReviews";
-import { Search, Navigation } from "lucide-react";
+import { Search, Navigation, ArrowUpDown } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
