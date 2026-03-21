@@ -337,6 +337,15 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
               <span className="font-bold text-foreground text-lg">{total.toLocaleString("fr-FR")} F</span>
             </div>
           </div>
+          {/* Cancellation policy badge */}
+          {CANCELLATION_LABELS[cancellationPolicy] && (
+            <div className="flex items-center gap-2 text-xs py-2">
+              <span>{CANCELLATION_LABELS[cancellationPolicy].icon}</span>
+              <span className={CANCELLATION_LABELS[cancellationPolicy].color}>
+                {CANCELLATION_LABELS[cancellationPolicy].label}
+              </span>
+            </div>
+          )}
           <PaymentMethodSelector selected={paymentMethod} onSelect={setPaymentMethod} />
           <Button onClick={handleConfirmPayment} className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base">
             <Shield className="w-4 h-4 mr-2" />
