@@ -272,6 +272,11 @@ const Dashboard = () => {
                         <CardContent className="p-4 space-y-2.5">
                           <h3 className="font-display font-semibold text-foreground line-clamp-1">{listing.title}</h3>
                           <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-primary/60" /> {listing.location || "Non précisé"}</p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                              {listing.booking_mode === "instant" ? "⚡ Toujours disponible" : "📩 Sur demande"}
+                            </Badge>
+                          </div>
                           <div className="flex items-center justify-between pt-2 border-t border-border/50">
                             <span className="font-bold text-foreground">{listing.price_per_night.toLocaleString("fr-FR")} F<span className="text-xs text-muted-foreground font-normal"> /nuit</span></span>
                             {ratingsMap?.[listing.id] && (

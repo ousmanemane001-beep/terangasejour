@@ -46,6 +46,8 @@ const EditListing = () => {
   const [bathrooms, setBathrooms] = useState(1);
   const [capacity, setCapacity] = useState(2);
   const [price, setPrice] = useState("");
+  const [bookingMode, setBookingMode] = useState("instant");
+  const [availabilityMode, setAvailabilityMode] = useState("always");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -60,6 +62,8 @@ const EditListing = () => {
       setBathrooms(listing.bathrooms || 1);
       setCapacity(listing.capacity || 2);
       setPrice(String(listing.price_per_night || ""));
+      setBookingMode(listing.booking_mode || "instant");
+      setAvailabilityMode(listing.availability_mode || "always");
     }
   }, [listing]);
 
@@ -110,6 +114,8 @@ const EditListing = () => {
         bathrooms,
         capacity,
         price_per_night: parseInt(price),
+        booking_mode: bookingMode,
+        availability_mode: availabilityMode,
         updated_at: new Date().toISOString(),
       };
 
@@ -260,6 +266,37 @@ const EditListing = () => {
                   <DollarSign className="w-3.5 h-3.5 inline mr-1" />Prix par nuit (FCFA)
                 </label>
                 <Input type="number" className="rounded-xl h-12" value={price} onChange={(e) => setPrice(e.target.value)} />
+              </div>
+
+              {/* Booking mode */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Mode de réservation</label>
+                  <select
+                    className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm"
+                    value={bookingMode}
+                    onChange={(e) => {
+                      setBookingMode(e.target.value);
+                      if (e.target.value === "instant") setAvailabilityMode("always");
+                    }}
+                  >
+                    <option value="instant">Toujours disponible</option>
+                    <option value="request">Disponible sur demande</option>
+                  </select>
+                </div>
+                {bookingMode === "request" && (
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">Disponibilité</label>
+                    <select
+                      className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm"
+                      value={availabilityMode}
+                      onChange={(e) => setAvailabilityMode(e.target.value)}
+                    >
+                      <option value="request">Me contacter</option>
+                      <option value="calendar">Calendrier personnalisé</option>
+                    </select>
+                  </div>
+                )}
               </div>
 
               {/* Photos info */}
