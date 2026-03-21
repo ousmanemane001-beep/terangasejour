@@ -2,7 +2,10 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Users, Loader2, CheckCircle, MessageCircle, ChevronDown, Shield, Flame } from "lucide-react";
+import {
+  Loader2, CheckCircle, MessageCircle, ChevronDown, Shield, Flame,
+  CalendarCheck, Zap, Clock, AlertTriangle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -31,38 +34,72 @@ interface BookingWidgetProps {
 const SERVICE_FEE_RATE = 0.15;
 const HOLD_MINUTES = 30;
 
-type BookingStep = "dates" | "info" | "hold" | "confirmed" | "expired";
+type BookingStep = "dates" | "info" | "payment" | "hold" | "confirmed" | "expired" | "request-sent" | "request-approved";
+
+const MODE_CONFIG = {
+  instant: {
+    icon: Zap,
+    label: "Réservation instantanée",
+    sublabel: "Confirmation immédiate après paiement",
+    ctaText: "Réserver maintenant",
+    ctaIcon: Zap,
+    color: "text-primary",
+    bgColor: "bg-primary/5",
+    borderColor: "border-primary/20",
+  },
+  request: {
+    icon: MessageCircle,
+    label: "Sur demande",
+    sublabel: "L'hôte doit approuver votre demande",
+    ctaText: "Demander la disponibilité",
+    ctaIcon: MessageCircle,
+    color: "text-amber-600",
+    bgColor: "bg-amber-50",
+    borderColor: "border-amber-200",
+  },
+  calendar: {
+    icon: CalendarCheck,
+    label: "Selon disponibilités",
+    sublabel: "Sélectionnez parmi les dates disponibles",
+    ctaText: "Réserver ces dates",
+    ctaIcon: CalendarCheck,
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-50",
+    borderColor: "border-emerald-200",
+  },
+};
 
 const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "instant", hostId }: BookingWidgetProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const createBooking = useCreateBooking();
   const createNotification = useCreateNotification();
-  const { dateMap } = useCalendarData(listingId);
+  const { dateMap, isLoading: calendarLoading } = useCalendarData(listingId);
 
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [guests, setGuests] = useState(2);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("wave");
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(bookingMode === "calendar");
   const [step, setStep] = useState<BookingStep>("dates");
   const [bookingId, setBookingId] = useState<string>();
   const [expiresAt, setExpiresAt] = useState<string>();
+  const [requestMessage, setRequestMessage] = useState("");
 
   const [passengerInfo, setPassengerInfo] = useState<PassengerInfo>({
     firstName: "", lastName: "", email: "", phone: "", passport: "", nationality: "",
   });
 
-  // Request mode
-  const [requestMessage, setRequestMessage] = useState("");
-  const [requestSent, setRequestSent] = useState(false);
+  const mode = (bookingMode === "instant" || bookingMode === "request" || bookingMode === "calendar")
+    ? bookingMode : "instant";
+  const config = MODE_CONFIG[mode];
 
-  const isRequestMode = bookingMode === "request";
   const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
   const subtotal = nights * pricePerNight;
   const serviceFee = Math.round(subtotal * SERVICE_FEE_RATE);
   const total = subtotal + serviceFee;
 
+  // ─── Date selection with gap validation ───
   const handleSelectDate = (date: Date) => {
     if (!checkIn || (checkIn && checkOut)) {
       setCheckIn(date);
@@ -75,6 +112,7 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
           const key = format(current, "yyyy-MM-dd");
           const info = dateMap.get(key);
           if (info && (info.status === "booked" || info.status === "blocked")) {
+            toast.error("Des dates indisponibles se trouvent dans cette plage.");
             setCheckIn(date);
             setCheckOut(undefined);
             return;
@@ -82,7 +120,7 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
           current.setDate(current.getDate() + 1);
         }
         setCheckOut(date);
-        setShowCalendar(false);
+        if (mode !== "calendar") setShowCalendar(false);
       } else {
         setCheckIn(date);
         setCheckOut(undefined);
@@ -90,6 +128,7 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
     }
   };
 
+  // ─── Proceed to info step ───
   const handleProceedToInfo = () => {
     if (!user) { toast.error("Connectez-vous pour réserver."); navigate("/login"); return; }
     if (!checkIn || !checkOut || nights < 1) { toast.error("Sélectionnez vos dates."); return; }
@@ -103,29 +142,20 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
     setStep("info");
   };
 
+  // ─── Create booking (instant & calendar → hold with timer) ───
   const handleCreateHold = async () => {
     if (!user || !checkIn || !checkOut) return;
     if (!passengerInfo.firstName.trim() || !passengerInfo.lastName.trim() || !passengerInfo.email.trim()) {
-      toast.error("Veuillez remplir au minimum votre nom et email.");
-      return;
+      toast.error("Veuillez remplir au minimum votre nom et email."); return;
     }
-
     try {
       const expiry = new Date(Date.now() + HOLD_MINUTES * 60 * 1000).toISOString();
       const result = await createBooking.mutateAsync({
-        listing_id: listingId,
-        guest_id: user.id,
-        check_in: format(checkIn, "yyyy-MM-dd"),
-        check_out: format(checkOut, "yyyy-MM-dd"),
-        guests,
-        nights,
-        price_per_night: pricePerNight,
-        service_fee: serviceFee,
-        total_price: total,
-        payment_method: paymentMethod,
+        listing_id: listingId, guest_id: user.id,
+        check_in: format(checkIn, "yyyy-MM-dd"), check_out: format(checkOut, "yyyy-MM-dd"),
+        guests, nights, price_per_night: pricePerNight,
+        service_fee: serviceFee, total_price: total, payment_method: paymentMethod,
       });
-
-      // Update with passenger info and expiry via direct update
       await supabase.from("bookings").update({
         expires_at: expiry,
         guest_name: `${passengerInfo.firstName} ${passengerInfo.lastName}`,
@@ -141,48 +171,19 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
 
       if (hostId) {
         await createNotification.mutateAsync({
-          user_id: hostId,
-          type: "new_booking",
-          title: "Nouvelle réservation en attente",
-          message: `${passengerInfo.firstName} ${passengerInfo.lastName} souhaite réserver du ${format(checkIn, "d MMM", { locale: fr })} au ${format(checkOut, "d MMM", { locale: fr })} · ${total.toLocaleString("fr-FR")} F`,
+          user_id: hostId, type: "new_booking", title: "Nouvelle réservation",
+          message: `${passengerInfo.firstName} ${passengerInfo.lastName} · ${format(checkIn, "d MMM", { locale: fr })} → ${format(checkOut, "d MMM", { locale: fr })} · ${total.toLocaleString("fr-FR")} F`,
           data: { listing_id: listingId, booking_id: result.id },
         });
       }
-
-      toast.success("Réservation en attente ! Vous avez 30 minutes pour confirmer.");
+      toast.success("Réservation créée ! Confirmez votre paiement sous 30 minutes.");
     } catch (err: any) {
       toast.error(err.message || "Erreur lors de la réservation.");
     }
   };
 
-  const handleConfirmPayment = async () => {
-    if (!bookingId) return;
-    try {
-      await supabase.from("bookings").update({
-        payment_status: "paid",
-        status: "confirmed",
-        updated_at: new Date().toISOString(),
-      } as any).eq("id", bookingId);
-
-      setStep("confirmed");
-      toast.success("Paiement confirmé ! Réservation validée.");
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors du paiement.");
-    }
-  };
-
-  const handleExpire = useCallback(async () => {
-    if (bookingId) {
-      await supabase.from("bookings").update({
-        status: "expired",
-        updated_at: new Date().toISOString(),
-      } as any).eq("id", bookingId);
-    }
-    setStep("expired");
-  }, [bookingId]);
-
-  // Request mode
-  const handleRequestAvailability = async () => {
+  // ─── Request booking (request mode) ───
+  const handleRequestBooking = async () => {
     if (!user) { toast.error("Connectez-vous pour faire une demande."); navigate("/login"); return; }
     if (!checkIn || !checkOut || nights < 1) { toast.error("Sélectionnez vos dates."); return; }
     try {
@@ -198,23 +199,59 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
           data: { listing_id: listingId },
         });
       }
-      setRequestSent(true);
+      setStep("request-sent");
       toast.success("Demande envoyée à l'hôte !");
     } catch (err: any) {
       toast.error(err.message || "Erreur lors de l'envoi.");
     }
   };
 
+  // ─── Confirm payment ───
+  const handleConfirmPayment = async () => {
+    if (!bookingId) return;
+    try {
+      await supabase.from("bookings").update({
+        payment_status: "paid", status: "confirmed", updated_at: new Date().toISOString(),
+      } as any).eq("id", bookingId);
+      setStep("confirmed");
+      toast.success("Paiement confirmé ! Réservation validée.");
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors du paiement.");
+    }
+  };
+
+  // ─── Expiration ───
+  const handleExpire = useCallback(async () => {
+    if (bookingId) {
+      await supabase.from("bookings").update({
+        status: "expired", updated_at: new Date().toISOString(),
+      } as any).eq("id", bookingId);
+    }
+    setStep("expired");
+  }, [bookingId]);
+
   // ─── TERMINAL STATES ───
-  if (requestSent) {
+
+  if (step === "request-sent") {
     return (
       <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6 text-center">
-        <MessageCircle className="w-12 h-12 text-primary mx-auto mb-3" />
+        <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
+          <MessageCircle className="w-7 h-7 text-amber-600" />
+        </div>
         <h3 className="font-display text-lg font-bold text-foreground mb-1">Demande envoyée !</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          L'hôte va examiner votre demande pour le {format(checkIn!, "d MMMM", { locale: fr })} au {format(checkOut!, "d MMMM yyyy", { locale: fr })}.
+        <p className="text-sm text-muted-foreground mb-1">
+          {format(checkIn!, "d MMMM", { locale: fr })} → {format(checkOut!, "d MMMM yyyy", { locale: fr })}
         </p>
-        <Button className="rounded-full bg-primary text-primary-foreground" onClick={() => navigate("/dashboard/my-bookings")}>
+        <p className="text-xs text-muted-foreground mb-4">
+          L'hôte va examiner votre demande. Vous serez notifié dès qu'il répond.
+        </p>
+        <div className="bg-secondary rounded-xl p-3 mb-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="w-4 h-4" />
+            <span>Si approuvé, vous pourrez payer pour confirmer.</span>
+          </div>
+        </div>
+        <Button className="rounded-full bg-primary text-primary-foreground w-full" onClick={() => navigate("/dashboard/my-bookings")}>
           Voir mes demandes
         </Button>
       </div>
@@ -224,11 +261,13 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
   if (step === "confirmed") {
     return (
       <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6 text-center">
-        <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-3" />
+        <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
+          <CheckCircle className="w-7 h-7 text-emerald-600" />
+        </div>
         <h3 className="font-display text-lg font-bold text-foreground mb-1">Réservation confirmée !</h3>
         <BookingStatusBadge status="confirmed" />
         <p className="text-sm text-muted-foreground mt-3 mb-4">
-          Du {format(checkIn!, "d MMMM", { locale: fr })} au {format(checkOut!, "d MMMM yyyy", { locale: fr })}
+          {format(checkIn!, "d MMMM", { locale: fr })} → {format(checkOut!, "d MMMM yyyy", { locale: fr })}
         </p>
         <div className="bg-secondary rounded-xl p-4 text-left space-y-1 mb-4">
           <div className="flex justify-between text-sm"><span className="text-muted-foreground">Total payé</span><span className="font-bold text-foreground">{total.toLocaleString("fr-FR")} F</span></div>
@@ -244,11 +283,12 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
   if (step === "expired") {
     return (
       <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6 text-center">
+        <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+          <AlertTriangle className="w-7 h-7 text-destructive" />
+        </div>
         <BookingStatusBadge status="expired" />
         <h3 className="font-display text-lg font-bold text-foreground mt-3 mb-1">Réservation expirée</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Le délai de 30 minutes a été dépassé. Essayez à nouveau.
-        </p>
+        <p className="text-sm text-muted-foreground mb-4">Le délai de 30 minutes a été dépassé.</p>
         <Button className="rounded-full bg-primary text-primary-foreground w-full" onClick={() => { setStep("dates"); setBookingId(undefined); setExpiresAt(undefined); }}>
           Recommencer
         </Button>
@@ -256,7 +296,7 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
     );
   }
 
-  // ─── HOLD STATE (countdown) ───
+  // ─── HOLD STATE (countdown + payment) ───
   if (step === "hold" && expiresAt) {
     return (
       <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-elevated)] border border-border overflow-hidden">
@@ -264,12 +304,9 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
           <div className="text-center">
             <BookingStatusBadge status="pending" />
             <h3 className="font-display text-lg font-bold text-foreground mt-3">Réservation en attente</h3>
-            <p className="text-sm text-muted-foreground mt-1">Confirmez votre paiement pour valider</p>
+            <p className="text-sm text-muted-foreground mt-1">Payez pour confirmer votre réservation</p>
           </div>
-
           <CountdownTimer expiresAt={expiresAt} onExpire={handleExpire} variant="banner" />
-
-          {/* Summary */}
           <div className="bg-secondary rounded-xl p-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{format(checkIn!, "d MMM", { locale: fr })} → {format(checkOut!, "d MMM", { locale: fr })}</span>
@@ -288,18 +325,11 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
               <span className="font-bold text-foreground text-lg">{total.toLocaleString("fr-FR")} F</span>
             </div>
           </div>
-
-          {/* Payment */}
           <PaymentMethodSelector selected={paymentMethod} onSelect={setPaymentMethod} />
-
-          <Button
-            onClick={handleConfirmPayment}
-            className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base"
-          >
+          <Button onClick={handleConfirmPayment} className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base">
             <Shield className="w-4 h-4 mr-2" />
             Payer et confirmer · {total.toLocaleString("fr-FR")} F
           </Button>
-
           <p className="text-[10px] text-center text-muted-foreground flex items-center justify-center gap-1">
             <Shield className="w-3 h-3" /> Paiement sécurisé · Annulation gratuite sous 24h
           </p>
@@ -317,6 +347,16 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
           <span className="text-2xl font-bold text-foreground">{pricePerNight.toLocaleString("fr-FR")} F</span>
           <span className="text-muted-foreground text-sm"> / nuit</span>
         </div>
+
+        {/* Booking mode badge */}
+        <div className={cn("mt-3 flex items-center gap-2 rounded-lg px-3 py-2 border text-xs font-medium", config.bgColor, config.borderColor, config.color)}>
+          <config.icon className="w-3.5 h-3.5 shrink-0" />
+          <div>
+            <p className="font-semibold leading-tight">{config.label}</p>
+            <p className="font-normal opacity-80 leading-tight">{config.sublabel}</p>
+          </div>
+        </div>
+
         {nights > 0 && (
           <div className="flex items-center gap-2 mt-2">
             <Flame className="w-3.5 h-3.5 text-destructive" />
@@ -335,13 +375,13 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
             <div className="p-3">
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Arrivée</label>
               <p className="text-sm text-foreground font-medium mt-0.5">
-                {checkIn ? format(checkIn, "d MMM yyyy", { locale: fr }) : "Ajouter"}
+                {checkIn ? format(checkIn, "d MMM yyyy", { locale: fr }) : "Sélectionner"}
               </p>
             </div>
             <div className="p-3">
               <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Départ</label>
               <p className="text-sm text-foreground font-medium mt-0.5">
-                {checkOut ? format(checkOut, "d MMM yyyy", { locale: fr }) : "Ajouter"}
+                {checkOut ? format(checkOut, "d MMM yyyy", { locale: fr }) : "Sélectionner"}
               </p>
             </div>
           </div>
@@ -358,6 +398,23 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
               className="overflow-hidden"
             >
               <div className="pt-2 pb-1">
+                {/* Calendar legend for calendar mode */}
+                {mode === "calendar" && (
+                  <div className="flex flex-wrap gap-3 mb-3 px-1">
+                    <div className="flex items-center gap-1.5 text-[10px]">
+                      <span className="w-3 h-3 rounded-sm bg-emerald-100 border border-emerald-300" />
+                      <span className="text-muted-foreground">Disponible</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px]">
+                      <span className="w-3 h-3 rounded-sm bg-destructive/20 border border-destructive/40" />
+                      <span className="text-muted-foreground">Réservé</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px]">
+                      <span className="w-3 h-3 rounded-sm bg-muted border border-border" />
+                      <span className="text-muted-foreground">Bloqué</span>
+                    </div>
+                  </div>
+                )}
                 <CalendarGrid
                   dateMap={dateMap}
                   checkIn={checkIn}
@@ -422,7 +479,7 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
         )}
       </AnimatePresence>
 
-      {/* Step: Passenger info */}
+      {/* Step: Passenger info (instant & calendar modes) */}
       <AnimatePresence>
         {step === "info" && nights > 0 && (
           <motion.div
@@ -439,8 +496,8 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
         )}
       </AnimatePresence>
 
-      {/* Request mode message */}
-      {isRequestMode && nights > 0 && (
+      {/* Request mode: message field */}
+      {mode === "request" && nights > 0 && step === "dates" && (
         <div className="px-6 pb-4">
           <Textarea
             placeholder="Message à l'hôte (optionnel)..."
@@ -452,54 +509,69 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
         </div>
       )}
 
-      {/* CTA Button */}
+      {/* CTA Button area */}
       <div className="p-6 pt-0">
-        {isRequestMode ? (
-          <Button
-            onClick={handleRequestAvailability}
-            disabled={!nights}
-            className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
-          >
-            <MessageCircle className="w-4 h-4 mr-2" />
-            {nights > 0 ? "Demander la disponibilité" : "Sélectionnez vos dates"}
-          </Button>
-        ) : step === "dates" ? (
-          <Button
-            onClick={handleProceedToInfo}
-            disabled={!nights}
-            className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
-          >
-            {nights > 0 ? `Réserver · ${total.toLocaleString("fr-FR")} F` : "Sélectionnez vos dates"}
-          </Button>
-        ) : step === "info" ? (
-          <Button
-            onClick={handleCreateHold}
-            disabled={createBooking.isPending}
-            className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90"
-          >
-            {createBooking.isPending ? (
-              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Réservation en cours...</>
-            ) : (
-              <><Shield className="w-4 h-4 mr-2" /> Réserver maintenant · {total.toLocaleString("fr-FR")} F</>
-            )}
-          </Button>
-        ) : null}
-
-        {step === "dates" && isRequestMode && (
-          <p className="text-[10px] text-center text-muted-foreground mt-2">
-            L'hôte doit approuver votre demande avant la réservation.
-          </p>
-        )}
-        {step === "info" && (
-          <div className="mt-2 space-y-1">
-            <p className="text-[10px] text-center text-muted-foreground flex items-center justify-center gap-1">
-              <Shield className="w-3 h-3" /> Votre réservation sera bloquée pendant 30 minutes
+        {mode === "request" && step === "dates" ? (
+          <>
+            <Button
+              onClick={handleRequestBooking}
+              disabled={!nights}
+              className={cn(
+                "w-full rounded-xl h-12 font-medium text-base",
+                "bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50"
+              )}
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              {nights > 0 ? `Demander la disponibilité · ${total.toLocaleString("fr-FR")} F` : "Sélectionnez vos dates"}
+            </Button>
+            <p className="text-[10px] text-center text-muted-foreground mt-2">
+              Aucun paiement maintenant · L'hôte doit d'abord approuver
             </p>
-            <button onClick={() => setStep("dates")} className="text-xs text-primary hover:underline w-full text-center">
-              ← Modifier les dates
-            </button>
-          </div>
-        )}
+          </>
+        ) : step === "dates" ? (
+          <>
+            <Button
+              onClick={handleProceedToInfo}
+              disabled={!nights}
+              className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
+            >
+              <config.ctaIcon className="w-4 h-4 mr-2" />
+              {nights > 0 ? `${config.ctaText} · ${total.toLocaleString("fr-FR")} F` : "Sélectionnez vos dates"}
+            </Button>
+            {mode === "instant" && (
+              <p className="text-[10px] text-center text-muted-foreground mt-2 flex items-center justify-center gap-1">
+                <Zap className="w-3 h-3" /> Confirmation immédiate après paiement
+              </p>
+            )}
+            {mode === "calendar" && (
+              <p className="text-[10px] text-center text-muted-foreground mt-2 flex items-center justify-center gap-1">
+                <CalendarCheck className="w-3 h-3" /> Paiement direct · Dates garanties
+              </p>
+            )}
+          </>
+        ) : step === "info" ? (
+          <>
+            <Button
+              onClick={handleCreateHold}
+              disabled={createBooking.isPending}
+              className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90"
+            >
+              {createBooking.isPending ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Réservation en cours...</>
+              ) : (
+                <><Shield className="w-4 h-4 mr-2" /> Réserver · {total.toLocaleString("fr-FR")} F</>
+              )}
+            </Button>
+            <div className="mt-2 space-y-1">
+              <p className="text-[10px] text-center text-muted-foreground flex items-center justify-center gap-1">
+                <Shield className="w-3 h-3" /> Votre réservation sera bloquée 30 min pour le paiement
+              </p>
+              <button onClick={() => setStep("dates")} className="text-xs text-primary hover:underline w-full text-center">
+                ← Modifier les dates
+              </button>
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   );
