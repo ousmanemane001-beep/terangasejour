@@ -68,126 +68,48 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar />
 
-      {/* ═══ 1. HERO — Clean, no background image (cozycozy style) ═══ */}
-      <section className="bg-primary pt-4 pb-8 md:pt-8 md:pb-12">
+      {/* ═══ 1. SEARCH + LISTINGS (Airbnb mobile style) ═══ */}
+      <section className="bg-background pt-4 pb-2 md:pt-6">
         <div className="container mx-auto px-4">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="font-display text-2xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-2 text-center"
-          >
-            Locations & Logements au Sénégal
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="text-primary-foreground/80 text-sm md:text-base text-center mb-6"
-          >
-            {dbListings?.length
-              ? `${dbListings.length}+ offres de logements vérifiés disponibles`
-              : "Des centaines de logements vérifiés vous attendent"}
-          </motion.p>
-
           {/* Search bar */}
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.15 }}
-            className="max-w-4xl mx-auto bg-card rounded-2xl shadow-[var(--shadow-elevated)] p-4 md:p-5"
+            transition={{ duration: 0.4 }}
+            className="max-w-3xl mx-auto bg-card rounded-2xl shadow-[var(--shadow-elevated)] border border-border p-3 md:p-4 mb-6"
           >
             <SearchBar />
           </motion.div>
-        </div>
-      </section>
 
-      {/* ═══ 2. FILTER BAR (cozycozy style) ═══ */}
-      <section className="border-b border-border bg-card sticky top-[56px] z-30">
-        <div className="container mx-auto px-4 py-4">
-          <h2 className="font-display font-bold text-foreground text-sm md:text-base mb-3">
-            Choisissez l'hébergement idéal
-          </h2>
-
-          <div className="flex flex-col md:flex-row gap-4 md:gap-8">
-            {/* Price */}
-            <div>
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Prix par nuit</p>
-              <div className="flex gap-2">
-                {PRICE_FILTERS.map((f) => (
-                  <Link
-                    key={f.label}
-                    to={`/explore?${f.query}`}
-                    className="px-3 py-1.5 rounded-full text-xs font-medium border border-border bg-background text-foreground hover:border-primary hover:text-primary transition-colors"
-                  >
-                    {f.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Type */}
-            <div className="flex-1">
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Type de logement</p>
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                {TYPE_FILTERS.map((f) => (
-                  <Link
-                    key={f.label}
-                    to={f.query ? `/explore?${f.query}` : "/explore"}
-                    className="shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-lg border border-border bg-background hover:border-primary hover:text-primary transition-colors min-w-[80px]"
-                  >
-                    <f.icon className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-[10px] md:text-[11px] font-medium text-foreground text-center leading-tight">{f.label}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Ratings */}
-            <div className="hidden md:block">
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Notes</p>
-              <div className="flex gap-2">
-                {RATING_FILTERS.map((f) => (
-                  <Link
-                    key={f.label}
-                    to={f.query ? `/explore?${f.query}` : "/explore"}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-border bg-background text-foreground hover:border-primary hover:text-primary transition-colors"
-                  >
-                    {f.label}
-                    {f.score && (
-                      <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-primary text-primary-foreground text-[10px] font-bold">
-                        {f.score}
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </div>
+          {/* Category tabs */}
+          <div className="flex gap-6 overflow-x-auto pb-3 mb-4 border-b border-border scrollbar-hide">
+            {TYPE_FILTERS.map((f) => (
+              <Link
+                key={f.label}
+                to={f.query ? `/explore?${f.query}` : "/explore"}
+                className="shrink-0 flex flex-col items-center gap-1.5 pb-2 border-b-2 border-transparent hover:border-primary transition-colors group"
+              >
+                <f.icon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground whitespace-nowrap">{f.label}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ 3. LISTINGS GRID (main content) ═══ */}
-      <section className="py-8 md:py-12">
+      {/* Listings grid directly below */}
+      <section className="pb-8">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-end justify-between mb-6"
-          >
-            <div>
-              <h2 className="font-display text-lg md:text-2xl font-bold text-foreground">
-                Meilleures offres de logements au Sénégal
-              </h2>
-              <p className="text-muted-foreground text-sm mt-0.5">Les mieux notés et les plus populaires</p>
-            </div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-base md:text-xl font-bold text-foreground">
+              Logements populaires · Sénégal
+            </h2>
             <Link to="/explore">
-              <Button variant="outline" size="sm" className="hidden md:flex rounded-full gap-1">
-                Tout voir <ArrowRight className="w-3.5 h-3.5" />
+              <Button variant="ghost" size="icon" className="rounded-full border border-border">
+                <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
-          </motion.div>
+          </div>
 
           {isLoading ? (
             <div className="flex justify-center py-16">
