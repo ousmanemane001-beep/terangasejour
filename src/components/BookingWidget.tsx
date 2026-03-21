@@ -76,7 +76,7 @@ const MODE_CONFIG = {
   },
 };
 
-const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "instant", hostId }: BookingWidgetProps) => {
+const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "instant", hostId, cancellationPolicy = "flexible" }: BookingWidgetProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const createBooking = useCreateBooking();
