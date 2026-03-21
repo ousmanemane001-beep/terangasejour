@@ -62,7 +62,7 @@ const Navbar = () => {
         <div className="container mx-auto flex items-center justify-between h-14 px-4">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
-            <span className="font-display text-lg font-bold text-[#0d9488]">TerangaSéjour</span>
+            <span className="font-display text-lg font-bold text-primary">TerangaSéjour</span>
           </Link>
 
           {/* Desktop nav links */}
@@ -71,8 +71,8 @@ const Navbar = () => {
               <Link key={link.path} to={link.path}
                 className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
                   location.pathname === link.path
-                    ? "text-[#0d9488] font-semibold"
-                    : "text-[#333] hover:text-[#0d9488]"
+                    ? "text-primary font-semibold"
+                    : "text-foreground hover:text-primary"
                 }`}
               >{link.label}</Link>
             ))}
