@@ -13,6 +13,8 @@ export interface OwnerListing {
   created_at: string;
   bedrooms: number;
   capacity: number;
+  booking_mode: string;
+  availability_mode: string;
 }
 
 export interface OwnerBooking {
