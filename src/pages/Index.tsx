@@ -77,6 +77,33 @@ const Index = () => {
           isLoading={isLoading}
         />
         <CategorySection
+          title="Logements à Mbour"
+          listings={dbListings}
+          filterFn={(l) => {
+            const city = (l.city || l.location || "").toLowerCase();
+            return city.includes("mbour");
+          }}
+          isLoading={isLoading}
+        />
+        <CategorySection
+          title="Logements Île du Saloum"
+          listings={dbListings}
+          filterFn={(l) => {
+            const city = (l.city || l.location || "").toLowerCase();
+            return city.includes("saloum") || city.includes("foundiougne") || city.includes("ndangane") || city.includes("palmarin");
+          }}
+          isLoading={isLoading}
+        />
+        <CategorySection
+          title="Logements à Saint-Louis"
+          listings={dbListings}
+          filterFn={(l) => {
+            const city = (l.city || l.location || "").toLowerCase();
+            return city.includes("saint-louis") || city.includes("saint louis");
+          }}
+          isLoading={isLoading}
+        />
+        <CategorySection
           title="Logements en région"
           listings={dbListings}
           filterFn={(l) => {
