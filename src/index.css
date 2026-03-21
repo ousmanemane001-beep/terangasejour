@@ -41,8 +41,8 @@
     /* Custom tokens */
     --nav-bg: 216 85% 34%;
     --nav-foreground: 0 0% 100%;
-    --search-accent: 142 76% 36%;
-    --search-highlight: 142 76% 36%;
+    --search-accent: 205 90% 50%;
+    --search-highlight: 216 85% 34%;
 
     --font-display: 'Plus Jakarta Sans', sans-serif;
     --font-body: 'Inter', sans-serif;
