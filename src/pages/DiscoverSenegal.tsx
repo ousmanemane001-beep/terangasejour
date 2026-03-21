@@ -68,9 +68,9 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "joal-fadiouth": "/images/destinations/ile-fadiouth.png",
   "joal": "/images/destinations/ile-fadiouth.png",
   // Îles
-  "île de n'gor": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
-  "n'gor": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
-  "ngor": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
+  "île de n'gor": "/images/destinations/ile-ngor.png",
+  "n'gor": "/images/destinations/ile-ngor.png",
+  "ngor": "/images/destinations/ile-ngor.png",
   "île de karabane": "/images/destinations/ile-karabane.png",
   "karabane": "/images/destinations/ile-karabane.png",
   "île de la madeleine": "/images/destinations/ile-madeleine.png",
