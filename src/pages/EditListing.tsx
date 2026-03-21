@@ -46,6 +46,8 @@ const EditListing = () => {
   const [bathrooms, setBathrooms] = useState(1);
   const [capacity, setCapacity] = useState(2);
   const [price, setPrice] = useState("");
+  const [bookingMode, setBookingMode] = useState("instant");
+  const [availabilityMode, setAvailabilityMode] = useState("always");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
