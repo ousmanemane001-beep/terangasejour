@@ -41,6 +41,7 @@ const PropertyDetail = () => {
   const { data: dbRating } = useListingRating(isUUID ? id : undefined);
   const staticProperty = !isUUID ? properties.find((p) => p.id === Number(id)) : null;
   const [selectedImage, setSelectedImage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const startConversation = useStartConversation();
