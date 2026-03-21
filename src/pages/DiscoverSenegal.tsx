@@ -93,9 +93,9 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "palmarin": "/images/destinations/iles-saloum.png",
   // Dindefelo / Kédougou
   "dindefelo": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Dindefelo.jpg/800px-Dindefelo.jpg",
-  "kedougou": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Dindefelo.jpg/800px-Dindefelo.jpg",
-  "kédougou": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Dindefelo.jpg/800px-Dindefelo.jpg",
-  "bandafassi": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Dindefelo.jpg/800px-Dindefelo.jpg",
+  "kedougou": "/images/destinations/bandafassi-2.png",
+  "kédougou": "/images/destinations/bandafassi-2.png",
+  "bandafassi": "/images/destinations/bandafassi-1.png",
   "cases à impluvium": "/images/destinations/cases-impluvium.png",
   "cases a impluvium": "/images/destinations/cases-impluvium.png",
   "impluvium": "/images/destinations/cases-impluvium.png",
