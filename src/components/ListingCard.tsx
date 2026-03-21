@@ -1,9 +1,9 @@
-import { MapPin, Star, Navigation } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import FavoriteButton from "@/components/FavoriteButton";
 import type { DBListing } from "@/hooks/useListings";
 import type { ListingRating } from "@/hooks/useReviews";
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 
 interface ListingCardProps {
   listing: DBListing;
@@ -13,49 +13,90 @@ interface ListingCardProps {
 
 const ListingCard = forwardRef<HTMLDivElement, ListingCardProps>(
   ({ listing, rating, distanceInfo }, ref) => {
-    const coverImage = listing.photos?.[0] || "/placeholder.svg";
+    const photos = listing.photos?.length ? listing.photos : ["/placeholder.svg"];
+    const [currentPhoto, setCurrentPhoto] = useState(0);
     const zone = listing.city || listing.location || "Sénégal";
+    const hasMultiplePhotos = photos.length > 1;
+
+    const prevPhoto = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCurrentPhoto((p) => (p === 0 ? photos.length - 1 : p - 1));
+    };
+    const nextPhoto = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setCurrentPhoto((p) => (p === photos.length - 1 ? 0 : p + 1));
+    };
+
+    const showRating = rating && rating.avg !== null;
 
     return (
       <div ref={ref} className="group w-full">
         <Link to={`/property/${listing.id}`} className="block">
-          {/* Image — square on mobile, 3:2 on desktop */}
-          <div className="relative overflow-hidden rounded-2xl aspect-square md:aspect-[3/2]">
+          <div className="relative overflow-hidden rounded-xl aspect-[20/19]">
             <img
-              src={coverImage}
+              src={photos[currentPhoto]}
               alt={listing.title}
               loading="lazy"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover"
             />
-            <FavoriteButton listingId={listing.id} className="absolute top-2 right-2" />
-            {distanceInfo && (
-              <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/90 text-primary-foreground text-[11px] font-semibold backdrop-blur-sm">
-                <Navigation className="w-3 h-3" />
-                {distanceInfo.label}
-              </span>
+
+            <FavoriteButton listingId={listing.id} className="absolute top-2.5 right-2.5 z-10" />
+
+            {hasMultiplePhotos && (
+              <>
+                <button
+                  onClick={prevPhoto}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background hover:scale-105 shadow-sm"
+                  aria-label="Photo précédente"
+                >
+                  <ChevronLeft className="w-4 h-4 text-foreground" />
+                </button>
+                <button
+                  onClick={nextPhoto}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background hover:scale-105 shadow-sm"
+                  aria-label="Photo suivante"
+                >
+                  <ChevronRight className="w-4 h-4 text-foreground" />
+                </button>
+              </>
+            )}
+
+            {hasMultiplePhotos && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                {photos.slice(0, 5).map((_, i) => (
+                  <span
+                    key={i}
+                    className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                      i === currentPhoto ? "bg-white" : "bg-white/50"
+                    }`}
+                  />
+                ))}
+              </div>
             )}
           </div>
         </Link>
 
-        {/* Info — compact Airbnb style */}
-        <div className="mt-2 px-0.5">
+        <Link to={`/property/${listing.id}`} className="block mt-2 px-0.5">
           <div className="flex items-start justify-between gap-1">
-            <h3 className="font-semibold text-foreground text-[13px] md:text-sm leading-tight line-clamp-1">
+            <h3 className="font-medium text-foreground text-sm leading-tight line-clamp-1">
               {listing.property_type} · {zone}
             </h3>
-            {rating && rating.avg !== null && (
-              <span className="inline-flex items-center gap-0.5 text-foreground text-[12px] font-medium shrink-0">
+            {showRating && (
+              <span className="inline-flex items-center gap-0.5 text-foreground text-[13px] shrink-0">
                 <Star className="w-3 h-3 fill-foreground" />
-                {(rating.avg * 2).toFixed(1)}
+                {(rating.avg! * 2).toFixed(1)}
               </span>
             )}
           </div>
-          <p className="text-muted-foreground text-[12px] line-clamp-1 mt-0.5">{listing.title}</p>
-          <p className="text-foreground text-[13px] font-semibold mt-1">
-            {listing.price_per_night.toLocaleString("fr-FR")} F{" "}
+          <p className="text-muted-foreground text-[13px] line-clamp-1 mt-0.5">{listing.title}</p>
+          <p className="text-foreground text-sm mt-1">
+            <span className="font-semibold">{listing.price_per_night.toLocaleString("fr-FR")} F</span>
+            {" "}
             <span className="font-normal text-muted-foreground">/ nuit</span>
           </p>
-        </div>
+        </Link>
       </div>
     );
   }
