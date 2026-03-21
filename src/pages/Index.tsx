@@ -106,23 +106,6 @@ const Index = () => {
             <SearchBar />
           </motion.div>
 
-          {/* Quick destination chips */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex flex-wrap justify-center gap-2 mt-5"
-          >
-            {["Dakar", "Saly", "Somone", "Lac Rose", "Gorée"].map((city) => (
-              <Link
-                key={city}
-                to={`/explore?destination=${encodeURIComponent(city)}`}
-                className="px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-sm text-white text-xs font-medium hover:bg-white/25 transition-colors border border-white/20"
-              >
-                {city}
-              </Link>
-            ))}
-          </motion.div>
         </div>
       </section>
 
