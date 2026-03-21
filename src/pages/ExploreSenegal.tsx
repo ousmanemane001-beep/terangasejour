@@ -202,6 +202,14 @@ const ExploreSenegal = () => {
   return (
     <div className="h-screen flex flex-col">
       <Navbar />
+      {/* Mobile back button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="md:hidden fixed top-16 left-3 z-[40] bg-background/90 backdrop-blur-sm border border-border rounded-full p-2 shadow-md"
+        aria-label="Retour"
+      >
+        <ArrowLeft className="w-5 h-5 text-foreground" />
+      </button>
       <div className="flex-1 relative">
         {isLoading ? (
           <div className="w-full h-full flex items-center justify-center bg-secondary">
