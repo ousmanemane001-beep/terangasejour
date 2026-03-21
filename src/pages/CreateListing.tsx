@@ -90,7 +90,7 @@ const availabilityModes: Array<{
 ];
 
 const CreateListing = () => {
-  const { user, isHost } = useAuth();
+  const { user, profile, isHost, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -143,7 +143,7 @@ const CreateListing = () => {
     );
   };
 
-  const totalSteps = bookingMode === "request" ? 6 : 5;
+  const totalSteps = 6;
   const activeStep = Math.min(step, totalSteps);
   const progress = (activeStep / totalSteps) * 100;
 
@@ -163,7 +163,17 @@ const CreateListing = () => {
     return true;
   }, [activeStep, title, description, location, photos.length, price]);
 
-  // Redirect non-hosts to become-host page
+  const canPublishNow = activeStep === 6 || (activeStep === 5 && bookingMode === "instant");
+
+  if (authLoading || (user && !profile)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Redirect non-hosts to become-host page only once profile state is loaded
   if (!isHost && user) {
     navigate("/become-host");
     return null;
@@ -637,7 +647,7 @@ const CreateListing = () => {
               <ChevronLeft className="w-4 h-4" />
               Précédent
             </Button>
-            {activeStep < totalSteps ? (
+            {!canPublishNow ? (
               <Button
                 className="rounded-full bg-primary text-primary-foreground gap-1"
                 onClick={() => setStep((s) => Math.min(totalSteps, Math.min(s, totalSteps) + 1))}
