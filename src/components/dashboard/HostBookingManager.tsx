@@ -44,14 +44,21 @@ function useGuestProfiles(guestIds: string[]) {
   });
 }
 
-function getTimeLeft(createdAt: string) {
-  const expiresAt = new Date(new Date(createdAt).getTime() + EXPIRY_HOURS * 60 * 60 * 1000);
+// For requests: expires 24h after creation. For bookings: use expires_at field (null = no expiry).
+function getTimeLeft(item: { type?: string; created_at: string; expires_at?: string | null }) {
+  let expiresAt: Date;
+  if (item.type === "booking") {
+    if (!item.expires_at) return { expired: false, text: "", hours: 99, minutes: 0, urgent: false, hasTimer: false };
+    expiresAt = new Date(item.expires_at);
+  } else {
+    expiresAt = new Date(new Date(item.created_at).getTime() + EXPIRY_HOURS * 60 * 60 * 1000);
+  }
   const now = new Date();
-  if (isPast(expiresAt)) return { expired: true, text: "Expirée", hours: 0, minutes: 0, urgent: false };
+  if (isPast(expiresAt)) return { expired: true, text: "Expirée", hours: 0, minutes: 0, urgent: false, hasTimer: true };
   const hours = differenceInHours(expiresAt, now);
   const minutes = differenceInMinutes(expiresAt, now) % 60;
   const urgent = hours < 2;
-  return { expired: false, text: `${hours}h ${minutes}min`, hours, minutes, urgent };
+  return { expired: false, text: `${hours}h ${minutes}min`, hours, minutes, urgent, hasTimer: true };
 }
 
 function getGuestName(id: string, profiles: Record<string, GuestProfile> | undefined) {
