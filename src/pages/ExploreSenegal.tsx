@@ -200,7 +200,7 @@ const ExploreSenegal = () => {
   }, [destinations, showDestinations]);
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col pb-16 md:pb-0">
       <Navbar />
       {/* Mobile back button */}
       <button
