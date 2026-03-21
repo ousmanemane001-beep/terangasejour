@@ -1,21 +1,22 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { format, differenceInDays } from "date-fns";
+import { format, differenceInDays, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Users, Loader2, CheckCircle, MessageCircle } from "lucide-react";
+import { Calendar, Users, Loader2, CheckCircle, MessageCircle, ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateBooking } from "@/hooks/useBookings";
-import { useBookedDates, getDisabledDates } from "@/hooks/useAvailability";
+import { useCalendarData } from "@/components/calendar/useCalendarData";
+import CalendarGrid from "@/components/calendar/CalendarGrid";
 import { useCreateNotification } from "@/hooks/useAdmin";
 import PaymentMethodSelector, { type PaymentMethod } from "@/components/PaymentMethodSelector";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface BookingWidgetProps {
   listingId: string;
@@ -32,14 +33,14 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
   const navigate = useNavigate();
   const createBooking = useCreateBooking();
   const createNotification = useCreateNotification();
-  const { data: bookedRanges } = useBookedDates(listingId);
-  const disabledDates = bookedRanges ? getDisabledDates(bookedRanges) : [];
+  const { dateMap } = useCalendarData(listingId);
 
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [guests, setGuests] = useState(2);
   const [booked, setBooked] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("wave");
+  const [showCalendar, setShowCalendar] = useState(false);
 
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
@@ -55,11 +56,32 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
   const serviceFee = Math.round(subtotal * SERVICE_FEE_RATE);
   const total = subtotal + serviceFee;
 
-  const isDateDisabled = (date: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (date < today) return true;
-    return disabledDates.some((d) => d.toDateString() === date.toDateString());
+  const handleSelectDate = (date: Date) => {
+    if (!checkIn || (checkIn && checkOut)) {
+      setCheckIn(date);
+      setCheckOut(undefined);
+    } else {
+      if (date > checkIn) {
+        // Verify no booked dates in between
+        const current = new Date(checkIn);
+        current.setDate(current.getDate() + 1);
+        while (current < date) {
+          const key = format(current, "yyyy-MM-dd");
+          const info = dateMap.get(key);
+          if (info && (info.status === "booked" || info.status === "blocked")) {
+            setCheckIn(date);
+            setCheckOut(undefined);
+            return;
+          }
+          current.setDate(current.getDate() + 1);
+        }
+        setCheckOut(date);
+        setShowCalendar(false);
+      } else {
+        setCheckIn(date);
+        setCheckOut(undefined);
+      }
+    }
   };
 
   const handleRequestAvailability = async () => {
@@ -67,19 +89,13 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
     if (!checkIn || !checkOut || nights < 1) { toast.error("Sélectionnez vos dates."); return; }
     try {
       await supabase.from("booking_requests").insert({
-        listing_id: listingId,
-        guest_id: user.id,
-        check_in: format(checkIn, "yyyy-MM-dd"),
-        check_out: format(checkOut, "yyyy-MM-dd"),
-        guests,
-        message: requestMessage.trim() || null,
+        listing_id: listingId, guest_id: user.id,
+        check_in: format(checkIn, "yyyy-MM-dd"), check_out: format(checkOut, "yyyy-MM-dd"),
+        guests, message: requestMessage.trim() || null,
       } as any);
-      // Notify host
       if (hostId) {
         await createNotification.mutateAsync({
-          user_id: hostId,
-          type: "booking_request",
-          title: "Nouvelle demande de réservation",
+          user_id: hostId, type: "booking_request", title: "Nouvelle demande de réservation",
           message: `Un voyageur souhaite réserver du ${format(checkIn, "d MMM", { locale: fr })} au ${format(checkOut, "d MMM", { locale: fr })}.`,
           data: { listing_id: listingId },
         });
@@ -94,7 +110,6 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
   const handleBook = async () => {
     if (!user) { toast.error("Veuillez vous connecter pour réserver."); navigate("/login"); return; }
     if (!checkIn || !checkOut || nights < 1) { toast.error("Veuillez sélectionner vos dates de séjour."); return; }
-
     if (!showConfirmForm) {
       setShowConfirmForm(true);
       setGuestEmail(user.email || "");
@@ -102,28 +117,17 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
       setGuestPhone(user.user_metadata?.phone || "");
       return;
     }
-
     if (!guestName.trim() || !guestEmail.trim()) { toast.error("Veuillez remplir votre nom et email."); return; }
-
     try {
       await createBooking.mutateAsync({
-        listing_id: listingId,
-        guest_id: user.id,
-        check_in: format(checkIn, "yyyy-MM-dd"),
-        check_out: format(checkOut, "yyyy-MM-dd"),
-        guests,
-        nights,
-        price_per_night: pricePerNight,
-        service_fee: serviceFee,
-        total_price: total,
-        payment_method: paymentMethod,
+        listing_id: listingId, guest_id: user.id,
+        check_in: format(checkIn, "yyyy-MM-dd"), check_out: format(checkOut, "yyyy-MM-dd"),
+        guests, nights, price_per_night: pricePerNight,
+        service_fee: serviceFee, total_price: total, payment_method: paymentMethod,
       });
-      // Notify host
       if (hostId) {
         await createNotification.mutateAsync({
-          user_id: hostId,
-          type: "new_booking",
-          title: "Nouvelle réservation",
+          user_id: hostId, type: "new_booking", title: "Nouvelle réservation",
           message: `Réservation confirmée du ${format(checkIn, "d MMM", { locale: fr })} au ${format(checkOut, "d MMM", { locale: fr })} · ${total.toLocaleString("fr-FR")} F`,
           data: { listing_id: listingId },
         });
@@ -166,61 +170,74 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
   }
 
   return (
-    <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6">
-      <div className="mb-4">
-        <span className="text-2xl font-bold text-foreground">{pricePerNight.toLocaleString("fr-FR")} F</span>
-        <span className="text-muted-foreground"> / nuit</span>
+    <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-elevated)] border border-border overflow-hidden">
+      {/* Price header */}
+      <div className="p-6 pb-0">
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-bold text-foreground">{pricePerNight.toLocaleString("fr-FR")} F</span>
+          <span className="text-muted-foreground text-sm"> / nuit</span>
+        </div>
       </div>
 
-      <div className="space-y-3 mb-6">
-        <Popover>
-          <PopoverTrigger asChild>
-            <div className="rounded-xl border border-border p-3 cursor-pointer hover:bg-muted transition-colors">
-              <label className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" /> Arrivée
-              </label>
-              <p className="text-sm text-foreground mt-0.5">{checkIn ? format(checkIn, "d MMM yyyy", { locale: fr }) : "Sélectionner"}</p>
+      {/* Date selectors */}
+      <div className="p-6 pt-4 space-y-3">
+        <div
+          className="rounded-xl border border-border divide-y divide-border cursor-pointer hover:border-primary/40 transition-colors"
+          onClick={() => setShowCalendar(!showCalendar)}
+        >
+          <div className="grid grid-cols-2 divide-x divide-border">
+            <div className="p-3">
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Arrivée</label>
+              <p className="text-sm text-foreground font-medium mt-0.5">
+                {checkIn ? format(checkIn, "d MMM yyyy", { locale: fr }) : "Ajouter"}
+              </p>
             </div>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <CalendarComponent
-              mode="single" selected={checkIn}
-              onSelect={(d) => { setCheckIn(d); if (checkOut && d && d >= checkOut) setCheckOut(undefined); }}
-              disabled={isDateDisabled}
-              modifiers={{ booked: disabledDates }}
-              modifiersClassNames={{ booked: "!bg-destructive/20 !text-destructive line-through" }}
-              className={cn("p-3 pointer-events-auto")}
-            />
-          </PopoverContent>
-        </Popover>
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <div className="rounded-xl border border-border p-3 cursor-pointer hover:bg-muted transition-colors">
-              <label className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" /> Départ
-              </label>
-              <p className="text-sm text-foreground mt-0.5">{checkOut ? format(checkOut, "d MMM yyyy", { locale: fr }) : "Sélectionner"}</p>
+            <div className="p-3">
+              <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Départ</label>
+              <p className="text-sm text-foreground font-medium mt-0.5">
+                {checkOut ? format(checkOut, "d MMM yyyy", { locale: fr }) : "Ajouter"}
+              </p>
             </div>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <CalendarComponent
-              mode="single" selected={checkOut} onSelect={setCheckOut}
-              disabled={(date) => isDateDisabled(date) || date < (checkIn || new Date())}
-              modifiers={{ booked: disabledDates }}
-              modifiersClassNames={{ booked: "!bg-destructive/20 !text-destructive line-through" }}
-              className={cn("p-3 pointer-events-auto")}
-            />
-          </PopoverContent>
-        </Popover>
+          </div>
+        </div>
 
+        {/* Inline calendar */}
+        <AnimatePresence>
+          {showCalendar && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-2 pb-1">
+                <CalendarGrid
+                  dateMap={dateMap}
+                  checkIn={checkIn}
+                  checkOut={checkOut}
+                  onSelectDate={handleSelectDate}
+                  pricePerNight={pricePerNight}
+                />
+                {checkIn && !checkOut && (
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    Sélectionnez votre date de départ
+                  </p>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Guests selector */}
         <Popover>
           <PopoverTrigger asChild>
-            <div className="rounded-xl border border-border p-3 cursor-pointer hover:bg-muted transition-colors">
-              <label className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                <Users className="w-3.5 h-3.5" /> Voyageurs
-              </label>
-              <p className="text-sm text-foreground mt-0.5">{guests} voyageur{guests > 1 ? "s" : ""}</p>
+            <div className="rounded-xl border border-border p-3 cursor-pointer hover:border-primary/40 transition-colors flex items-center justify-between">
+              <div>
+                <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Voyageurs</label>
+                <p className="text-sm text-foreground font-medium mt-0.5">{guests} voyageur{guests > 1 ? "s" : ""}</p>
+              </div>
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
             </div>
           </PopoverTrigger>
           <PopoverContent className="w-48 p-4" align="start">
@@ -235,26 +252,35 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
       </div>
 
       {/* Price breakdown */}
-      {nights > 0 && (
-        <div className="space-y-2 mb-6 text-sm">
-          <div className="flex justify-between text-muted-foreground">
-            <span>{pricePerNight.toLocaleString("fr-FR")} F × {nights} nuit{nights > 1 ? "s" : ""}</span>
-            <span>{subtotal.toLocaleString("fr-FR")} F</span>
-          </div>
-          <div className="flex justify-between text-muted-foreground">
-            <span>Frais de service (15%)</span>
-            <span>{serviceFee.toLocaleString("fr-FR")} F</span>
-          </div>
-          <div className="border-t border-border pt-2 flex justify-between font-semibold text-foreground">
-            <span>Total</span>
-            <span>{total.toLocaleString("fr-FR")} F</span>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {nights > 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="px-6 overflow-hidden"
+          >
+            <div className="space-y-2 text-sm pb-4">
+              <div className="flex justify-between text-muted-foreground">
+                <span>{pricePerNight.toLocaleString("fr-FR")} F × {nights} nuit{nights > 1 ? "s" : ""}</span>
+                <span>{subtotal.toLocaleString("fr-FR")} F</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Frais de service (15%)</span>
+                <span>{serviceFee.toLocaleString("fr-FR")} F</span>
+              </div>
+              <div className="border-t border-border pt-2 flex justify-between font-semibold text-foreground">
+                <span>Total</span>
+                <span>{total.toLocaleString("fr-FR")} F</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Request mode: message to host */}
+      {/* Request mode message */}
       {isRequestMode && nights > 0 && (
-        <div className="space-y-3 mb-6">
+        <div className="px-6 pb-4">
           <Textarea
             placeholder="Message à l'hôte (optionnel)..."
             className="rounded-xl"
@@ -265,57 +291,54 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
         </div>
       )}
 
-      {/* Payment method + Confirmation form (instant mode only) */}
+      {/* Confirm form (instant mode) */}
       {!isRequestMode && showConfirmForm && nights > 0 && (
-        <div className="space-y-4 mb-6">
+        <div className="px-6 pb-4 space-y-4">
           <PaymentMethodSelector selected={paymentMethod} onSelect={setPaymentMethod} />
-          
           <div className="space-y-3 p-4 rounded-xl bg-secondary border border-border">
             <h4 className="font-display font-semibold text-foreground text-sm">Vos informations</h4>
             <Input placeholder="Nom complet" className="rounded-xl" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
             <Input placeholder="Email" type="email" className="rounded-xl" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} />
             <Input placeholder="Téléphone" type="tel" className="rounded-xl" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} />
-            <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t border-border">
-              <p>📅 {checkIn && format(checkIn, "d MMMM yyyy", { locale: fr })} → {checkOut && format(checkOut, "d MMMM yyyy", { locale: fr })}</p>
-              <p>🌙 {nights} nuit{nights > 1 ? "s" : ""} · {guests} voyageur{guests > 1 ? "s" : ""}</p>
-              <p className="font-semibold text-foreground">💰 Total : {total.toLocaleString("fr-FR")} FCFA</p>
-            </div>
           </div>
         </div>
       )}
 
-      {isRequestMode ? (
-        <Button
-          onClick={handleRequestAvailability}
-          disabled={!nights}
-          className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
-        >
-          <MessageCircle className="w-4 h-4 mr-2" />
-          {nights > 0 ? "Demander la disponibilité" : "Sélectionnez vos dates"}
-        </Button>
-      ) : (
-        <Button
-          onClick={handleBook}
-          disabled={!nights || createBooking.isPending}
-          className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
-        >
-          {createBooking.isPending ? (
-            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Réservation en cours...</>
-          ) : showConfirmForm ? (
-            `Confirmer la réservation`
-          ) : nights > 0 ? (
-            `Réserver · ${total.toLocaleString("fr-FR")} F`
-          ) : (
-            "Sélectionnez vos dates"
-          )}
-        </Button>
-      )}
+      {/* CTA Button */}
+      <div className="p-6 pt-0">
+        {isRequestMode ? (
+          <Button
+            onClick={handleRequestAvailability}
+            disabled={!nights}
+            className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
+            {nights > 0 ? "Demander la disponibilité" : "Sélectionnez vos dates"}
+          </Button>
+        ) : (
+          <Button
+            onClick={handleBook}
+            disabled={!nights || createBooking.isPending}
+            className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50"
+          >
+            {createBooking.isPending ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Réservation en cours...</>
+            ) : showConfirmForm ? (
+              `Confirmer la réservation`
+            ) : nights > 0 ? (
+              `Réserver · ${total.toLocaleString("fr-FR")} F`
+            ) : (
+              "Sélectionnez vos dates"
+            )}
+          </Button>
+        )}
 
-      {isRequestMode && (
-        <p className="text-xs text-center text-muted-foreground mt-3">
-          📩 L'hôte doit approuver votre demande avant la réservation.
-        </p>
-      )}
+        {isRequestMode && (
+          <p className="text-[10px] text-center text-muted-foreground mt-2">
+            L'hôte doit approuver votre demande avant la réservation.
+          </p>
+        )}
+      </div>
     </div>
   );
 };
