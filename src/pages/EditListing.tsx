@@ -114,6 +114,8 @@ const EditListing = () => {
         bathrooms,
         capacity,
         price_per_night: parseInt(price),
+        booking_mode: bookingMode,
+        availability_mode: availabilityMode,
         updated_at: new Date().toISOString(),
       };
 
