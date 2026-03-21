@@ -73,6 +73,10 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "ngor": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
   "île de karabane": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
   "karabane": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
+  "île aux oiseaux": "/images/destinations/ile-oiseaux.png",
+  "ile aux oiseaux": "/images/destinations/ile-oiseaux.png",
+  "île aux serpents": "/images/destinations/ile-serpents.png",
+  "ile aux serpents": "/images/destinations/ile-serpents.png",
   "îles du saloum": "/images/destinations/iles-saloum.png",
   "iles du saloum": "/images/destinations/iles-saloum.png",
   // Sine Saloum
