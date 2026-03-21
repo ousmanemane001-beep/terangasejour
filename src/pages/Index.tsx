@@ -60,6 +60,17 @@ const Index = () => {
       {/* ═══ LISTINGS ═══ */}
       <section className="flex-1 py-4 md:py-6">
         <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base md:text-xl font-bold text-foreground">
+              Logements populaires · Sénégal
+            </h2>
+            <Link to="/explore">
+              <Button variant="ghost" size="icon" className="rounded-full border border-border w-8 h-8">
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+
           {isLoading ? (
             <div className="flex justify-center py-16">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -159,13 +170,26 @@ const ListingsGrid = ({ listings, activeCategory }: { listings: DBListing[]; act
   }, [listings, activeCategory, ratingsMap]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {filtered.length > 0 ? filtered.map((listing) => (
-        <ListingCard key={listing.id} listing={listing} rating={ratingsMap?.[listing.id]} />
-      )) : (
-        <p className="col-span-full text-center text-muted-foreground py-8">Aucun logement dans cette catégorie.</p>
-      )}
-    </div>
+    <>
+      {/* Mobile: horizontal scroll like Airbnb */}
+      <div className="md:hidden flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2">
+        {filtered.length > 0 ? filtered.map((listing) => (
+          <div key={listing.id} className="shrink-0 w-[46%]">
+            <ListingCard listing={listing} rating={ratingsMap?.[listing.id]} />
+          </div>
+        )) : (
+          <p className="text-center text-muted-foreground py-8 w-full">Aucun logement dans cette catégorie.</p>
+        )}
+      </div>
+      {/* Desktop: grid */}
+      <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {filtered.length > 0 ? filtered.map((listing) => (
+          <ListingCard key={listing.id} listing={listing} rating={ratingsMap?.[listing.id]} />
+        )) : (
+          <p className="col-span-full text-center text-muted-foreground py-8">Aucun logement dans cette catégorie.</p>
+        )}
+      </div>
+    </>
   );
 };
 
