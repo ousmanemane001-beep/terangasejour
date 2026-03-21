@@ -163,8 +163,8 @@ function UnifiedBookingCard({
   const [declineReason, setDeclineReason] = useState("");
 
   // Check if actually expired
-  const isPending = item.status === "pending";
-  const timeLeft = isPending ? getTimeLeft(item.created_at) : null;
+  const isPendingStatus = item.status === "pending";
+  const timeLeft = isPendingStatus ? getTimeLeft(item) : null;
   const isExpired = timeLeft?.expired;
   const effectiveStatus = isExpired ? "expired" : item.status;
   const badge = statusBadgeConfig[effectiveStatus] || statusBadgeConfig.pending;
