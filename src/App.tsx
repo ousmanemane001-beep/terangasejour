@@ -27,6 +27,8 @@ import AdminVerification from "./pages/AdminVerification";
 import AdminPanel from "./pages/AdminPanel";
 import EditListing from "./pages/EditListing";
 import Messages from "./pages/Messages";
+import CGU from "./pages/CGU";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +65,8 @@ const App = () => (
               <Route path="/admin/verification" element={<AdminVerification />} />
               <Route path="/admin" element={<AdminPanel />} />
               <Route path="/messages" element={<Messages />} />
+              <Route path="/cgu" element={<CGU />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

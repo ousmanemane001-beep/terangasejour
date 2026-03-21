@@ -5,6 +5,7 @@ import ReviewSection from "@/components/ReviewSection";
 import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import PropertyMap from "@/components/PropertyMap";
+import PhotoLightbox from "@/components/PhotoLightbox";
 import { motion } from "framer-motion";
 import { useListingRating } from "@/hooks/useReviews";
 import { useParams, Link, useNavigate } from "react-router-dom";
@@ -18,8 +19,9 @@ import {
   Star, MapPin, Heart, Share2, Bed, Bath, Users,
   Wifi, Car, AirVent, ChefHat, Waves, ArrowLeft, Loader2,
   Tv, Lock, Flower2, ShieldCheck, MessageCircle, CheckCircle, AlertTriangle,
+  Eye, Clock, ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 const amenityMap: Record<string, { icon: typeof Wifi; label: string }> = {
   wifi: { icon: Wifi, label: "Wi-Fi" },
@@ -39,9 +41,16 @@ const PropertyDetail = () => {
   const { data: dbRating } = useListingRating(isUUID ? id : undefined);
   const staticProperty = !isUUID ? properties.find((p) => p.id === Number(id)) : null;
   const [selectedImage, setSelectedImage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const startConversation = useStartConversation();
+
+  // Social proof (stable random per listing ID)
+  const socialProof = useMemo(() => ({
+    viewers: Math.floor((id?.charCodeAt?.(0) || 5) % 15) + 3,
+    lastBookingHours: Math.floor((id?.charCodeAt?.(1) || 8) % 20) + 1,
+  }), [id]);
 
   if (isLoading) {
     return (
@@ -105,40 +114,57 @@ const PropertyDetail = () => {
       <Navbar />
       <section className="py-6">
         <div className="container mx-auto px-4">
-          <Link to="/explore" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4">
-            <ArrowLeft className="w-4 h-4" /> Retour aux résultats
-          </Link>
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-1 text-xs text-muted-foreground mb-4 flex-wrap">
+            <Link to="/" className="hover:text-foreground">Accueil</Link>
+            <ChevronRight className="w-3 h-3" />
+            <Link to="/explore" className="hover:text-foreground">Explorer</Link>
+            {listing && (
+              <>
+                <ChevronRight className="w-3 h-3" />
+                <span className="text-foreground font-medium truncate max-w-[200px]">{listing?.title}</span>
+              </>
+            )}
+          </nav>
 
           {/* Image Gallery */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8 relative">
             {listing.images.length > 1 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 rounded-2xl overflow-hidden">
-                <div className="aspect-[4/3] md:aspect-auto md:row-span-2">
-                  <img src={listing.images[selectedImage]} alt={listing.title} className="w-full h-full object-cover cursor-pointer" loading="lazy" />
+                <div className="aspect-[4/3] md:aspect-auto md:row-span-2 cursor-pointer" onClick={() => { setSelectedImage(0); setLightboxOpen(true); }}>
+                  <img src={listing.images[0]} alt={listing.title} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {listing.images.slice(0, 4).map((img, i) => (
-                    <div key={i} className={`aspect-[4/3] cursor-pointer overflow-hidden ${selectedImage === i ? "ring-2 ring-primary rounded-lg" : ""}`} onClick={() => setSelectedImage(i)}>
+                  {listing.images.slice(1, 5).map((img, i) => (
+                    <div key={i} className="aspect-[4/3] cursor-pointer overflow-hidden" onClick={() => { setSelectedImage(i + 1); setLightboxOpen(true); }}>
                       <img src={img} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform" loading="lazy" />
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="rounded-2xl overflow-hidden">
+              <div className="rounded-2xl overflow-hidden cursor-pointer" onClick={() => setLightboxOpen(true)}>
                 <img src={listing.coverImage} alt={listing.title} className="w-full h-64 md:h-96 object-cover" loading="lazy" />
               </div>
             )}
-            {listing.images.length > 4 && (
-              <div className="flex gap-2 mt-2 overflow-x-auto pb-2">
-                {listing.images.map((img, i) => (
-                  <button key={i} className={`w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 ${selectedImage === i ? "border-primary" : "border-transparent"}`} onClick={() => setSelectedImage(i)}>
-                    <img src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
-                  </button>
-                ))}
-              </div>
+            {listing.images.length > 5 && (
+              <button
+                onClick={() => { setSelectedImage(0); setLightboxOpen(true); }}
+                className="absolute bottom-3 right-3 bg-card/90 backdrop-blur-sm border border-border px-3 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-card transition-colors"
+              >
+                <Eye className="w-3.5 h-3.5 inline mr-1" />
+                Voir les {listing.images.length} photos
+              </button>
             )}
           </motion.div>
+
+          {/* Lightbox */}
+          <PhotoLightbox
+            images={listing.images}
+            initialIndex={selectedImage}
+            open={lightboxOpen}
+            onClose={() => setLightboxOpen(false)}
+          />
 
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
@@ -165,7 +191,33 @@ const PropertyDetail = () => {
                   </div>
                   <div className="flex gap-2">
                     <button className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"><Heart className="w-4 h-4" /></button>
-                    <button className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"><Share2 className="w-4 h-4" /></button>
+                    <button
+                      className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"
+                      onClick={async () => {
+                        const url = window.location.href;
+                        const shareData = { title: listing.title, text: `${listing.title} — ${listing.price.toLocaleString("fr-FR")} F/nuit sur TerangaSéjour`, url };
+                        if (navigator.share) {
+                          try { await navigator.share(shareData); } catch {}
+                        } else {
+                          await navigator.clipboard.writeText(url);
+                          toast.success("Lien copié dans le presse-papier !");
+                        }
+                      }}
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Social proof */}
+                <div className="flex flex-wrap gap-3 mt-3">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>{socialProof.viewers} personnes consultent ce logement</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Dernière réservation il y a {socialProof.lastBookingHours}h</span>
                   </div>
                 </div>
 
