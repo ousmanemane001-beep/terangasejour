@@ -51,8 +51,6 @@ const Navbar = () => {
     { label: "Accueil", path: "/", icon: Home },
     { label: "Destinations", path: "/explore", icon: MapPin },
     ...(user ? [{ label: "Publier un logement", path: isHost ? "/create-listing" : "/become-host", icon: PlusCircle }] : []),
-    ...(user ? [{ label: "Mes voyages", path: "/dashboard/my-bookings", icon: CalendarDays }] : []),
-    ...(user && isHost ? [{ label: "Réservations", path: "/dashboard/bookings", icon: ClipboardList }] : []),
   ];
 
   return (
@@ -263,6 +261,14 @@ const Navbar = () => {
                     <Link to="/messages" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
                       <MessageCircle className="w-5 h-5 shrink-0" /> Messages
                     </Link>
+                    <Link to="/dashboard/my-bookings" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
+                      <CalendarDays className="w-5 h-5 shrink-0" /> Mes voyages
+                    </Link>
+                    {isHost && (
+                      <Link to="/dashboard/bookings" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
+                        <ClipboardList className="w-5 h-5 shrink-0" /> Réservations
+                      </Link>
+                    )}
                     <Link to="/profile" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
                       <User className="w-5 h-5 shrink-0" /> Mon profil
                     </Link>
