@@ -34,7 +34,7 @@ const ListingCard = forwardRef<HTMLDivElement, ListingCardProps>(
     return (
       <div ref={ref} className="group w-full">
         <Link to={`/property/${listing.id}`} className="block">
-          <div className="relative overflow-hidden rounded-xl aspect-[20/19]">
+          <div className="relative overflow-hidden rounded-xl aspect-[4/3] sm:aspect-[20/19]">
             <img
               src={photos[currentPhoto]}
               alt={listing.title}
