@@ -30,6 +30,7 @@ const Explore = () => {
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [showMap, setShowMap] = useState(!!searchParams.get("lat"));
   const [hoveredProperty, setHoveredProperty] = useState<number | null>(null);
+  const [sortBy, setSortBy] = useState<"default" | "price_asc" | "price_desc" | "newest">("default");
 
   const destName = searchParams.get("destination") || "";
   const destLat = searchParams.get("lat") ? parseFloat(searchParams.get("lat")!) : undefined;
