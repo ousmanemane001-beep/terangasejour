@@ -116,8 +116,7 @@ const Dashboard = () => {
   const hostTabs = [
     { id: "overview", label: "Dashboard", icon: TrendingUp },
     { id: "properties", label: "Mes logements", icon: Home },
-    { id: "reservations", label: "Réservations reçues", icon: CalendarDays },
-    { id: "requests", label: "Demandes", icon: CalendarDays },
+    { id: "bookings", label: "Réservations", icon: CalendarDays },
     { id: "revenue", label: "Revenus", icon: CreditCard },
     { id: "calendar", label: "Calendrier", icon: CalendarDays },
   ];
