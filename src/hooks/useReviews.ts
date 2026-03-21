@@ -37,7 +37,7 @@ export function useReviews(listingId: string | undefined) {
       if (userIds.length === 0) return [] as Review[];
 
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("safe_profiles" as any)
         .select("id, first_name, last_name, avatar_url")
         .in("id", userIds);
 

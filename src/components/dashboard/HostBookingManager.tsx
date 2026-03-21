@@ -30,7 +30,7 @@ function useGuestProfiles(guestIds: string[]) {
     queryFn: async () => {
       if (guestIds.length === 0) return {};
       const { data } = await supabase
-        .from("profiles")
+        .from("safe_profiles" as any)
         .select("id, first_name, last_name")
         .in("id", guestIds);
       const map: Record<string, GuestProfile> = {};
