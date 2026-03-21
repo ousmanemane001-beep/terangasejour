@@ -289,12 +289,12 @@ const Index = () => {
   );
 };
 
-/* ── Listings Grid (cozycozy style: 4-col grid on desktop, 2-col on mobile) ── */
+/* ── Listings: horizontal scroll on mobile (Airbnb style), grid on desktop ── */
 const ListingsGrid = ({ listings }: { listings: DBListing[] }) => {
   const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+    <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-3 lg:grid-cols-4 md:overflow-visible md:mx-0 md:px-0 md:snap-none">
       {listings.map((listing, i) => (
         <motion.div
           key={listing.id}
@@ -302,6 +302,7 @@ const ListingsGrid = ({ listings }: { listings: DBListing[] }) => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: i * 0.04, duration: 0.35 }}
+          className="shrink-0 w-[280px] snap-start md:w-auto md:shrink"
         >
           <ListingCard listing={listing} rating={ratingsMap?.[listing.id]} />
         </motion.div>
