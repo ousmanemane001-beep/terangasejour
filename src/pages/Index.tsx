@@ -91,7 +91,7 @@ const Index = () => {
               Réservez votre séjour au Sénégal
             </h1>
             <p className="text-white/85 text-sm md:text-lg max-w-xl mx-auto drop-shadow">
-              Des logements vérifiés, sans arnaque, avec assistance locale 24h/24.
+              Des logements vérifiés, avec assistance locale 24h/24.
             </p>
           </motion.div>
 
