@@ -319,6 +319,7 @@ const EditListing = () => {
                 </div>
               )}
 
+              <Button onClick={handleSave} disabled={saving} className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium gap-2">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {needsModification ? "Sauvegarder et re-soumettre" : "Sauvegarder les modifications"}
               </Button>
