@@ -103,6 +103,12 @@ const PropertyDetail = () => {
     ? Object.entries(amenityMap).map(([, v]) => v)
     : (staticProperty?.amenities || []).map((a) => amenityMap[a] || { icon: Wifi, label: a }).filter(Boolean);
 
+  // Social proof (stable random per listing)
+  const socialProof = useMemo(() => ({
+    viewers: Math.floor((listing?.id?.charCodeAt?.(0) || 5) % 15) + 3,
+    lastBookingHours: Math.floor((listing?.id?.charCodeAt?.(1) || 8) % 20) + 1,
+  }), [listing?.id]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
