@@ -68,32 +68,17 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar />
 
-      {/* ═══ 1. SEARCH + LISTINGS (Airbnb mobile style) ═══ */}
+      {/* ═══ 1. SEARCH ═══ */}
       <section className="bg-background pt-4 pb-2 md:pt-6">
         <div className="container mx-auto px-4">
-          {/* Search bar */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="max-w-3xl mx-auto bg-card rounded-2xl shadow-[var(--shadow-elevated)] border border-border p-3 md:p-4 mb-6"
+            className="max-w-3xl mx-auto bg-card rounded-2xl shadow-[var(--shadow-elevated)] border border-border p-3 md:p-4"
           >
             <SearchBar />
           </motion.div>
-
-          {/* Category tabs */}
-          <div className="flex gap-6 overflow-x-auto pb-3 mb-4 border-b border-border scrollbar-hide">
-            {TYPE_FILTERS.map((f) => (
-              <Link
-                key={f.label}
-                to={f.query ? `/explore?${f.query}` : "/explore"}
-                className="shrink-0 flex flex-col items-center gap-1.5 pb-2 border-b-2 border-transparent hover:border-primary transition-colors group"
-              >
-                <f.icon className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground whitespace-nowrap">{f.label}</span>
-              </Link>
-            ))}
-          </div>
         </div>
       </section>
 
