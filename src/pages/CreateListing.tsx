@@ -90,7 +90,7 @@ const availabilityModes: Array<{
 ];
 
 const CreateListing = () => {
-  const { user, isHost } = useAuth();
+  const { user, isHost, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
