@@ -42,6 +42,12 @@ const Index = () => {
       {/* ═══ CATEGORIZED LISTINGS ═══ */}
       <section className="flex-1 py-4 md:py-6 space-y-6 md:space-y-10">
         <CategorySection
+          title="Logements populaires"
+          listings={dbListings}
+          filterFn={() => true}
+          isLoading={isLoading}
+        />
+        <CategorySection
           title="Appartements à Dakar"
           listings={dbListings}
           filterFn={(l) => {
@@ -59,12 +65,6 @@ const Index = () => {
             const type = l.property_type.toLowerCase();
             return COASTAL_CITIES.some((c) => city.includes(c)) || type.includes("plage") || type.includes("villa");
           }}
-          isLoading={isLoading}
-        />
-        <CategorySection
-          title="Logements populaires"
-          listings={dbListings}
-          filterFn={() => true}
           isLoading={isLoading}
         />
         <CategorySection
