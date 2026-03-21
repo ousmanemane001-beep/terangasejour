@@ -3,63 +3,47 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-
 import {
-  Home,
-  Camera,
-  MapPin,
-  DollarSign,
-  Bed,
-  Bath,
-  Users,
-  CheckCircle,
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  AlertCircle,
-  Clock,
-  RefreshCcw,
-  Zap,
-  CalendarDays,
+  MapPin, Camera, Bed, DollarSign, CheckCircle, Loader2,
+  ChevronLeft, ChevronRight, AlertCircle, RefreshCcw,
 } from "lucide-react";
 import PhotoUploader from "@/components/PhotoUploader";
-import BookingModeStep, { type BookingMode } from "@/components/publish/BookingModeStep";
-import AvailabilityTypeStep, { type AvailabilitySubType } from "@/components/publish/AvailabilityTypeStep";
-import CalendarStep from "@/components/publish/CalendarStep";
+import PropertyTypeStep from "@/components/publish/PropertyTypeStep";
+import DetailsStep from "@/components/publish/DetailsStep";
+import PriceAvailabilityStep from "@/components/publish/PriceAvailabilityStep";
+import type { BookingMode } from "@/components/publish/BookingModeStep";
+import type { AvailabilitySubType } from "@/components/publish/AvailabilityTypeStep";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { validateListingText } from "@/lib/contentFilter";
 import { useQueryClient } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
+import type { PhotoItem } from "@/components/PhotoUploader";
 
-// 6 logical steps — some skipped dynamically based on bookingMode + availabilitySubType
-const ALL_STEPS = [
-  { id: "booking_mode",     icon: Zap,          title: "Réservation" },
-  { id: "availability_type", icon: Clock,        title: "Disponibilité" },
-  { id: "calendar",         icon: CalendarDays,  title: "Calendrier" },
-  { id: "description",      icon: Home,          title: "Détails" },
-  { id: "photos",           icon: Camera,        title: "Photos" },
-  { id: "summary",          icon: CheckCircle,   title: "Publier" },
+const STEPS = [
+  { id: "type_location", icon: MapPin, title: "Type & Lieu" },
+  { id: "photos", icon: Camera, title: "Photos" },
+  { id: "details", icon: Bed, title: "Détails" },
+  { id: "price_availability", icon: DollarSign, title: "Prix" },
+  { id: "summary", icon: CheckCircle, title: "Publier" },
 ] as const;
 
-type StepId = (typeof ALL_STEPS)[number]["id"];
+type StepId = (typeof STEPS)[number]["id"];
 
 const DEFAULT_CURRENCY = "XOF";
 
-import type { PhotoItem } from "@/components/PhotoUploader";
-
 interface ListingDraft {
-  title: string;
-  description: string;
   propertyType: string;
   location: string;
+  capacity: number;
+  title: string;
+  description: string;
   bedrooms: number;
   bathrooms: number;
-  capacity: number;
+  amenities: string[];
   price: string;
   currency: string;
   photos: PhotoItem[];
@@ -83,7 +67,6 @@ class StepRenderBoundary extends Component<
             <AlertCircle className="w-5 h-5" />
             <p className="font-medium">Une erreur est survenue sur cette étape.</p>
           </div>
-          <p className="text-sm text-muted-foreground">Retour à l&apos;étape précédente pour continuer.</p>
           <Button type="button" variant="outline" onClick={this.props.onFallback} className="rounded-xl">
             <ChevronLeft className="w-4 h-4 mr-1" /> Retour
           </Button>
@@ -105,7 +88,7 @@ class PageErrorBoundary extends Component<{ children: ReactNode }, { hasError: b
           <AlertCircle className="w-12 h-12 text-destructive mb-4" />
           <h1 className="text-xl font-bold text-foreground mb-2">Une erreur est survenue</h1>
           <p className="text-sm text-muted-foreground mb-6 max-w-md">
-            La page de création d&apos;annonce a rencontré un problème. Vos données sont sauvegardées automatiquement.
+            La page de création d&apos;annonce a rencontré un problème.
           </p>
           <div className="flex gap-3">
             <Button variant="outline" className="rounded-xl" onClick={() => this.setState({ hasError: false })}>
@@ -122,9 +105,9 @@ class PageErrorBoundary extends Component<{ children: ReactNode }, { hasError: b
   }
 }
 
-const DRAFT_STORAGE_KEY = "terangasejour_listing_draft";
+const DRAFT_STORAGE_KEY = "terangasejour_listing_draft_v2";
 
-function loadDraftFromStorage(): Partial<ListingDraft> | null {
+function loadDraft(): Partial<ListingDraft> & { _step?: number } | null {
   try {
     const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
     if (!raw) return null;
@@ -132,167 +115,96 @@ function loadDraftFromStorage(): Partial<ListingDraft> | null {
     if (Array.isArray(parsed.blockedDates)) {
       parsed.blockedDates = parsed.blockedDates.map((d: string) => new Date(d));
     }
-    if (parsed.availabilityType && !parsed.bookingMode) {
-      parsed.bookingMode = parsed.availabilityType === "always" ? "instant" : "request";
-    }
     parsed.photos = [];
-    return parsed as Partial<ListingDraft> & { _step?: number };
-  } catch {
-    return null;
-  }
+    return parsed;
+  } catch { return null; }
 }
 
-function saveDraftToStorage(draft: ListingDraft, currentStep: number) {
+function saveDraft(draft: ListingDraft, step: number) {
   try {
-    const serializable = {
-      title: draft.title,
-      description: draft.description,
+    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({
       propertyType: draft.propertyType,
       location: draft.location,
+      capacity: draft.capacity,
+      title: draft.title,
+      description: draft.description,
       bedrooms: draft.bedrooms,
       bathrooms: draft.bathrooms,
-      capacity: draft.capacity,
+      amenities: draft.amenities,
       price: draft.price,
-      currency: draft.currency,
       bookingMode: draft.bookingMode,
       availabilitySubType: draft.availabilitySubType,
       blockedDates: draft.blockedDates.map((d) => d.toISOString()),
-      _step: currentStep,
-    };
-    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(serializable));
+      _step: step,
+    }));
   } catch {}
-}
-
-/**
- * Dynamic step visibility:
- * - instant booking → skip availability_type + calendar
- * - request + contact → skip calendar
- * - request + calendar → show all
- */
-function getVisibleSteps(bookingMode: BookingMode, availabilitySubType: AvailabilitySubType): StepId[] {
-  const steps: StepId[] = ["booking_mode"];
-
-  if (bookingMode === "request") {
-    steps.push("availability_type");
-    if (availabilitySubType === "calendar") {
-      steps.push("calendar");
-    }
-  }
-  // instant → skip availability_type and calendar entirely
-
-  steps.push("description", "photos", "summary");
-  return steps;
 }
 
 const Publish = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const saved = useMemo(() => loadDraft(), []);
 
-  const savedDraft = useMemo(() => loadDraftFromStorage(), []) as (Partial<ListingDraft> & { _step?: number }) | null;
-
-  const [stepIndex, setStepIndex] = useState(() => {
-    const s = savedDraft?._step;
-    return Number.isInteger(s) ? Math.min(Math.max(s!, 0), ALL_STEPS.length - 1) : 0;
-  });
-  const [title, setTitle] = useState(savedDraft?.title ?? "");
-  const [description, setDescription] = useState(savedDraft?.description ?? "");
-  const [propertyType, setPropertyType] = useState(savedDraft?.propertyType ?? "villa");
-  const [location, setLocation] = useState(savedDraft?.location ?? "");
-  const [bedrooms, setBedrooms] = useState(savedDraft?.bedrooms ?? 1);
-  const [bathrooms, setBathrooms] = useState(savedDraft?.bathrooms ?? 1);
-  const [capacity, setCapacity] = useState(savedDraft?.capacity ?? 2);
-  const [price, setPrice] = useState(savedDraft?.price ?? "0");
+  const [step, setStep] = useState(() => Math.min(Math.max(saved?._step ?? 0, 0), 4));
+  const [propertyType, setPropertyType] = useState(saved?.propertyType ?? "villa");
+  const [location, setLocation] = useState(saved?.location ?? "");
+  const [capacity, setCapacity] = useState(saved?.capacity ?? 2);
+  const [title, setTitle] = useState(saved?.title ?? "");
+  const [description, setDescription] = useState(saved?.description ?? "");
+  const [bedrooms, setBedrooms] = useState(saved?.bedrooms ?? 1);
+  const [bathrooms, setBathrooms] = useState(saved?.bathrooms ?? 1);
+  const [amenities, setAmenities] = useState<string[]>(saved?.amenities ?? []);
+  const [price, setPrice] = useState(saved?.price ?? "0");
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
-  const [bookingMode, setBookingMode] = useState<BookingMode>(savedDraft?.bookingMode ?? "instant");
-  const [availabilitySubType, setAvailabilitySubType] = useState<AvailabilitySubType>(savedDraft?.availabilitySubType ?? "contact");
-  const [blockedDates, setBlockedDates] = useState<Date[]>(
-    Array.isArray(savedDraft?.blockedDates) ? savedDraft!.blockedDates : []
-  );
+  const [bookingMode, setBookingMode] = useState<BookingMode>(saved?.bookingMode ?? "instant");
+  const [availabilitySubType, setAvailabilitySubType] = useState<AvailabilitySubType>(saved?.availabilitySubType ?? "contact");
+  const [blockedDates, setBlockedDates] = useState<Date[]>(Array.isArray(saved?.blockedDates) ? saved!.blockedDates : []);
   const [loading, setLoading] = useState(false);
   const [isPhotoProcessing, setIsPhotoProcessing] = useState(false);
-  const [submitUploadProgress, setSubmitUploadProgress] = useState({ current: 0, total: 0 });
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+
+  const currentStepId = STEPS[step].id;
+
+  const draft = useMemo<ListingDraft>(() => ({
+    propertyType, location, capacity, title, description, bedrooms, bathrooms, amenities,
+    price, currency: DEFAULT_CURRENCY, photos: photos.filter((p) => !!p?.id && !!p?.file && !!p?.preview),
+    bookingMode, availabilitySubType, blockedDates,
+  }), [propertyType, location, capacity, title, description, bedrooms, bathrooms, amenities, price, photos, bookingMode, availabilitySubType, blockedDates]);
+
+  useEffect(() => { saveDraft(draft, step); }, [draft, step]);
+
+  const validPhotoCount = draft.photos.filter((p) => !p.error && p.validated).length;
+  const hasPhotoErrors = draft.photos.some((p) => !!p.error);
 
   const handleBookingModeChange = (mode: BookingMode) => {
-    console.log("bookingMode changed:", mode);
     setBookingMode(mode);
-    if (mode === "instant") {
-      setAvailabilitySubType("contact");
-      setBlockedDates([]);
-    }
+    if (mode === "instant") { setAvailabilitySubType("contact"); setBlockedDates([]); }
   };
 
   const handleAvailabilitySubTypeChange = (sub: AvailabilitySubType) => {
-    console.log("availabilitySubType changed:", sub);
     setAvailabilitySubType(sub);
-    if (sub === "contact") {
-      setBlockedDates([]);
-    }
+    if (sub === "contact") setBlockedDates([]);
   };
 
-  const visibleSteps = useMemo(() => getVisibleSteps(bookingMode, availabilitySubType), [bookingMode, availabilitySubType]);
-  const totalSteps = visibleSteps.length;
-
-  const safeStepIndex = useMemo(() => {
-    if (!Number.isInteger(stepIndex)) return 0;
-    return Math.min(Math.max(stepIndex, 0), totalSteps - 1);
-  }, [stepIndex, totalSteps]);
-
-  useEffect(() => {
-    if (safeStepIndex !== stepIndex) setStepIndex(safeStepIndex);
-  }, [safeStepIndex, stepIndex]);
-
-  const currentStepId = visibleSteps[safeStepIndex];
-
-  const listingDraft = useMemo<ListingDraft>(
-    () => ({
-      title: title ?? "",
-      description: description ?? "",
-      propertyType: propertyType ?? "villa",
-      location: location ?? "",
-      bedrooms: Number.isFinite(bedrooms) ? bedrooms : 1,
-      bathrooms: Number.isFinite(bathrooms) ? bathrooms : 1,
-      capacity: Number.isFinite(capacity) ? capacity : 1,
-      price: price ?? "0",
-      currency: DEFAULT_CURRENCY,
-      photos: Array.isArray(photos) ? photos.filter((p) => !!p?.id && !!p?.file && !!p?.preview) : [],
-      bookingMode: bookingMode ?? "instant",
-      availabilitySubType: availabilitySubType ?? "contact",
-      blockedDates: Array.isArray(blockedDates) ? blockedDates : [],
-    }),
-    [title, description, propertyType, location, bedrooms, bathrooms, capacity, price, photos, bookingMode, availabilitySubType, blockedDates]
-  );
-
-  useEffect(() => {
-    saveDraftToStorage(listingDraft, safeStepIndex);
-  }, [listingDraft, safeStepIndex]);
-
-  const validPhotoCount = listingDraft.photos.filter((p) => !p.error && p.validated).length;
-  const hasPhotoErrors = listingDraft.photos.some((p) => !!p.error);
-
-  const mapUploadError = (rawMessage?: string) => {
-    const message = (rawMessage || "").toLowerCase();
-    if (message.includes("mime") || message.includes("content-type")) return "Format non accepté. Utilisez JPG, PNG ou WEBP.";
-    if (message.includes("size") || message.includes("too large") || message.includes("file_size_limit")) return "Image trop lourde. Taille maximale : 20 MB.";
-    return "Échec d'upload. Vérifiez l'image et réessayez.";
-  };
-
-  const validateStep = (id: StepId): string | null => {
+  const validate = (id: StepId): string | null => {
     switch (id) {
-      case "description": {
-        if (!listingDraft.title.trim()) return "Veuillez saisir un titre pour votre annonce.";
-        if (!listingDraft.location.trim()) return "Veuillez indiquer la localisation.";
-        if (!listingDraft.price || Number.parseInt(listingDraft.price, 10) <= 0) return "Veuillez indiquer un prix valide.";
-        const titleCheck = validateListingText(listingDraft.title);
-        if (titleCheck) return titleCheck;
-        const descCheck = validateListingText(listingDraft.description);
-        if (descCheck) return descCheck;
+      case "type_location":
+        if (!location.trim()) return "Veuillez indiquer la localisation.";
         return null;
-      }
       case "photos":
-        if (isPhotoProcessing) return "Traitement des images en cours. Veuillez patienter.";
+        if (isPhotoProcessing) return "Traitement des images en cours.";
         if (validPhotoCount < 1) return "Ajoutez au moins 1 photo valide.";
-        if (hasPhotoErrors) return "Veuillez corriger les images avant de continuer.";
+        if (hasPhotoErrors) return "Corrigez les images avant de continuer.";
+        return null;
+      case "details":
+        if (!title.trim()) return "Veuillez saisir un titre.";
+        const titleCheck = validateListingText(title);
+        if (titleCheck) return titleCheck;
+        if (description) { const descCheck = validateListingText(description); if (descCheck) return descCheck; }
+        return null;
+      case "price_availability":
+        if (!price || Number.parseInt(price, 10) <= 0) return "Veuillez indiquer un prix valide.";
         return null;
       default:
         return null;
@@ -300,39 +212,29 @@ const Publish = () => {
   };
 
   const goNext = () => {
-    try {
-      const error = validateStep(currentStepId);
-      if (error) { toast.error(error); return; }
-      console.log("currentStep:", currentStepId, "bookingMode:", bookingMode, "availabilitySubType:", availabilitySubType);
-      const nextStep = Math.min(safeStepIndex + 1, totalSteps - 1);
-      window.scrollTo({ top: 0 });
-      setStepIndex(nextStep);
-    } catch {
-      toast.error("Une erreur est survenue. Veuillez réessayer.");
-    }
+    const error = validate(currentStepId);
+    if (error) { toast.error(error); return; }
+    window.scrollTo({ top: 0 });
+    setStep(Math.min(step + 1, 4));
   };
 
   const goBack = () => {
-    console.log("currentStep:", currentStepId, "bookingMode:", bookingMode, "availabilitySubType:", availabilitySubType);
-    const previousStep = Math.max(safeStepIndex - 1, 0);
     window.scrollTo({ top: 0 });
-    setStepIndex(previousStep);
+    setStep(Math.max(step - 1, 0));
   };
 
-  const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
-    return new Promise<T>((resolve, reject) => {
+  const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> =>
+    new Promise<T>((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error(`Délai dépassé : ${label}`)), ms);
       promise.then(
         (val) => { clearTimeout(timer); resolve(val); },
         (err) => { clearTimeout(timer); reject(err); },
       );
     });
-  };
 
   const uploadSinglePhoto = async (photo: PhotoItem, userId: string, retries = 2): Promise<string> => {
     const ext = photo.file.name.split(".").pop() || "jpg";
     const rawPath = `raw/${userId}/${crypto.randomUUID()}.${ext}`;
-
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const { error: uploadError } = await withTimeout(
@@ -346,7 +248,6 @@ const Publish = () => {
         await new Promise((r) => setTimeout(r, 1000));
       }
     }
-
     try {
       const { data: fnData, error: fnError } = await withTimeout(
         supabase.functions.invoke("process-listing-photo", { body: { rawPath } }),
@@ -355,33 +256,34 @@ const Publish = () => {
       if (fnError) throw fnError;
       if (fnData?.url) return fnData.url;
       throw new Error("No URL returned");
-    } catch (processErr) {
-      console.warn("[Publish] Server processing failed, using raw URL:", processErr);
+    } catch {
       const { data: urlData } = supabase.storage.from("listing-photos").getPublicUrl(rawPath);
       return urlData.publicUrl;
     }
   };
 
-  const handleSubmit = async () => {
-    if (!user) { toast.error("Veuillez vous connecter pour publier un logement"); navigate("/login"); return; }
-    if (isPhotoProcessing) { toast.error("Traitement des images en cours. Veuillez patienter."); return; }
+  const mapUploadError = (rawMessage?: string) => {
+    const message = (rawMessage || "").toLowerCase();
+    if (message.includes("mime") || message.includes("content-type")) return "Format non accepté. Utilisez JPG, PNG ou WEBP.";
+    if (message.includes("size") || message.includes("too large")) return "Image trop lourde (max 20 MB).";
+    return "Échec d'upload. Réessayez.";
+  };
 
-    const error = validateStep("description") || validateStep("photos");
+  const handleSubmit = async () => {
+    if (!user) { toast.error("Veuillez vous connecter"); navigate("/login"); return; }
+    if (isPhotoProcessing) { toast.error("Traitement en cours…"); return; }
+    const error = validate("details") || validate("photos") || validate("price_availability");
     if (error) { toast.error(error); return; }
 
     setLoading(true);
     try {
       const photoUrls: string[] = [];
-      const validPhotos = listingDraft.photos.filter((p) => !p.error);
-      setSubmitUploadProgress({ current: 0, total: validPhotos.length });
+      const validPhotos = draft.photos.filter((p) => !p.error);
+      setUploadProgress({ current: 0, total: validPhotos.length });
 
       for (let i = 0; i < validPhotos.length; i++) {
         const photo = validPhotos[i];
-        if (photo.file.size > 20 * 1024 * 1024) {
-          const sizeError = "Image trop lourde. Taille maximale : 20 MB.";
-          setPhotos((prev) => prev.map((p) => p.id === photo.id ? { ...p, error: sizeError, validated: false } : p));
-          throw new Error(`"${photo.file.name}" : ${sizeError}`);
-        }
+        if (photo.file.size > 20 * 1024 * 1024) throw new Error(`"${photo.file.name}" trop lourde`);
         try {
           const url = await uploadSinglePhoto(photo, user.id);
           photoUrls.push(url);
@@ -390,40 +292,34 @@ const Publish = () => {
           setPhotos((prev) => prev.map((p) => p.id === photo.id ? { ...p, error: friendlyError, validated: false } : p));
           throw new Error(`"${photo.file.name}" : ${friendlyError}`);
         }
-        setSubmitUploadProgress({ current: i + 1, total: validPhotos.length });
+        setUploadProgress({ current: i + 1, total: validPhotos.length });
       }
 
-      const safePrice = Number.parseInt(listingDraft.price || "0", 10);
-      const dbBookingMode = listingDraft.bookingMode === "request" ? "request" : "instant";
-      const dbAvailabilityMode = listingDraft.bookingMode === "instant" ? "always" : "request";
-
-      const insertPromise = supabase
-        .from("listings")
-        .insert({
-          user_id: user.id,
-          title: listingDraft.title.trim(),
-          description: listingDraft.description.trim() || null,
-          property_type: listingDraft.propertyType,
-          location: listingDraft.location.trim(),
-          bedrooms: listingDraft.bedrooms,
-          bathrooms: listingDraft.bathrooms,
-          capacity: listingDraft.capacity,
-          price_per_night: safePrice,
-          photos: photoUrls,
-          status: "published",
-          booking_mode: dbBookingMode,
-          availability_mode: dbAvailabilityMode,
-        })
-        .select("id")
-        .single();
+      const safePrice = Number.parseInt(price || "0", 10);
+      const dbBookingMode = bookingMode === "request" ? "request" : "instant";
+      const dbAvailabilityMode = bookingMode === "instant" ? "always" : "request";
 
       const { data: insertedListing, error: insertError } = await withTimeout(
-        Promise.resolve(insertPromise), 30_000, "insertion annonce",
+        Promise.resolve(
+          supabase.from("listings").insert({
+            user_id: user.id,
+            title: title.trim(),
+            description: description.trim() || null,
+            property_type: propertyType,
+            location: location.trim(),
+            bedrooms, bathrooms, capacity,
+            price_per_night: safePrice,
+            photos: photoUrls,
+            status: "published",
+            booking_mode: dbBookingMode,
+            availability_mode: dbAvailabilityMode,
+          }).select("id").single()
+        ), 30_000, "insertion annonce",
       );
       if (insertError) throw insertError;
 
-      if (listingDraft.bookingMode === "request" && listingDraft.availabilitySubType === "calendar" && listingDraft.blockedDates.length > 0 && insertedListing) {
-        const blockedRows = listingDraft.blockedDates.map((d) => ({
+      if (bookingMode === "request" && availabilitySubType === "calendar" && blockedDates.length > 0 && insertedListing) {
+        const blockedRows = blockedDates.map((d) => ({
           listing_id: insertedListing.id,
           date: format(d, "yyyy-MM-dd"),
         }));
@@ -437,96 +333,57 @@ const Publish = () => {
       queryClient.invalidateQueries({ queryKey: ["owner-listings"] });
       toast.success("Logement publié avec succès !");
       try { localStorage.removeItem(DRAFT_STORAGE_KEY); } catch {}
-      try { navigate("/dashboard"); } catch { window.location.href = "/dashboard"; }
+      navigate("/dashboard");
     } catch (err: any) {
-      console.error("[Publish] submit error:", err);
       const msg = err?.message || "";
-      if (msg.includes("Délai dépassé")) {
-        toast.error("La connexion a été trop longue. Vérifiez votre réseau et réessayez.");
-      } else {
-        toast.error(msg || "Une erreur est survenue lors de la publication.");
-      }
+      toast.error(msg.includes("Délai") ? "Connexion trop longue. Réessayez." : (msg || "Erreur lors de la publication."));
     } finally {
       setLoading(false);
-      setSubmitUploadProgress({ current: 0, total: 0 });
+      setUploadProgress({ current: 0, total: 0 });
     }
   };
 
-  const displayedPrice = Number.parseInt(listingDraft.price || "0", 10);
-
-  // Stepper always shows 6 logical steps; skipped steps are visually muted
-  const skippedStepIds = useMemo(() => {
-    return new Set(ALL_STEPS.filter((s) => !visibleSteps.includes(s.id)).map((s) => s.id));
-  }, [visibleSteps]);
-
-  const globalCurrentIndex = useMemo(() => {
-    return ALL_STEPS.findIndex((s) => s.id === currentStepId);
-  }, [currentStepId]);
-
-  const isLastStep = currentStepId === "summary";
-  const isFirstStep = safeStepIndex === 0;
-
-  const isNextDisabled = useMemo(() => {
-    if (loading) return true;
-    if (currentStepId === "photos" && (isPhotoProcessing || validPhotoCount < 1 || hasPhotoErrors)) return true;
-    return false;
-  }, [loading, currentStepId, isPhotoProcessing, validPhotoCount, hasPhotoErrors]);
-
-  // Dynamic CTA text
-  const nextButtonText = useMemo(() => {
-    if (currentStepId === "booking_mode" && bookingMode === "instant") {
-      return "Continuer";
-    }
-    return "Suivant";
-  }, [currentStepId, bookingMode]);
+  const displayedPrice = Number.parseInt(price || "0", 10);
+  const isLastStep = step === 4;
+  const isFirstStep = step === 0;
+  const isNextDisabled = loading || (currentStepId === "photos" && (isPhotoProcessing || validPhotoCount < 1 || hasPhotoErrors));
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar />
 
-      {/* Step indicator — always 6 steps, with skipped steps dimmed */}
+      {/* Progress bar */}
       <div className="sticky top-0 z-30 bg-card border-b border-border">
         <div className="container mx-auto px-4 py-3">
           <div className="max-w-2xl mx-auto">
-            <div className="flex items-center justify-between">
-              {ALL_STEPS.map((s, i) => {
-                const isSkipped = skippedStepIds.has(s.id);
-                const isCompleted = !isSkipped && i < globalCurrentIndex;
-                const isActive = !isSkipped && i === globalCurrentIndex;
-                const nextIsSkipped = i < ALL_STEPS.length - 1 ? skippedStepIds.has(ALL_STEPS[i + 1].id) : false;
-
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-muted-foreground">Étape {step + 1} sur 5</span>
+              <span className="text-xs font-semibold text-foreground">{STEPS[step].title}</span>
+            </div>
+            <Progress value={((step + 1) / 5) * 100} className="h-2" />
+            <div className="flex items-center justify-between mt-3">
+              {STEPS.map((s, i) => {
+                const isCompleted = i < step;
+                const isActive = i === step;
                 return (
                   <div key={s.id} className="flex items-center gap-1">
-                    <div
-                      className={`w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
-                        isCompleted
-                          ? "bg-accent text-accent-foreground"
-                          : isActive
-                          ? "bg-primary text-primary-foreground"
-                          : isSkipped
-                          ? "bg-muted text-muted-foreground/50 border border-dashed border-border"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
+                    <div className={cn(
+                      "w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors",
+                      isCompleted ? "bg-accent text-accent-foreground"
+                        : isActive ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    )}>
                       {isCompleted ? <CheckCircle className="w-3.5 h-3.5" /> : i + 1}
                     </div>
-                    <span
-                      className={`text-[10px] font-medium hidden lg:inline whitespace-nowrap ${
-                        isActive
-                          ? "text-foreground"
-                          : isSkipped
-                          ? "text-muted-foreground/50 line-through"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {s.title}
-                    </span>
-                    {i < ALL_STEPS.length - 1 && (
-                      <div
-                        className={`w-4 sm:w-6 lg:w-8 h-0.5 mx-0.5 shrink-0 ${
-                          isCompleted && !nextIsSkipped ? "bg-accent" : "bg-border"
-                        } ${isSkipped || nextIsSkipped ? "opacity-40" : ""}`}
-                      />
+                    <span className={cn(
+                      "text-[10px] font-medium hidden lg:inline whitespace-nowrap",
+                      isActive ? "text-foreground" : "text-muted-foreground"
+                    )}>{s.title}</span>
+                    {i < 4 && (
+                      <div className={cn(
+                        "w-4 sm:w-6 lg:w-8 h-0.5 mx-0.5 shrink-0",
+                        isCompleted ? "bg-accent" : "bg-border"
+                      )} />
                     )}
                   </div>
                 );
@@ -540,166 +397,99 @@ const Publish = () => {
         <div className="container mx-auto px-4 max-w-2xl">
           <StepRenderBoundary onFallback={goBack}>
             <div key={currentStepId} className="animate-fade-in">
-
-              {/* STEP 1: Booking Mode */}
-              {currentStepId === "booking_mode" && (
-                <BookingModeStep bookingMode={listingDraft.bookingMode} onChangeMode={handleBookingModeChange} />
-              )}
-
-              {/* STEP 2: Availability Type (only for request mode) */}
-              {currentStepId === "availability_type" && (
-                <AvailabilityTypeStep
-                  availabilitySubType={listingDraft.availabilitySubType}
-                  onChangeSubType={handleAvailabilitySubTypeChange}
+              {/* Step 1: Type & Location */}
+              {currentStepId === "type_location" && (
+                <PropertyTypeStep
+                  propertyType={propertyType}
+                  location={location}
+                  capacity={capacity}
+                  onChangeType={setPropertyType}
+                  onChangeLocation={setLocation}
+                  onChangeCapacity={setCapacity}
                 />
               )}
 
-              {/* STEP 3: Calendar (only for request + calendar) */}
-              {currentStepId === "calendar" && (
-                <CalendarStep
-                  blockedDates={listingDraft.blockedDates}
-                  onChangeBlockedDates={setBlockedDates}
-                />
-              )}
-
-              {/* STEP 4: Listing Details (description + price combined) */}
-              {currentStepId === "description" && (
-                <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
-                  <h2 className="font-display text-xl font-bold text-foreground">Décrivez votre logement</h2>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Titre de l'annonce *</label>
-                    <Input placeholder="Ex: Belle villa avec piscine à Saly" className="rounded-xl h-12" value={listingDraft.title} onChange={(e) => setTitle(e.target.value)} />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Description</label>
-                    <Textarea placeholder="Décrivez votre logement en détail..." rows={4} className="rounded-xl" value={listingDraft.description} onChange={(e) => setDescription(e.target.value)} />
-                    <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3 shrink-0" />
-                      Ne partagez pas vos coordonnées personnelles.
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5">Type de logement</label>
-                      <select className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm" value={listingDraft.propertyType} onChange={(e) => setPropertyType(e.target.value)}>
-                        <option value="villa">Villa</option>
-                        <option value="appartement">Appartement</option>
-                        <option value="maison">Maison d'hôtes</option>
-                        <option value="lodge">Lodge</option>
-                        <option value="loft">Loft</option>
-                        <option value="studio">Studio</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5"><MapPin className="w-3.5 h-3.5 inline mr-1" />Localisation *</label>
-                      <Input placeholder="Ville, quartier" className="rounded-xl h-12" value={listingDraft.location} onChange={(e) => setLocation(e.target.value)} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5"><Bed className="w-3.5 h-3.5 inline mr-1" />Chambres</label>
-                      <Input type="number" min={1} className="rounded-xl h-12" value={listingDraft.bedrooms} onChange={(e) => setBedrooms(Number(e.target.value) || 1)} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5"><Bath className="w-3.5 h-3.5 inline mr-1" />Salles de bain</label>
-                      <Input type="number" min={1} className="rounded-xl h-12" value={listingDraft.bathrooms} onChange={(e) => setBathrooms(Number(e.target.value) || 1)} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5"><Users className="w-3.5 h-3.5 inline mr-1" />Capacité</label>
-                      <Input type="number" min={1} className="rounded-xl h-12" value={listingDraft.capacity} onChange={(e) => setCapacity(Number(e.target.value) || 1)} />
-                    </div>
-                  </div>
-                  {/* Price section integrated */}
-                  <div className="border-t border-border pt-5">
-                    <h3 className="font-display text-lg font-semibold text-foreground mb-3">
-                      <DollarSign className="w-4 h-4 inline mr-1" />Prix par nuit
-                    </h3>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-1.5">
-                        Tarif ({listingDraft.currency}) *
-                      </label>
-                      <Input type="number" placeholder="Ex: 45000" className="rounded-xl h-14 text-lg font-semibold" value={listingDraft.price} onChange={(e) => setPrice(e.target.value || "0")} />
-                    </div>
-                    {Number.isFinite(displayedPrice) && displayedPrice > 0 && (
-                      <div className="bg-muted rounded-xl p-4 text-sm text-muted-foreground mt-3">
-                        Tarif affiché : <strong className="text-foreground">{displayedPrice.toLocaleString("fr-FR")} {listingDraft.currency} / nuit</strong>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 5: Photos */}
+              {/* Step 2: Photos */}
               {currentStepId === "photos" && (
                 <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
-                  <h2 className="font-display text-xl font-bold text-foreground"><Camera className="w-5 h-5 inline mr-2" />Ajoutez des photos</h2>
-                  <p className="text-sm text-muted-foreground">Ajoutez jusqu'à 10 photos de votre logement. Les images seront optimisées automatiquement.</p>
-                  <PhotoUploader photos={listingDraft.photos} onChange={setPhotos} onProcessingChange={setIsPhotoProcessing} />
+                  <h2 className="font-display text-xl font-bold text-foreground">
+                    <Camera className="w-5 h-5 inline mr-2" />Ajoutez des photos
+                  </h2>
+                  <div className="bg-accent/50 rounded-xl p-4 text-sm text-muted-foreground">
+                    📸 Les annonces avec photos reçoivent plus de réservations. La première image sera la couverture.
+                  </div>
+                  <PhotoUploader photos={draft.photos} onChange={setPhotos} onProcessingChange={setIsPhotoProcessing} />
                   {isPhotoProcessing && (
                     <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />Traitement des images en cours…
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />Traitement en cours…
                     </p>
                   )}
                 </div>
               )}
 
-              {/* STEP 6: Summary & Submit */}
+              {/* Step 3: Details */}
+              {currentStepId === "details" && (
+                <DetailsStep
+                  title={title}
+                  description={description}
+                  bedrooms={bedrooms}
+                  bathrooms={bathrooms}
+                  amenities={amenities}
+                  onChangeTitle={setTitle}
+                  onChangeDescription={setDescription}
+                  onChangeBedrooms={setBedrooms}
+                  onChangeBathrooms={setBathrooms}
+                  onChangeAmenities={setAmenities}
+                />
+              )}
+
+              {/* Step 4: Price & Availability */}
+              {currentStepId === "price_availability" && (
+                <PriceAvailabilityStep
+                  price={price}
+                  currency={DEFAULT_CURRENCY}
+                  bookingMode={bookingMode}
+                  availabilitySubType={availabilitySubType}
+                  blockedDates={blockedDates}
+                  onChangePrice={setPrice}
+                  onChangeBookingMode={handleBookingModeChange}
+                  onChangeAvailabilitySubType={handleAvailabilitySubTypeChange}
+                  onChangeBlockedDates={setBlockedDates}
+                />
+              )}
+
+              {/* Step 5: Summary */}
               {currentStepId === "summary" && (
                 <div className="bg-card rounded-2xl shadow-sm border border-border p-6 sm:p-8 space-y-5">
-                  <h2 className="font-display text-xl font-bold text-foreground"><CheckCircle className="w-5 h-5 inline mr-2" />Récapitulatif</h2>
-                  <p className="text-sm text-muted-foreground">Vérifiez les informations avant de publier votre logement.</p>
+                  <h2 className="font-display text-xl font-bold text-foreground">
+                    <CheckCircle className="w-5 h-5 inline mr-2" />Récapitulatif
+                  </h2>
+                  <p className="text-sm text-muted-foreground">Vérifiez avant de publier.</p>
 
                   <div className="space-y-3 text-sm">
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Mode de réservation</span>
-                      <span className="font-medium text-foreground">
-                        {listingDraft.bookingMode === "instant" ? "Réservation instantanée" : "Demande de disponibilité"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Disponibilité</span>
-                      <span className="font-medium text-foreground">
-                        {listingDraft.bookingMode === "instant" && "Toujours disponible"}
-                        {listingDraft.bookingMode === "request" && listingDraft.availabilitySubType === "contact" && "Sur demande (contact)"}
-                        {listingDraft.bookingMode === "request" && listingDraft.availabilitySubType === "calendar" && `Calendrier — ${(listingDraft.blockedDates || []).length} date(s) occupée(s)`}
-                      </span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Titre</span>
-                      <span className="font-medium text-foreground text-right max-w-[60%]">{listingDraft.title || "—"}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Type</span>
-                      <span className="font-medium text-foreground capitalize">{listingDraft.propertyType || "—"}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Localisation</span>
-                      <span className="font-medium text-foreground">{listingDraft.location || "—"}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Chambres / SdB / Capacité</span>
-                      <span className="font-medium text-foreground">{listingDraft.bedrooms || 1} / {listingDraft.bathrooms || 1} / {listingDraft.capacity || 1}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Prix par nuit</span>
-                      <span className="font-bold text-foreground">{(Number.isFinite(displayedPrice) ? displayedPrice : 0).toLocaleString("fr-FR")} {listingDraft.currency}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b border-border">
-                      <span className="text-muted-foreground">Photos</span>
-                      <span className="font-medium text-foreground">{(listingDraft.photos || []).length} photo(s)</span>
-                    </div>
+                    {[
+                      ["Type", propertyType],
+                      ["Localisation", location || "—"],
+                      ["Capacité", `${capacity} voyageur(s)`],
+                      ["Titre", title || "—"],
+                      ["Chambres / SdB", `${bedrooms} / ${bathrooms}`],
+                      ["Équipements", amenities.length > 0 ? amenities.join(", ") : "Aucun"],
+                      ["Prix / nuit", `${(Number.isFinite(displayedPrice) ? displayedPrice : 0).toLocaleString("fr-FR")} ${DEFAULT_CURRENCY}`],
+                      ["Mode", bookingMode === "instant" ? "Réservation instantanée" : "Demande de disponibilité"],
+                      ["Photos", `${draft.photos.length} photo(s)`],
+                    ].map(([label, value]) => (
+                      <div key={label} className="flex justify-between py-2 border-b border-border">
+                        <span className="text-muted-foreground">{label}</span>
+                        <span className="font-medium text-foreground text-right max-w-[60%] capitalize">{value}</span>
+                      </div>
+                    ))}
                   </div>
 
-                  {(listingDraft.photos || []).length > 0 && (
+                  {draft.photos.length > 0 && (
                     <div className="grid grid-cols-5 gap-2">
-                      {(listingDraft.photos || []).slice(0, 5).map((p, i) => (
+                      {draft.photos.slice(0, 5).map((p, i) => (
                         <div key={p?.id || i} className="relative w-full aspect-[4/3] rounded-lg border border-border overflow-hidden bg-muted">
-                          {p?.preview ? (
-                            <img src={p.preview} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                          ) : null}
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <Camera className="w-4 h-4 text-muted-foreground" />
-                          </div>
+                          {p?.preview && <img src={p.preview} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />}
                         </div>
                       ))}
                     </div>
@@ -715,40 +505,23 @@ const Publish = () => {
               <Button type="button" variant="outline" onClick={goBack} className="rounded-xl h-12 px-6" disabled={loading}>
                 <ChevronLeft className="w-4 h-4 mr-1" />Retour
               </Button>
-            ) : (
-              <div />
-            )}
+            ) : <div />}
 
             {!isLastStep ? (
-              <Button
-                type="button"
-                onClick={goNext}
-                disabled={isNextDisabled}
-                className="rounded-xl h-12 px-6 bg-primary text-primary-foreground"
-              >
-                {nextButtonText}
-                <ChevronRight className="w-4 h-4 ml-1" />
+              <Button type="button" onClick={goNext} disabled={isNextDisabled} className="rounded-xl h-12 px-6 bg-primary text-primary-foreground">
+                Suivant<ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             ) : (
-              <Button
-                type="button"
-                onClick={handleSubmit}
-                disabled={loading || isPhotoProcessing}
-                className="rounded-xl h-12 px-8 bg-primary text-primary-foreground font-medium"
-              >
-                {loading ? (
-                  <><Loader2 className="w-4 h-4 animate-spin mr-2" />Publication en cours…</>
-                ) : (
-                  "Publier mon logement"
-                )}
+              <Button type="button" onClick={handleSubmit} disabled={loading || isPhotoProcessing} className="rounded-xl h-12 px-8 bg-primary text-primary-foreground font-medium">
+                {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Publication…</> : "Publier mon logement"}
               </Button>
             )}
           </div>
 
-          {loading && submitUploadProgress.total > 0 && (
+          {loading && uploadProgress.total > 0 && (
             <div className="mt-3 bg-muted/50 border border-border rounded-xl p-3 space-y-2">
-              <p className="text-xs text-muted-foreground">Upload des images : {submitUploadProgress.current}/{submitUploadProgress.total}</p>
-              <Progress value={(submitUploadProgress.current / submitUploadProgress.total) * 100} className="h-2" />
+              <p className="text-xs text-muted-foreground">Upload : {uploadProgress.current}/{uploadProgress.total}</p>
+              <Progress value={(uploadProgress.current / uploadProgress.total) * 100} className="h-2" />
             </div>
           )}
         </div>
