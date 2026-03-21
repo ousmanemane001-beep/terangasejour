@@ -306,7 +306,7 @@ const Navbar = () => {
               {user && !isAdmin && (
                 <div className="px-5 py-4 border-t border-border">
                   <Link to={isHost ? "/create-listing" : "/become-host"} onClick={close}>
-                    <Button className="w-full rounded-lg font-semibold text-sm" style={{ backgroundColor: 'hsl(var(--search-highlight))', color: '#fff' }}>
+                    <Button className="w-full rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90">
                       <PlusCircle className="w-4 h-4 mr-2" />
                       Publier mon logement
                     </Button>
