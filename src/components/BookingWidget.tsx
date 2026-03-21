@@ -496,16 +496,30 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
         )}
       </AnimatePresence>
 
-      {/* Request mode: message field */}
+      {/* Request mode: predefined messages */}
       {mode === "request" && nights > 0 && step === "dates" && (
-        <div className="px-6 pb-4">
-          <Textarea
-            placeholder="Message à l'hôte (optionnel)..."
-            className="rounded-xl"
-            rows={3}
-            value={requestMessage}
-            onChange={(e) => setRequestMessage(e.target.value)}
-          />
+        <div className="px-6 pb-4 space-y-2">
+          <p className="text-xs text-muted-foreground font-medium">Message à l'hôte :</p>
+          {[
+            "Je souhaite vérifier la disponibilité pour ces dates.",
+            "Est-il possible d'arriver plus tard ?",
+            "Y a-t-il des équipements spécifiques disponibles ?",
+            "Je voyage en famille, est-ce adapté ?",
+          ].map((msg) => (
+            <button
+              key={msg}
+              type="button"
+              onClick={() => setRequestMessage(msg)}
+              className={cn(
+                "w-full text-left text-sm px-3 py-2.5 rounded-xl border transition-all",
+                requestMessage === msg
+                  ? "border-primary bg-primary/5 text-foreground font-medium"
+                  : "border-border text-muted-foreground hover:border-primary/40 hover:bg-muted/50"
+              )}
+            >
+              {msg}
+            </button>
+          ))}
         </div>
       )}
 
