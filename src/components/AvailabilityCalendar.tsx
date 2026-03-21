@@ -1,18 +1,64 @@
-import { Calendar } from "@/components/ui/calendar";
-import { useBookedDates, getDisabledDates } from "@/hooks/useAvailability";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import CalendarGrid from "@/components/calendar/CalendarGrid";
+import { useCalendarData } from "@/components/calendar/useCalendarData";
 
 interface AvailabilityCalendarProps {
   listingId: string;
+  pricePerNight?: number;
+  onDatesChange?: (checkIn?: Date, checkOut?: Date) => void;
+  interactive?: boolean;
 }
 
-const AvailabilityCalendar = ({ listingId }: AvailabilityCalendarProps) => {
-  const { data: bookedRanges, isLoading } = useBookedDates(listingId);
-  const disabledDates = bookedRanges ? getDisabledDates(bookedRanges) : [];
+const AvailabilityCalendar = ({
+  listingId,
+  pricePerNight,
+  onDatesChange,
+  interactive = false,
+}: AvailabilityCalendarProps) => {
+  const { dateMap, isLoading } = useCalendarData(listingId);
+  const [checkIn, setCheckIn] = useState<Date>();
+  const [checkOut, setCheckOut] = useState<Date>();
+
+  const handleSelectDate = (date: Date) => {
+    if (!interactive) return;
+
+    if (!checkIn || (checkIn && checkOut)) {
+      // Start new selection
+      setCheckIn(date);
+      setCheckOut(undefined);
+      onDatesChange?.(date, undefined);
+    } else {
+      // Set check-out
+      if (date > checkIn) {
+        // Verify no booked dates in between
+        const current = new Date(checkIn);
+        current.setDate(current.getDate() + 1);
+        while (current < date) {
+          const key = current.toISOString().split("T")[0];
+          const info = dateMap.get(key);
+          if (info && (info.status === "booked" || info.status === "blocked")) {
+            // Can't select across booked dates — restart
+            setCheckIn(date);
+            setCheckOut(undefined);
+            onDatesChange?.(date, undefined);
+            return;
+          }
+          current.setDate(current.getDate() + 1);
+        }
+        setCheckOut(date);
+        onDatesChange?.(checkIn, date);
+      } else {
+        setCheckIn(date);
+        setCheckOut(undefined);
+        onDatesChange?.(date, undefined);
+      }
+    }
+  };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-6">
+      <div className="flex justify-center py-8">
         <Loader2 className="w-5 h-5 animate-spin text-primary" />
       </div>
     );
@@ -20,24 +66,18 @@ const AvailabilityCalendar = ({ listingId }: AvailabilityCalendarProps) => {
 
   return (
     <div>
-      <h2 className="font-display text-xl font-semibold text-foreground mb-4">Disponibilité</h2>
-      <div className="flex items-center gap-4 mb-3 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-green-500/20 border border-green-500/40" /> Disponible</span>
-        <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-destructive/20 border border-destructive/40" /> Réservé</span>
+      <h2 className="font-display text-xl font-semibold text-foreground mb-4">
+        Disponibilité
+      </h2>
+      <div className="bg-card rounded-2xl border border-border p-4 sm:p-6 shadow-[var(--shadow-card)]">
+        <CalendarGrid
+          dateMap={dateMap}
+          checkIn={interactive ? checkIn : undefined}
+          checkOut={interactive ? checkOut : undefined}
+          onSelectDate={handleSelectDate}
+          pricePerNight={pricePerNight}
+        />
       </div>
-      <Calendar
-        mode="single"
-        disabled={[
-          (date) => date < new Date(),
-          ...disabledDates.map((d) => new Date(d)),
-        ]}
-        modifiers={{ booked: disabledDates }}
-        modifiersClassNames={{
-          booked: "!bg-destructive/20 !text-destructive line-through",
-        }}
-        className="rounded-xl border border-border p-3"
-        numberOfMonths={2}
-      />
     </div>
   );
 };
