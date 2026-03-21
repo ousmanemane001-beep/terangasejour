@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useState, useEffect, useCallback } from "react";
+import { forwardRef, useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -6,6 +6,7 @@ import SearchBar from "@/components/SearchBar";
 import ListingCard from "@/components/ListingCard";
 import Footer from "@/components/Footer";
 import OusmaneChatbot from "@/components/OusmaneChatbot";
+import CategoryFilter, { type CategoryKey } from "@/components/CategoryFilter";
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
 import { useDestinationCounts } from "@/hooks/useDestinationCounts";
@@ -63,6 +64,7 @@ const trustPoints = [
 const Index = () => {
   const { data: dbListings, isLoading } = useListings(12);
   const { data: destCounts } = useDestinationCounts(DESTINATION_CITIES);
+  const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
@@ -124,8 +126,15 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ═══ CATÉGORIES ═══ */}
+      <section className="border-b border-border sticky top-0 z-20 bg-background">
+        <div className="container mx-auto px-4">
+          <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
+        </div>
+      </section>
+
       {/* Listings grid directly below */}
-      <section className="pb-8">
+      <section className="py-6 pb-8">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-base md:text-xl font-bold text-foreground">
@@ -143,7 +152,7 @@ const Index = () => {
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
           ) : dbListings && dbListings.length > 0 ? (
-            <ListingsGrid listings={dbListings} />
+            <ListingsGrid listings={dbListings} activeCategory={activeCategory} />
           ) : (
             <p className="text-center text-muted-foreground py-12">Aucun logement disponible pour le moment.</p>
           )}
@@ -289,13 +298,42 @@ const Index = () => {
   );
 };
 
-/* ── Listings: 2-col grid on mobile (Airbnb), 4-col on desktop ── */
-const ListingsGrid = ({ listings }: { listings: DBListing[] }) => {
+const COASTAL_CITIES = ["saly", "somone", "mbour", "cap skirring", "gorée", "saint-louis", "ziguinchor"];
+const REGION_CITIES = ["ziguinchor", "tambacounda", "kaolack", "thiès", "kédougou", "fatick", "kolda"];
+
+const ListingsGrid = ({ listings, activeCategory }: { listings: DBListing[]; activeCategory: CategoryKey }) => {
   const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
+
+  const filtered = useMemo(() => {
+    if (activeCategory === "all") return listings;
+    return listings.filter((l) => {
+      const city = (l.city || l.location || "").toLowerCase();
+      const type = l.property_type.toLowerCase();
+      switch (activeCategory) {
+        case "dakar": return city.includes("dakar");
+        case "bord_mer": return COASTAL_CITIES.some((c) => city.includes(c)) || type.includes("plage");
+        case "mieux_notes": return true; // sorted below
+        case "moins_chers": return true; // sorted below
+        case "populaires": return true;
+        case "region": return REGION_CITIES.some((c) => city.includes(c));
+        case "hotels": return type.includes("hotel") || type.includes("hôtel") || type.includes("résidence");
+        case "verifies": return l.verified;
+        default: return true;
+      }
+    }).sort((a, b) => {
+      if (activeCategory === "moins_chers") return a.price_per_night - b.price_per_night;
+      if (activeCategory === "mieux_notes") {
+        const ra = ratingsMap?.[a.id]?.avg ?? 0;
+        const rb = ratingsMap?.[b.id]?.avg ?? 0;
+        return rb - ra;
+      }
+      return 0;
+    });
+  }, [listings, activeCategory, ratingsMap]);
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-      {listings.map((listing, i) => (
+      {filtered.length > 0 ? filtered.map((listing, i) => (
         <motion.div
           key={listing.id}
           initial={{ opacity: 0, y: 16 }}
@@ -305,7 +343,9 @@ const ListingsGrid = ({ listings }: { listings: DBListing[] }) => {
         >
           <ListingCard listing={listing} rating={ratingsMap?.[listing.id]} />
         </motion.div>
-      ))}
+      )) : (
+        <p className="col-span-full text-center text-muted-foreground py-8">Aucun logement dans cette catégorie.</p>
+      )}
     </div>
   );
 };
