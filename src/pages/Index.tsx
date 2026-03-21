@@ -88,10 +88,7 @@ const Index = () => {
         <CategorySection
           title="Logements Île du Saloum"
           listings={dbListings}
-          filterFn={(l) => {
-            const city = (l.city || l.location || "").toLowerCase();
-            return city.includes("saloum") || city.includes("foundiougne") || city.includes("ndangane") || city.includes("palmarin");
-          }}
+          filterFn={() => true}
           isLoading={isLoading}
         />
         <CategorySection
