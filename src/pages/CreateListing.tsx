@@ -49,6 +49,30 @@ const rulesList = [
   "Arrivée autonome (serrure connectée)",
 ];
 
+const cancellationPolicies = [
+  {
+    value: "flexible",
+    label: "Flexible",
+    icon: "✅",
+    desc: "Annulation gratuite jusqu'à 24h avant l'arrivée. Remboursement intégral.",
+    color: "text-emerald-600",
+  },
+  {
+    value: "moderate",
+    label: "Modérée",
+    icon: "⚠️",
+    desc: "Annulation gratuite jusqu'à 5 jours avant l'arrivée. 50% remboursé après.",
+    color: "text-amber-600",
+  },
+  {
+    value: "strict",
+    label: "Stricte",
+    icon: "🚫",
+    desc: "Annulation gratuite dans les 48h suivant la réservation. Aucun remboursement après.",
+    color: "text-red-600",
+  },
+];
+
 const bookingModes: Array<{
   value: "instant" | "request";
   label: string;
