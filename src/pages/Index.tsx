@@ -64,6 +64,7 @@ const trustPoints = [
 const Index = () => {
   const { data: dbListings, isLoading } = useListings(12);
   const { data: destCounts } = useDestinationCounts(DESTINATION_CITIES);
+  const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
