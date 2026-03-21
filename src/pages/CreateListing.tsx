@@ -143,7 +143,7 @@ const CreateListing = () => {
     );
   };
 
-  const totalSteps = bookingMode === "request" ? 6 : 5;
+  const totalSteps = 6;
   const activeStep = Math.min(step, totalSteps);
   const progress = (activeStep / totalSteps) * 100;
 
