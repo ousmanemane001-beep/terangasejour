@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConversations, useMessages, useSendMessage } from "@/hooks/useConversations";
 import { useConversationBookingStatus } from "@/hooks/useConversationBookingStatus";
+import { useCreateNotification } from "@/hooks/useAdmin";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import ConversationList from "@/components/messaging/ConversationList";
