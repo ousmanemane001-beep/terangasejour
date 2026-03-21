@@ -34,7 +34,7 @@ function useGuestProfiles(guestIds: string[]) {
         .select("id, first_name, last_name")
         .in("id", guestIds);
       const map: Record<string, GuestProfile> = {};
-      data?.forEach((p) => { map[p.id] = p; });
+      (data as any[])?.forEach((p: any) => { map[p.id] = p; });
       return map;
     },
     enabled: guestIds.length > 0,
