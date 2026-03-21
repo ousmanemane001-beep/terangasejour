@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import SeasonalPriceManager from "@/components/SeasonalPriceManager";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -308,6 +309,13 @@ const EditListing = () => {
                       <img key={i} src={photo} alt="" className="w-full aspect-square object-cover rounded-lg" />
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Prix saisonniers */}
+              {id && listing && (
+                <div className="border-t border-border pt-6 mt-6">
+                  <SeasonalPriceManager listingId={id} basePricePerNight={listing.price_per_night} />
                 </div>
               )}
 

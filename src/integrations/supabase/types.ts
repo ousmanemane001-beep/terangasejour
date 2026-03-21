@@ -578,6 +578,44 @@ export type Database = {
           },
         ]
       }
+      seasonal_prices: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          listing_id: string
+          price_per_night: number
+          season_name: string
+          start_date: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          listing_id: string
+          price_per_night: number
+          season_name: string
+          start_date: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          listing_id?: string
+          price_per_night?: number
+          season_name?: string
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seasonal_prices_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string

@@ -192,6 +192,17 @@ const PropertyDetail = () => {
                   <div className="flex gap-2">
                     <button className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"><Heart className="w-4 h-4" /></button>
                     <button
+                      className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-[#25D366]/10 text-[#25D366] transition-colors"
+                      onClick={() => {
+                        const url = window.location.href;
+                        const text = `${listing.title} — ${listing.price.toLocaleString("fr-FR")} F/nuit sur TerangaSéjour\n${url}`;
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                      }}
+                      aria-label="Partager sur WhatsApp"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                    </button>
+                    <button
                       className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"
                       onClick={async () => {
                         const url = window.location.href;
