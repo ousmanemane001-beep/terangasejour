@@ -101,11 +101,17 @@ export type Database = {
           check_in: string
           check_out: string
           created_at: string
+          expires_at: string | null
+          guest_email: string | null
           guest_id: string
+          guest_name: string | null
+          guest_phone: string | null
           guests: number
           id: string
           listing_id: string
+          nationality: string | null
           nights: number
+          passport_number: string | null
           payment_method: string
           payment_status: string
           price_per_night: number
@@ -118,11 +124,17 @@ export type Database = {
           check_in: string
           check_out: string
           created_at?: string
+          expires_at?: string | null
+          guest_email?: string | null
           guest_id: string
+          guest_name?: string | null
+          guest_phone?: string | null
           guests?: number
           id?: string
           listing_id: string
+          nationality?: string | null
           nights: number
+          passport_number?: string | null
           payment_method?: string
           payment_status?: string
           price_per_night: number
@@ -135,11 +147,17 @@ export type Database = {
           check_in?: string
           check_out?: string
           created_at?: string
+          expires_at?: string | null
+          guest_email?: string | null
           guest_id?: string
+          guest_name?: string | null
+          guest_phone?: string | null
           guests?: number
           id?: string
           listing_id?: string
+          nationality?: string | null
           nights?: number
+          passport_number?: string | null
           payment_method?: string
           payment_status?: string
           price_per_night?: number
@@ -550,6 +568,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      expire_pending_bookings: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
