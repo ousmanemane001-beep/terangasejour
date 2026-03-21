@@ -213,11 +213,11 @@ const PropertyDetail = () => {
                 <div className="flex flex-wrap gap-3 mt-3">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
                     <Eye className="w-3.5 h-3.5" />
-                    <span>{Math.floor(Math.random() * 15) + 3} personnes consultent ce logement</span>
+                    <span>{socialProof.viewers} personnes consultent ce logement</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
                     <Clock className="w-3.5 h-3.5" />
-                    <span>Dernière réservation il y a {Math.floor(Math.random() * 20) + 1}h</span>
+                    <span>Dernière réservation il y a {socialProof.lastBookingHours}h</span>
                   </div>
                 </div>
 
