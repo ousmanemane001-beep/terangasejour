@@ -37,10 +37,6 @@ const Index = () => {
             <SearchBar />
           </div>
         </div>
-        {/* Categories */}
-        <div className="container mx-auto px-4">
-          <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
-        </div>
       </div>
 
       {/* ═══ CATEGORIZED LISTINGS ═══ */}
