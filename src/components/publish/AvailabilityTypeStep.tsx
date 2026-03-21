@@ -1,4 +1,4 @@
-import { Phone, CalendarDays } from "lucide-react";
+import { MessageCircle, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type AvailabilitySubType = "contact" | "calendar";
@@ -40,7 +40,7 @@ const AvailabilityTypeStep = ({
               ? "bg-primary/10 text-primary"
               : "bg-muted text-muted-foreground group-hover:text-primary/60"
           )}>
-            <Phone className="w-7 h-7" />
+            <MessageCircle className="w-7 h-7" />
           </div>
           <div className="text-center space-y-1.5">
             <p className="font-semibold text-foreground">Me contacter</p>

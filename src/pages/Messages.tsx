@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConversations, useMessages, useSendMessage } from "@/hooks/useConversations";
 import { useConversationBookingStatus } from "@/hooks/useConversationBookingStatus";
+import { useCreateNotification } from "@/hooks/useAdmin";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import ConversationList from "@/components/messaging/ConversationList";
@@ -21,6 +22,7 @@ const Messages = () => {
   const { data: conversations, isLoading: convsLoading } = useConversations();
   const { data: messages, isLoading: msgsLoading } = useMessages(selectedConv || undefined);
   const sendMessage = useSendMessage();
+  const createNotification = useCreateNotification();
 
   const selectedConversation = conversations?.find((c) => c.id === selectedConv);
 
@@ -150,6 +152,24 @@ const Messages = () => {
                   senderId: user.id,
                   content,
                 });
+                // Send notification to the other participant
+                if (selectedConversation) {
+                  const recipientId = selectedConversation.guest_id === user.id
+                    ? selectedConversation.host_id
+                    : selectedConversation.guest_id;
+                  const senderName = getOtherName({
+                    ...selectedConversation,
+                    guest_id: recipientId,
+                    host_id: user.id,
+                  } as any);
+                  await createNotification.mutateAsync({
+                    user_id: recipientId,
+                    type: "new_message",
+                    title: "Nouveau message",
+                    message: content.length > 80 ? content.slice(0, 80) + "…" : content,
+                    data: { conversation_id: selectedConv },
+                  }).catch(() => {}); // Don't block on notification failure
+                }
               }}
               isSending={sendMessage.isPending}
             />
