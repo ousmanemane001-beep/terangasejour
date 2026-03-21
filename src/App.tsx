@@ -27,6 +27,8 @@ import AdminVerification from "./pages/AdminVerification";
 import AdminPanel from "./pages/AdminPanel";
 import EditListing from "./pages/EditListing";
 import Messages from "./pages/Messages";
+import CGU from "./pages/CGU";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
