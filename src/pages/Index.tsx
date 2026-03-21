@@ -62,18 +62,18 @@ const Index = () => {
           isLoading={isLoading}
         />
         <CategorySection
+          title="Logements populaires"
+          listings={dbListings}
+          filterFn={() => true}
+          isLoading={isLoading}
+        />
+        <CategorySection
           title="Hôtels & Résidences"
           listings={dbListings}
           filterFn={(l) => {
             const type = l.property_type.toLowerCase();
             return type.includes("hotel") || type.includes("hôtel") || type.includes("résidence") || type.includes("residence");
           }}
-          isLoading={isLoading}
-        />
-        <CategorySection
-          title="Logements populaires"
-          listings={dbListings}
-          filterFn={() => true}
           isLoading={isLoading}
         />
         <CategorySection
