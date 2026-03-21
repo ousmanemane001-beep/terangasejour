@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import {
   Star, MapPin, Heart, Share2, Bed, Bath, Users,
   Wifi, Car, AirVent, ChefHat, Waves, ArrowLeft, Loader2,
-  Tv, Lock, Flower2, ShieldCheck, MessageCircle,
+  Tv, Lock, Flower2, ShieldCheck, MessageCircle, CheckCircle, AlertTriangle,
 } from "lucide-react";
 import { useState } from "react";
 
