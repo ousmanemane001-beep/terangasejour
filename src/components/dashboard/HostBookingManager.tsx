@@ -295,20 +295,123 @@ function RequestColumn({
   );
 }
 
+// ─── Pending Bookings Card ───
+function PendingBookingCard({
+  booking, listingTitle, guestName, onConfirm, onDecline, isPending,
+}: {
+  booking: any;
+  listingTitle: string;
+  guestName: string;
+  onConfirm: () => void;
+  onDecline: () => void;
+  isPending: boolean;
+}) {
+  const nights = Math.ceil(
+    (new Date(booking.check_out).getTime() - new Date(booking.check_in).getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  return (
+    <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2.5">
+            <Avatar className="h-9 w-9 shrink-0">
+              <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                {(guestName || "V").slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-semibold text-foreground text-sm">{guestName}</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <MapPin className="w-3 h-3" /> {listingTitle}
+              </p>
+            </div>
+          </div>
+          <BookingStatusBadge status={booking.status} />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <CalendarDays className="w-3.5 h-3.5 text-primary/60" />
+            {format(new Date(booking.check_in), "d MMM", { locale: fr })} → {format(new Date(booking.check_out), "d MMM", { locale: fr })}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5 text-primary/60" />
+            {booking.guests} voyageur{booking.guests > 1 ? "s" : ""} · {nights} nuit{nights > 1 ? "s" : ""}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between bg-secondary rounded-lg px-3 py-2">
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <CreditCard className="w-3 h-3" /> {booking.payment_status === "paid" ? "Payé" : "Non payé"}
+          </span>
+          <span className="font-bold text-foreground text-sm">{(booking.total_price || 0).toLocaleString("fr-FR")} F</span>
+        </div>
+
+        {booking.expires_at && booking.status === "pending" && (
+          <CountdownTimer expiresAt={booking.expires_at} variant="inline" />
+        )}
+
+        {booking.status === "pending" && (
+          <div className="flex gap-1.5">
+            <Button
+              size="sm"
+              className="rounded-full h-8 px-3 text-xs bg-green-600 hover:bg-green-700 text-white gap-1 flex-1"
+              disabled={isPending}
+              onClick={onConfirm}
+            >
+              <Check className="w-3 h-3" /> Confirmer
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-full h-8 px-3 text-xs text-destructive border-destructive/30 hover:bg-destructive/10 gap-1 flex-1"
+              disabled={isPending}
+              onClick={onDecline}
+            >
+              <X className="w-3 h-3" /> Refuser
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Main Component ───
 export default function HostBookingManager() {
   const { data: requests, isLoading } = useBookingRequests();
   const { data: listings } = useOwnerListings();
+  const { data: ownerBookings } = useOwnerBookings();
   const respondToRequest = useRespondToRequest();
   const isMobile = useIsMobile();
+  const qc = useQueryClient();
   const [activeColumn, setActiveColumn] = useState<"pending" | "confirmed" | "declined">("pending");
+
+  // Real-time subscription for bookings
+  useEffect(() => {
+    const channel = supabase
+      .channel("host-bookings-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => {
+        qc.invalidateQueries({ queryKey: ["owner-bookings"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "booking_requests" }, () => {
+        qc.invalidateQueries({ queryKey: ["booking-requests"] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
 
   // Build listings map
   const listingsMap: Record<string, string> = {};
   listings?.forEach((l) => { listingsMap[l.id] = l.title; });
 
-  // Gather guest IDs
-  const guestIds = [...new Set(requests?.map((r) => r.guest_id) || [])];
+  // Gather guest IDs from both requests and bookings
+  const allGuestIds = [
+    ...(requests?.map((r) => r.guest_id) || []),
+    ...(ownerBookings?.map((b) => b.guest_id) || []),
+  ];
+  const guestIds = [...new Set(allGuestIds)];
   const { data: guestProfiles } = useGuestProfiles(guestIds);
 
   // Categorize requests
@@ -330,6 +433,10 @@ export default function HostBookingManager() {
     return false;
   }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || [];
 
+  // Pending bookings (instant bookings awaiting payment)
+  const pendingBookings = ownerBookings?.filter((b) => b.status === "pending") || [];
+  const confirmedBookings = ownerBookings?.filter((b) => b.status === "confirmed") || [];
+
   const handleAccept = (id: string) => {
     respondToRequest.mutate(
       { requestId: id, status: "approved" },
@@ -344,6 +451,24 @@ export default function HostBookingManager() {
     );
   };
 
+  const handleConfirmBooking = async (bookingId: string) => {
+    const { error } = await supabase.from("bookings").update({
+      status: "confirmed", updated_at: new Date().toISOString(),
+    } as any).eq("id", bookingId);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Réservation confirmée !");
+    qc.invalidateQueries({ queryKey: ["owner-bookings"] });
+  };
+
+  const handleDeclineBooking = async (bookingId: string) => {
+    const { error } = await supabase.from("bookings").update({
+      status: "cancelled", updated_at: new Date().toISOString(),
+    } as any).eq("id", bookingId);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Réservation refusée.");
+    qc.invalidateQueries({ queryKey: ["owner-bookings"] });
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -352,19 +477,19 @@ export default function HostBookingManager() {
     );
   }
 
+  // Combined pending count
+  const totalPending = pending.length + pendingBookings.length;
+
   // ─── Mobile: Tabs + Swipeable Cards ───
   if (isMobile) {
     const columns = [
-      { key: "pending" as const, label: "En attente", count: pending.length, data: pending },
-      { key: "confirmed" as const, label: "Confirmées", count: confirmed.length, data: confirmed },
-      { key: "declined" as const, label: "Refusées", count: declined.length, data: declined },
+      { key: "pending" as const, label: "En attente", count: totalPending },
+      { key: "confirmed" as const, label: "Confirmées", count: confirmed.length + confirmedBookings.length },
+      { key: "declined" as const, label: "Refusées", count: declined.length },
     ];
-
-    const activeData = columns.find((c) => c.key === activeColumn)?.data || [];
 
     return (
       <div className="space-y-4">
-        {/* Mobile column switcher */}
         <div className="flex gap-1 bg-muted/50 rounded-xl p-1">
           {columns.map((col) => (
             <button
@@ -383,54 +508,113 @@ export default function HostBookingManager() {
           ))}
         </div>
 
-        {/* Swipe hint */}
-        {activeColumn === "pending" && pending.length > 0 && (
+        {activeColumn === "pending" && totalPending > 0 && (
           <p className="text-xs text-muted-foreground text-center">
             ← Glissez pour refuser · Glissez pour accepter →
           </p>
         )}
 
-        {/* Cards */}
         <div className="space-y-3">
           <AnimatePresence mode="popLayout">
-            {activeData.length > 0 ? activeData.map((req) => (
-              <motion.div
-                key={req.id}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-              >
-                {activeColumn === "pending" ? (
-                  <SwipeableRequestCard
-                    request={req}
-                    listingTitle={listingsMap[req.listing_id] || "Logement"}
-                    guestName={getGuestName(req.guest_id, guestProfiles)}
-                    onAccept={() => handleAccept(req.id)}
-                    onDecline={() => handleDecline(req.id)}
-                    isPending={respondToRequest.isPending}
-                  />
-                ) : (
-                  <Card className="border-none shadow-sm">
-                    <CardContent className="p-4">
-                      <RequestCardContent
-                        request={req}
-                        listingTitle={listingsMap[req.listing_id] || "Logement"}
-                        guestName={getGuestName(req.guest_id, guestProfiles)}
-                        timeLeft={getTimeLeft(req.created_at)}
-                        onAccept={() => handleAccept(req.id)}
-                        onDecline={() => handleDecline(req.id)}
-                        isPending={respondToRequest.isPending}
-                      />
-                    </CardContent>
-                  </Card>
+            {activeColumn === "pending" && (
+              <>
+                {pendingBookings.map((b) => (
+                  <motion.div key={`b-${b.id}`} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -100 }}>
+                    <PendingBookingCard
+                      booking={b}
+                      listingTitle={listingsMap[b.listing_id] || "Logement"}
+                      guestName={getGuestName(b.guest_id, guestProfiles)}
+                      onConfirm={() => handleConfirmBooking(b.id)}
+                      onDecline={() => handleDeclineBooking(b.id)}
+                      isPending={false}
+                    />
+                  </motion.div>
+                ))}
+                {pending.map((req) => (
+                  <motion.div key={req.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -100 }}>
+                    <SwipeableRequestCard
+                      request={req}
+                      listingTitle={listingsMap[req.listing_id] || "Logement"}
+                      guestName={getGuestName(req.guest_id, guestProfiles)}
+                      onAccept={() => handleAccept(req.id)}
+                      onDecline={() => handleDecline(req.id)}
+                      isPending={respondToRequest.isPending}
+                    />
+                  </motion.div>
+                ))}
+                {totalPending === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <Inbox className="w-12 h-12 text-muted-foreground/20 mb-3" />
+                    <p className="text-sm text-muted-foreground">Aucune demande en attente</p>
+                  </div>
                 )}
-              </motion.div>
-            )) : (
-              <div className="flex flex-col items-center justify-center py-16">
-                <Inbox className="w-12 h-12 text-muted-foreground/20 mb-3" />
-                <p className="text-sm text-muted-foreground">Aucune demande ici</p>
-              </div>
+              </>
+            )}
+            {activeColumn === "confirmed" && (
+              <>
+                {confirmedBookings.map((b) => (
+                  <motion.div key={`bc-${b.id}`} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                    <PendingBookingCard
+                      booking={b}
+                      listingTitle={listingsMap[b.listing_id] || "Logement"}
+                      guestName={getGuestName(b.guest_id, guestProfiles)}
+                      onConfirm={() => {}}
+                      onDecline={() => {}}
+                      isPending={false}
+                    />
+                  </motion.div>
+                ))}
+                {confirmed.map((req) => (
+                  <motion.div key={req.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                    <Card className="border-none shadow-sm">
+                      <CardContent className="p-4">
+                        <RequestCardContent
+                          request={req}
+                          listingTitle={listingsMap[req.listing_id] || "Logement"}
+                          guestName={getGuestName(req.guest_id, guestProfiles)}
+                          timeLeft={getTimeLeft(req.created_at)}
+                          onAccept={() => {}}
+                          onDecline={() => {}}
+                          isPending={false}
+                        />
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+                {confirmed.length + confirmedBookings.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <CheckCircle2 className="w-12 h-12 text-muted-foreground/20 mb-3" />
+                    <p className="text-sm text-muted-foreground">Aucune réservation confirmée</p>
+                  </div>
+                )}
+              </>
+            )}
+            {activeColumn === "declined" && (
+              <>
+                {declined.map((req) => (
+                  <motion.div key={req.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                    <Card className="border-none shadow-sm">
+                      <CardContent className="p-4">
+                        <RequestCardContent
+                          request={req}
+                          listingTitle={listingsMap[req.listing_id] || "Logement"}
+                          guestName={getGuestName(req.guest_id, guestProfiles)}
+                          timeLeft={getTimeLeft(req.created_at)}
+                          onAccept={() => {}}
+                          onDecline={() => {}}
+                          isPending={false}
+                        />
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+                {declined.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <XCircle className="w-12 h-12 text-muted-foreground/20 mb-3" />
+                    <p className="text-sm text-muted-foreground">Aucune demande refusée</p>
+                  </div>
+                )}
+              </>
             )}
           </AnimatePresence>
         </div>
@@ -440,46 +624,75 @@ export default function HostBookingManager() {
 
   // ─── Desktop: 3-column layout ───
   return (
-    <div className="grid grid-cols-3 gap-6 min-h-[500px]">
-      <RequestColumn
-        title="En attente"
-        icon={Clock}
-        requests={pending}
-        listings={listingsMap}
-        profiles={guestProfiles}
-        onAccept={handleAccept}
-        onDecline={handleDecline}
-        respondPending={respondToRequest.isPending}
-        emptyText="Aucune demande en attente"
-        emptyIcon={Inbox}
-        color="bg-amber-500/10 text-amber-600"
-      />
-      <RequestColumn
-        title="Confirmées"
-        icon={CheckCircle2}
-        requests={confirmed}
-        listings={listingsMap}
-        profiles={guestProfiles}
-        onAccept={handleAccept}
-        onDecline={handleDecline}
-        respondPending={respondToRequest.isPending}
-        emptyText="Aucune réservation confirmée"
-        emptyIcon={CheckCircle2}
-        color="bg-green-500/10 text-green-600"
-      />
-      <RequestColumn
-        title="Refusées / Expirées"
-        icon={XCircle}
-        requests={declined}
-        listings={listingsMap}
-        profiles={guestProfiles}
-        onAccept={handleAccept}
-        onDecline={handleDecline}
-        respondPending={respondToRequest.isPending}
-        emptyText="Aucune demande refusée"
-        emptyIcon={XCircle}
-        color="bg-destructive/10 text-destructive"
-      />
+    <div className="space-y-6">
+      {/* Pending bookings (instant) */}
+      {pendingBookings.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10 text-primary">
+              <CreditCard className="w-4 h-4" />
+            </div>
+            <h3 className="font-display font-semibold text-foreground text-sm">Réservations en attente de paiement</h3>
+            <Badge variant="secondary" className="ml-auto text-xs">{pendingBookings.length}</Badge>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {pendingBookings.map((b) => (
+              <PendingBookingCard
+                key={b.id}
+                booking={b}
+                listingTitle={listingsMap[b.listing_id] || "Logement"}
+                guestName={getGuestName(b.guest_id, guestProfiles)}
+                onConfirm={() => handleConfirmBooking(b.id)}
+                onDecline={() => handleDeclineBooking(b.id)}
+                isPending={false}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Request columns */}
+      <div className="grid grid-cols-3 gap-6 min-h-[400px]">
+        <RequestColumn
+          title="En attente"
+          icon={Clock}
+          requests={pending}
+          listings={listingsMap}
+          profiles={guestProfiles}
+          onAccept={handleAccept}
+          onDecline={handleDecline}
+          respondPending={respondToRequest.isPending}
+          emptyText="Aucune demande en attente"
+          emptyIcon={Inbox}
+          color="bg-amber-500/10 text-amber-600"
+        />
+        <RequestColumn
+          title="Confirmées"
+          icon={CheckCircle2}
+          requests={confirmed}
+          listings={listingsMap}
+          profiles={guestProfiles}
+          onAccept={handleAccept}
+          onDecline={handleDecline}
+          respondPending={respondToRequest.isPending}
+          emptyText="Aucune réservation confirmée"
+          emptyIcon={CheckCircle2}
+          color="bg-green-500/10 text-green-600"
+        />
+        <RequestColumn
+          title="Refusées / Expirées"
+          icon={XCircle}
+          requests={declined}
+          listings={listingsMap}
+          profiles={guestProfiles}
+          onAccept={handleAccept}
+          onDecline={handleDecline}
+          respondPending={respondToRequest.isPending}
+          emptyText="Aucune demande refusée"
+          emptyIcon={XCircle}
+          color="bg-destructive/10 text-destructive"
+        />
+      </div>
     </div>
   );
 }
