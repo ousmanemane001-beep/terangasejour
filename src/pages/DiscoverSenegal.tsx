@@ -101,6 +101,8 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "cases à impluvium": "/images/destinations/cases-impluvium.png",
   "cases a impluvium": "/images/destinations/cases-impluvium.png",
   "impluvium": "/images/destinations/cases-impluvium.png",
+  "enampore": "/images/destinations/enampore-1.png",
+  "ethiolo": "/images/destinations/ethiolo-1.png",
   // Autres
   "centre culturel blaise senghor": "/images/destinations/centre-blaise-senghor.png",
   "blaise senghor": "/images/destinations/centre-blaise-senghor.png",
@@ -115,7 +117,7 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "diourbel": "/images/destinations/diourbel-1.png",
   "elinkine": "/images/destinations/elinkine-1.png",
   "dionewar": "/images/destinations/dionewar-1.png",
-  "fatick": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
+  "fatick": "/images/destinations/fatick-1.png",
   "foundiougne": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
   "gandiol": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
   "ngaparou": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Saly_mbour.jpg/800px-Saly_mbour.jpg",
