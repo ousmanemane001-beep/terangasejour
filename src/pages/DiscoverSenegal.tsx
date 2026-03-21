@@ -67,6 +67,9 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "fadiouth": "/images/destinations/ile-fadiouth.png",
   "joal-fadiouth": "/images/destinations/ile-fadiouth.png",
   "joal": "/images/destinations/ile-fadiouth.png",
+  "île de mar lodj": "/images/destinations/ile-mar-lodj.png",
+  "ile de mar lodj": "/images/destinations/ile-mar-lodj.png",
+  "mar lodj": "/images/destinations/ile-mar-lodj.png",
   // Îles
   "île de n'gor": "/images/destinations/ile-ngor.png",
   "n'gor": "/images/destinations/ile-ngor.png",
