@@ -143,59 +143,49 @@ const Index = () => {
   );
 };
 
-/* ── Listings Grid ── */
-const ListingsGrid = ({ listings, activeCategory }: { listings: DBListing[]; activeCategory: CategoryKey }) => {
-  const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
+/* ── Category Section ── */
+const CategorySection = ({
+  title,
+  listings,
+  filterFn,
+  isLoading,
+}: {
+  title: string;
+  listings: DBListing[] | undefined;
+  filterFn: (l: DBListing) => boolean;
+  isLoading: boolean;
+}) => {
+  const filtered = useMemo(() => (listings ?? []).filter(filterFn), [listings, filterFn]);
+  const { data: ratingsMap } = useListingsRatings(filtered.map((l) => l.id));
 
-  const filtered = useMemo(() => {
-    if (activeCategory === "all") return listings;
-    return listings.filter((l) => {
-      const city = (l.city || l.location || "").toLowerCase();
-      const type = l.property_type.toLowerCase();
-      switch (activeCategory) {
-        case "dakar": return city.includes("dakar");
-        case "bord_mer": return COASTAL_CITIES.some((c) => city.includes(c)) || type.includes("plage");
-        case "mieux_notes": return true;
-        case "moins_chers": return true;
-        case "populaires": return true;
-        case "region": return REGION_CITIES.some((c) => city.includes(c));
-        case "hotels": return type.includes("hotel") || type.includes("hôtel") || type.includes("résidence");
-        case "verifies": return l.verified;
-        default: return true;
-      }
-    }).sort((a, b) => {
-      if (activeCategory === "moins_chers") return a.price_per_night - b.price_per_night;
-      if (activeCategory === "mieux_notes") {
-        const ra = ratingsMap?.[a.id]?.avg ?? 0;
-        const rb = ratingsMap?.[b.id]?.avg ?? 0;
-        return rb - ra;
-      }
-      return 0;
-    });
-  }, [listings, activeCategory, ratingsMap]);
+  if (isLoading) return null;
+  if (filtered.length === 0) return null;
 
   return (
-    <>
-      {/* Mobile: horizontal scroll like Airbnb */}
+    <div className="container mx-auto px-4">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-base md:text-xl font-bold text-foreground">{title}</h2>
+        <Link to="/explore">
+          <Button variant="ghost" size="icon" className="rounded-full border border-border w-8 h-8">
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </Link>
+      </div>
+      {/* Mobile: horizontal scroll */}
       <div className="md:hidden flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2">
-        {filtered.length > 0 ? filtered.map((listing) => (
+        {filtered.map((listing) => (
           <div key={listing.id} className="shrink-0 w-[46%]">
             <ListingCard listing={listing} rating={ratingsMap?.[listing.id]} />
           </div>
-        )) : (
-          <p className="text-center text-muted-foreground py-8 w-full">Aucun logement dans cette catégorie.</p>
-        )}
+        ))}
       </div>
       {/* Desktop: grid */}
       <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filtered.length > 0 ? filtered.map((listing) => (
+        {filtered.map((listing) => (
           <ListingCard key={listing.id} listing={listing} rating={ratingsMap?.[listing.id]} />
-        )) : (
-          <p className="col-span-full text-center text-muted-foreground py-8">Aucun logement dans cette catégorie.</p>
-        )}
+        ))}
       </div>
-    </>
+    </div>
   );
 };
-
 export default Index;
