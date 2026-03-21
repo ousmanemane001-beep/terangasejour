@@ -94,10 +94,7 @@ const Index = () => {
         <CategorySection
           title="Logements à Saint-Louis"
           listings={dbListings}
-          filterFn={(l) => {
-            const city = (l.city || l.location || "").toLowerCase();
-            return city.includes("saint-louis") || city.includes("saint louis");
-          }}
+          filterFn={() => true}
           isLoading={isLoading}
         />
         <CategorySection
