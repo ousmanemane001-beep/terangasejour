@@ -268,6 +268,37 @@ const EditListing = () => {
                 <Input type="number" className="rounded-xl h-12" value={price} onChange={(e) => setPrice(e.target.value)} />
               </div>
 
+              {/* Booking mode */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Mode de réservation</label>
+                  <select
+                    className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm"
+                    value={bookingMode}
+                    onChange={(e) => {
+                      setBookingMode(e.target.value);
+                      if (e.target.value === "instant") setAvailabilityMode("always");
+                    }}
+                  >
+                    <option value="instant">Toujours disponible</option>
+                    <option value="request">Disponible sur demande</option>
+                  </select>
+                </div>
+                {bookingMode === "request" && (
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1.5">Disponibilité</label>
+                    <select
+                      className="w-full h-12 rounded-xl border border-input bg-background px-3 text-sm"
+                      value={availabilityMode}
+                      onChange={(e) => setAvailabilityMode(e.target.value)}
+                    >
+                      <option value="request">Me contacter</option>
+                      <option value="calendar">Calendrier personnalisé</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+
               {/* Photos info */}
               {listing.photos && listing.photos.length > 0 && (
                 <div>
