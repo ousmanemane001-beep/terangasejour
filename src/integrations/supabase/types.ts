@@ -356,6 +356,7 @@ export type Database = {
           bathrooms: number
           bedrooms: number
           booking_mode: string
+          cancellation_policy: string
           capacity: number
           city: string | null
           created_at: string
@@ -380,6 +381,7 @@ export type Database = {
           bathrooms?: number
           bedrooms?: number
           booking_mode?: string
+          cancellation_policy?: string
           capacity?: number
           city?: string | null
           created_at?: string
@@ -404,6 +406,7 @@ export type Database = {
           bathrooms?: number
           bedrooms?: number
           booking_mode?: string
+          cancellation_policy?: string
           capacity?: number
           city?: string | null
           created_at?: string
