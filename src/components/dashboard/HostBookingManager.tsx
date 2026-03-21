@@ -168,7 +168,7 @@ function UnifiedBookingCard({
   const isExpired = timeLeft?.expired;
   const effectiveStatus = isExpired ? "expired" : item.status;
   const badge = statusBadgeConfig[effectiveStatus] || statusBadgeConfig.pending;
-  const canAct = isPending && !isExpired;
+  const canAct = isPendingStatus && !isExpired;
 
   return (
     <motion.div
