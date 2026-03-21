@@ -163,7 +163,15 @@ const CreateListing = () => {
     return true;
   }, [activeStep, title, description, location, photos.length, price]);
 
-  // Redirect non-hosts to become-host page
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Redirect non-hosts to become-host page only once profile state is loaded
   if (!isHost && user) {
     navigate("/become-host");
     return null;
