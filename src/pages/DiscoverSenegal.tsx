@@ -62,7 +62,7 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "bignona": "/images/destinations/bignona-1.png",
   // Cap Skirring / Diembering
   "cap skirring": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Cap-Skirring-Beach-2007.jpg/1280px-Cap-Skirring-Beach-2007.jpg",
-  "diembering": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Sunset_in_Cap_Skirring_photo_1_by_Serdiuk.jpg/1280px-Sunset_in_Cap_Skirring_photo_1_by_Serdiuk.jpg",
+  "diembering": "/images/destinations/diembering-1.png",
   "kafountine": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Bolong_cap_skirring.jpg/1280px-Bolong_cap_skirring.jpg",
   // Fadiouth / Joal
   "île de fadiouth": "/images/destinations/ile-fadiouth.png",
@@ -112,7 +112,7 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "abéné": "/images/destinations/abene-1.png",
   "abene": "/images/destinations/abene-1.png",
   "djiffer": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
-  "dionewar": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
+  "dionewar": "/images/destinations/dionewar-1.png",
   "fatick": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
   "foundiougne": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
   "gandiol": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
