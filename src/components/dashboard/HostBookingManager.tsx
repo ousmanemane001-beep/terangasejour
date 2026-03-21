@@ -7,9 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Check, X, Clock, Users, CalendarDays, MapPin, Flame,
   AlertTriangle, Loader2, Inbox, CheckCircle2, XCircle, CreditCard, MessageCircle,
-  ChevronDown, ChevronUp, TrendingUp,
+  ChevronDown, ChevronUp, TrendingUp, Banknote, CircleAlert, RefreshCw,
 } from "lucide-react";
-import { format, differenceInHours, differenceInMinutes, formatDistanceToNow } from "date-fns";
+import { format, differenceInHours, formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useBookingRequests, useRespondToRequest, type BookingRequest } from "@/hooks/useAdmin";
@@ -41,7 +41,7 @@ function useGuestProfiles(guestIds: string[]) {
   });
 }
 
-// ─── Urgency helpers (no expiration, just visual urgency) ───
+// ─── Urgency helpers ───
 function getUrgency(createdAt: string): { level: "normal" | "warning" | "urgent"; hoursAgo: number } {
   const hours = differenceInHours(new Date(), new Date(createdAt));
   if (hours >= 12) return { level: "urgent", hoursAgo: hours };
@@ -62,10 +62,17 @@ function getInitials(name: string) {
   return name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "V";
 }
 
-// ─── Check date overlap ───
 function datesOverlap(a: { check_in: string; check_out: string }, b: { check_in: string; check_out: string }) {
   return new Date(a.check_in) < new Date(b.check_out) && new Date(a.check_out) > new Date(b.check_in);
 }
+
+// ─── Payment status config ───
+const paymentConfig: Record<string, { label: string; icon: React.ElementType; className: string }> = {
+  paid: { label: "Payé", icon: Banknote, className: "bg-green-500/10 text-green-700 border-green-500/20" },
+  pending: { label: "Non payé", icon: CircleAlert, className: "bg-amber-500/10 text-amber-700 border-amber-500/20" },
+  unpaid: { label: "Non payé", icon: CircleAlert, className: "bg-destructive/10 text-destructive border-destructive/20" },
+  refunded: { label: "Remboursé", icon: RefreshCw, className: "bg-blue-500/10 text-blue-700 border-blue-500/20" },
+};
 
 // ─── Unified Item type ───
 interface UnifiedBooking {
@@ -100,7 +107,7 @@ function unifyData(bookings: OwnerBooking[], requests: BookingRequest[]): Unifie
     status: b.status,
     created_at: b.created_at,
     expires_at: (b as any).expires_at,
-    payment_status: (b as any).payment_status,
+    payment_status: (b as any).payment_status || "pending",
     guest_name: (b as any).guest_name,
   }));
 
@@ -121,6 +128,7 @@ function unifyData(bookings: OwnerBooking[], requests: BookingRequest[]): Unifie
       status: r.status === "approved" ? "confirmed" : r.status === "rejected" ? "cancelled" : r.status,
       created_at: r.created_at,
       message: r.message,
+      payment_status: "pending",
     };
   });
 
@@ -136,15 +144,21 @@ const statusBadgeConfig: Record<string, { label: string; color: string }> = {
   declined: { label: "Refusée", color: "bg-destructive/10 text-destructive border-destructive/20" },
 };
 
+// ─── Payment Badge Component ───
+function PaymentBadge({ status }: { status: string }) {
+  const config = paymentConfig[status] || paymentConfig.pending;
+  const Icon = config.icon;
+  return (
+    <Badge variant="outline" className={cn("gap-1 text-[10px] border font-semibold", config.className)}>
+      <Icon className="w-3 h-3" />
+      {config.label}
+    </Badge>
+  );
+}
+
 // ─── Unified Booking Card ───
 function UnifiedBookingCard({
-  item,
-  listingTitle,
-  guestName,
-  onAccept,
-  onDecline,
-  loading,
-  isHighDemand,
+  item, listingTitle, guestName, onAccept, onDecline, loading, isHighDemand,
 }: {
   item: UnifiedBooking;
   listingTitle: string;
@@ -159,9 +173,11 @@ function UnifiedBookingCard({
   const [declineReason, setDeclineReason] = useState("");
 
   const isPending = item.status === "pending";
+  const isConfirmed = item.status === "confirmed";
   const badge = statusBadgeConfig[item.status] || statusBadgeConfig.pending;
   const urgency = isPending ? getUrgency(item.created_at) : null;
   const timeSince = getTimeSince(item.created_at);
+  const isPaid = item.payment_status === "paid";
 
   return (
     <motion.div
@@ -176,7 +192,11 @@ function UnifiedBookingCard({
           "rounded-xl border transition-all cursor-pointer group",
           isPending
             ? "border-amber-500/30 bg-amber-500/5 hover:border-amber-500/50 hover:shadow-md"
-            : "border-border bg-card hover:bg-muted/30",
+            : isConfirmed && isPaid
+              ? "border-green-500/20 bg-green-500/5 hover:border-green-500/40 hover:shadow-md"
+              : isConfirmed && !isPaid
+                ? "border-amber-500/20 bg-card hover:border-amber-500/40 hover:shadow-md"
+                : "border-border bg-card hover:bg-muted/30",
           expanded && "shadow-sm",
           urgency?.level === "urgent" && "ring-1 ring-destructive/30 border-destructive/30",
           urgency?.level === "warning" && "ring-1 ring-amber-500/30"
@@ -194,7 +214,7 @@ function UnifiedBookingCard({
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <p className="font-semibold text-foreground text-sm truncate">{guestName}</p>
                 {isHighDemand && (
                   <Badge className="text-[9px] h-4 px-1.5 bg-primary/10 text-primary border-primary/20 shrink-0" variant="outline">
@@ -211,13 +231,19 @@ function UnifiedBookingCard({
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="text-right">
-              <Badge variant="outline" className={cn("text-xs border", badge.color)}>
-                {badge.label}
-              </Badge>
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="text-right space-y-1">
+              <div className="flex items-center gap-1.5 justify-end flex-wrap">
+                <Badge variant="outline" className={cn("text-xs border", badge.color)}>
+                  {badge.label}
+                </Badge>
+                {/* Always show payment badge for bookings */}
+                {item.type === "booking" && (
+                  <PaymentBadge status={item.payment_status || "pending"} />
+                )}
+              </div>
               {item.total_price > 0 && (
-                <p className="text-sm font-bold text-foreground mt-1">
+                <p className="text-sm font-bold text-foreground">
                   {item.total_price.toLocaleString("fr-FR")} F
                 </p>
               )}
@@ -234,9 +260,9 @@ function UnifiedBookingCard({
                     <AlertTriangle className="w-3 h-3" /> Action requise
                   </Badge>
                 )}
-                {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
               </div>
             )}
+            {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
           </div>
         </button>
 
@@ -268,13 +294,37 @@ function UnifiedBookingCard({
               className="overflow-hidden"
             >
               <div className="px-4 pb-4 space-y-3 border-t border-border/50 pt-3">
-                {/* Payment info for bookings */}
+                {/* Payment info for bookings - prominent display */}
                 {item.type === "booking" && (
-                  <div className="flex items-center justify-between bg-secondary rounded-lg px-3 py-2">
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <CreditCard className="w-3 h-3" /> {item.payment_status === "paid" ? "Payé" : "Non payé"}
+                  <div className={cn(
+                    "flex items-center justify-between rounded-lg px-3 py-2.5",
+                    isPaid
+                      ? "bg-green-500/10 border border-green-500/20"
+                      : "bg-amber-500/10 border border-amber-500/20"
+                  )}>
+                    <div className="flex items-center gap-2">
+                      {isPaid ? (
+                        <Banknote className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <CircleAlert className="w-4 h-4 text-amber-600" />
+                      )}
+                      <div>
+                        <span className={cn(
+                          "text-xs font-semibold",
+                          isPaid ? "text-green-700" : "text-amber-700"
+                        )}>
+                          {isPaid ? "Paiement reçu" : "En attente de paiement"}
+                        </span>
+                        {!isPaid && isConfirmed && (
+                          <p className="text-[10px] text-amber-600 mt-0.5">
+                            ⚠️ Réservation confirmée mais non payée
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <span className="font-bold text-foreground text-sm">
+                      {item.total_price.toLocaleString("fr-FR")} F
                     </span>
-                    <span className="font-bold text-foreground text-sm">{item.total_price.toLocaleString("fr-FR")} F</span>
                   </div>
                 )}
 
@@ -387,13 +437,8 @@ function SwipeableBookingCard({
   if (!canSwipe) {
     return (
       <UnifiedBookingCard
-        item={item}
-        listingTitle={listingTitle}
-        guestName={guestName}
-        onAccept={onAccept}
-        onDecline={onDecline}
-        loading={loading}
-        isHighDemand={isHighDemand}
+        item={item} listingTitle={listingTitle} guestName={guestName}
+        onAccept={onAccept} onDecline={onDecline} loading={loading} isHighDemand={isHighDemand}
       />
     );
   }
@@ -410,23 +455,13 @@ function SwipeableBookingCard({
           <X className="w-5 h-5 text-destructive" />
         </div>
       </motion.div>
-
       <motion.div
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.3}
-        style={{ x }}
-        onDragEnd={handleDragEnd}
-        className="relative z-10"
+        drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.3}
+        style={{ x }} onDragEnd={handleDragEnd} className="relative z-10"
       >
         <UnifiedBookingCard
-          item={item}
-          listingTitle={listingTitle}
-          guestName={guestName}
-          onAccept={onAccept}
-          onDecline={onDecline}
-          loading={loading}
-          isHighDemand={isHighDemand}
+          item={item} listingTitle={listingTitle} guestName={guestName}
+          onAccept={onAccept} onDecline={onDecline} loading={loading} isHighDemand={isHighDemand}
         />
       </motion.div>
     </motion.div>
@@ -442,6 +477,7 @@ export default function HostBookingManager() {
   const isMobile = useIsMobile();
   const qc = useQueryClient();
   const [activeFilter, setActiveFilter] = useState<"pending" | "confirmed" | "declined">("pending");
+  const [paymentFilter, setPaymentFilter] = useState<"all" | "paid" | "unpaid">("all");
   const [actionLoading, setActionLoading] = useState(false);
 
   // Real-time subscription
@@ -458,31 +494,38 @@ export default function HostBookingManager() {
     return () => { supabase.removeChannel(channel); };
   }, [qc]);
 
-  // Build listings map
   const listingsMap: Record<string, string> = {};
   listings?.forEach((l) => { listingsMap[l.id] = l.title; });
 
-  // Unify data
   const allItems = unifyData(ownerBookings || [], requests || []);
-
-  // Gather guest IDs
   const guestIds = [...new Set(allItems.map((i) => i.guest_id))];
   const { data: guestProfiles } = useGuestProfiles(guestIds);
 
-  // Filter by status - NO automatic expiration
   const pendingItems = allItems
     .filter((i) => i.status === "pending")
-    .sort((a, b) => {
-      // Sort by urgency: oldest first (most urgent)
-      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-    });
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
   const confirmedItems = allItems.filter((i) => i.status === "confirmed");
   const declinedItems = allItems.filter((i) =>
     i.status === "cancelled" || i.status === "expired" || i.status === "declined"
   );
 
-  // Detect high-demand dates: dates with 2+ pending bookings for same listing
+  // Payment sub-filter for confirmed
+  const filteredConfirmed = confirmedItems.filter((i) => {
+    if (paymentFilter === "all") return true;
+    if (paymentFilter === "paid") return i.payment_status === "paid";
+    return i.payment_status !== "paid";
+  });
+
+  // Sort confirmed: paid first (priority)
+  const sortedConfirmed = [...filteredConfirmed].sort((a, b) => {
+    const aPaid = a.payment_status === "paid" ? 0 : 1;
+    const bPaid = b.payment_status === "paid" ? 0 : 1;
+    if (aPaid !== bPaid) return aPaid - bPaid;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
+  // High demand detection
   const highDemandIds = new Set<string>();
   for (let i = 0; i < pendingItems.length; i++) {
     for (let j = i + 1; j < pendingItems.length; j++) {
@@ -496,7 +539,10 @@ export default function HostBookingManager() {
     }
   }
 
-  // Accept: confirm booking + auto-decline conflicting pending ones
+  // Stats for confirmed tab
+  const paidCount = confirmedItems.filter((i) => i.payment_status === "paid").length;
+  const unpaidCount = confirmedItems.filter((i) => i.payment_status !== "paid").length;
+
   const handleAccept = async (item: UnifiedBooking) => {
     setActionLoading(true);
     try {
@@ -506,7 +552,6 @@ export default function HostBookingManager() {
           {
             onSuccess: async () => {
               toast.success("Demande acceptée !");
-              // Auto-decline conflicting requests
               const conflicting = pendingItems.filter(
                 (p) => p.id !== item.id && p.listing_id === item.listing_id && datesOverlap(p, item)
               );
@@ -531,8 +576,6 @@ export default function HostBookingManager() {
         } as any).eq("id", item.id);
         if (error) { toast.error(error.message); return; }
         toast.success("Réservation confirmée !");
-
-        // Auto-decline conflicting pending bookings
         const conflicting = pendingItems.filter(
           (p) => p.id !== item.id && p.listing_id === item.listing_id && datesOverlap(p, item)
         );
@@ -591,7 +634,11 @@ export default function HostBookingManager() {
     { key: "declined" as const, label: "Refusées", count: declinedItems.length, icon: XCircle },
   ];
 
-  const currentItems = activeFilter === "pending" ? pendingItems : activeFilter === "confirmed" ? confirmedItems : declinedItems;
+  const currentItems = activeFilter === "pending"
+    ? pendingItems
+    : activeFilter === "confirmed"
+      ? sortedConfirmed
+      : declinedItems;
 
   const emptyConfig = {
     pending: { icon: Inbox, text: "Aucune réservation en attente" },
@@ -606,7 +653,7 @@ export default function HostBookingManager() {
         {filters.map((f) => (
           <button
             key={f.key}
-            onClick={() => setActiveFilter(f.key)}
+            onClick={() => { setActiveFilter(f.key); setPaymentFilter("all"); }}
             className={cn(
               "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all cursor-pointer",
               activeFilter === f.key
@@ -631,7 +678,34 @@ export default function HostBookingManager() {
         ))}
       </div>
 
-      {/* Swipe hint on mobile for pending */}
+      {/* Payment sub-filters for confirmed tab */}
+      {activeFilter === "confirmed" && confirmedItems.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          {[
+            { key: "all" as const, label: "Toutes", count: confirmedItems.length },
+            { key: "paid" as const, label: "Payées", count: paidCount, color: "text-green-700" },
+            { key: "unpaid" as const, label: "Non payées", count: unpaidCount, color: "text-amber-700" },
+          ].map((pf) => (
+            <button
+              key={pf.key}
+              onClick={() => setPaymentFilter(pf.key)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer border",
+                paymentFilter === pf.key
+                  ? "bg-card border-border shadow-sm text-foreground"
+                  : "bg-transparent border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+            >
+              {pf.key === "paid" && <Banknote className="w-3 h-3" />}
+              {pf.key === "unpaid" && <CircleAlert className="w-3 h-3" />}
+              {pf.label}
+              <span className={cn("text-[10px]", pf.color)}>{pf.count}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Swipe hint */}
       {isMobile && activeFilter === "pending" && pendingItems.length > 0 && (
         <p className="text-xs text-muted-foreground text-center">
           ← Glissez pour refuser · Glissez pour accepter →
@@ -646,8 +720,7 @@ export default function HostBookingManager() {
               isMobile && activeFilter === "pending" ? (
                 <SwipeableBookingCard
                   key={`${item.type}-${item.id}`}
-                  item={item}
-                  listingTitle={listingsMap[item.listing_id] || "Logement"}
+                  item={item} listingTitle={listingsMap[item.listing_id] || "Logement"}
                   guestName={getGuestName(item.guest_id, guestProfiles)}
                   onAccept={() => handleAccept(item)}
                   onDecline={(reason) => handleDecline(item, reason)}
@@ -657,8 +730,7 @@ export default function HostBookingManager() {
               ) : (
                 <UnifiedBookingCard
                   key={`${item.type}-${item.id}`}
-                  item={item}
-                  listingTitle={listingsMap[item.listing_id] || "Logement"}
+                  item={item} listingTitle={listingsMap[item.listing_id] || "Logement"}
                   guestName={getGuestName(item.guest_id, guestProfiles)}
                   onAccept={() => handleAccept(item)}
                   onDecline={(reason) => handleDecline(item, reason)}
