@@ -147,6 +147,7 @@ const CreateListing = () => {
   const [bookingMode, setBookingMode] = useState<"instant" | "request">("instant");
   const [availabilityMode, setAvailabilityMode] = useState<"contact" | "calendar">("contact");
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
+  const [cancellationPolicy, setCancellationPolicy] = useState("flexible");
 
   // UI state
   const [step, setStep] = useState(1);
