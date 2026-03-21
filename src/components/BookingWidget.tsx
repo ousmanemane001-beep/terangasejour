@@ -159,11 +159,16 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
       await supabase.from("bookings").update({
         expires_at: expiry,
         guest_name: `${passengerInfo.firstName} ${passengerInfo.lastName}`,
+      } as any).eq("id", result.id);
+
+      // Store sensitive PII in separate secure table
+      await supabase.from("booking_guest_details").insert({
+        booking_id: result.id,
         guest_email: passengerInfo.email,
         guest_phone: passengerInfo.phone,
         passport_number: passengerInfo.passport || null,
         nationality: passengerInfo.nationality || null,
-      } as any).eq("id", result.id);
+      } as any);
 
       setBookingId(result.id);
       setExpiresAt(expiry);
