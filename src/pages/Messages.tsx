@@ -152,6 +152,24 @@ const Messages = () => {
                   senderId: user.id,
                   content,
                 });
+                // Send notification to the other participant
+                if (selectedConversation) {
+                  const recipientId = selectedConversation.guest_id === user.id
+                    ? selectedConversation.host_id
+                    : selectedConversation.guest_id;
+                  const senderName = getOtherName({
+                    ...selectedConversation,
+                    guest_id: recipientId,
+                    host_id: user.id,
+                  } as any);
+                  await createNotification.mutateAsync({
+                    user_id: recipientId,
+                    type: "new_message",
+                    title: "Nouveau message",
+                    message: content.length > 80 ? content.slice(0, 80) + "…" : content,
+                    data: { conversation_id: selectedConv },
+                  }).catch(() => {}); // Don't block on notification failure
+                }
               }}
               isSending={sendMessage.isPending}
             />
