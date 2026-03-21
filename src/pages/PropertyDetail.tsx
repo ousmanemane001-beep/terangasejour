@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import {
   Star, MapPin, Heart, Share2, Bed, Bath, Users,
   Wifi, Car, AirVent, ChefHat, Waves, ArrowLeft, Loader2,
-  Tv, Lock, Flower2, ShieldCheck, MessageCircle,
+  Tv, Lock, Flower2, ShieldCheck, MessageCircle, CheckCircle, AlertTriangle,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -63,6 +63,7 @@ const PropertyDetail = () => {
         rating: dbRating?.avg ?? null, reviewCount: dbRating?.count ?? null, isDB: true, verified: dbListing.verified,
         latitude: dbListing.latitude, longitude: dbListing.longitude,
         address: dbListing.address, city: dbListing.city,
+        cancellationPolicy: (dbListing as any).cancellation_policy || "flexible",
       }
     : staticProperty
     ? {
@@ -75,6 +76,7 @@ const PropertyDetail = () => {
         reviewCount: staticProperty.reviewCount, isDB: false, verified: false,
         latitude: null as number | null, longitude: null as number | null,
         address: null as string | null, city: null as string | null,
+        cancellationPolicy: "flexible",
       }
     : null;
 
@@ -230,6 +232,38 @@ const PropertyDetail = () => {
                 </div>
               </div>
 
+              {/* Cancellation Policy */}
+              <div className="border-t border-border pt-8">
+                <h2 className="font-display text-xl font-semibold text-foreground mb-4">Politique d'annulation</h2>
+                {listing.cancellationPolicy === "flexible" && (
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+                    <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="font-semibold text-emerald-700 text-sm">Annulation flexible</p>
+                      <p className="text-xs text-emerald-600 mt-1">Annulation gratuite jusqu'à 24h avant l'arrivée. Remboursement intégral.</p>
+                    </div>
+                  </div>
+                )}
+                {listing.cancellationPolicy === "moderate" && (
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                    <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="font-semibold text-amber-700 text-sm">Annulation modérée</p>
+                      <p className="text-xs text-amber-600 mt-1">Annulation gratuite jusqu'à 5 jours avant l'arrivée. 50% remboursé ensuite.</p>
+                    </div>
+                  </div>
+                )}
+                {listing.cancellationPolicy === "strict" && (
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-200">
+                    <ShieldCheck className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="font-semibold text-red-700 text-sm">Annulation stricte</p>
+                      <p className="text-xs text-red-600 mt-1">Annulation gratuite dans les 48h suivant la réservation. Aucun remboursement après.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Property Map */}
               {listing.latitude && listing.longitude && (
                 <div className="border-t border-border pt-8">
@@ -265,6 +299,7 @@ const PropertyDetail = () => {
                   maxGuests={listing.guests}
                   bookingMode={dbListing ? (dbListing as any).booking_mode : "instant"}
                   hostId={dbListing?.user_id}
+                  cancellationPolicy={listing.cancellationPolicy}
                 />
               ) : (
                 <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6">

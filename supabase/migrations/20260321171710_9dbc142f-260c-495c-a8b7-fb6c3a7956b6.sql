@@ -1,0 +1,1 @@
+ALTER TABLE public.listings ADD COLUMN cancellation_policy text NOT NULL DEFAULT 'flexible';

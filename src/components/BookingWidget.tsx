@@ -29,7 +29,14 @@ interface BookingWidgetProps {
   maxGuests: number;
   bookingMode?: string;
   hostId?: string;
+  cancellationPolicy?: string;
 }
+
+const CANCELLATION_LABELS: Record<string, { label: string; icon: string; color: string }> = {
+  flexible: { label: "Annulation gratuite 24h avant", icon: "✅", color: "text-emerald-600" },
+  moderate: { label: "Annulation gratuite 5j avant", icon: "⚠️", color: "text-amber-600" },
+  strict: { label: "Annulation stricte", icon: "🚫", color: "text-red-600" },
+};
 
 const SERVICE_FEE_RATE = 0.15;
 const HOLD_MINUTES = 30;
@@ -69,7 +76,7 @@ const MODE_CONFIG = {
   },
 };
 
-const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "instant", hostId }: BookingWidgetProps) => {
+const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "instant", hostId, cancellationPolicy = "flexible" }: BookingWidgetProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const createBooking = useCreateBooking();
@@ -330,6 +337,15 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
               <span className="font-bold text-foreground text-lg">{total.toLocaleString("fr-FR")} F</span>
             </div>
           </div>
+          {/* Cancellation policy badge */}
+          {CANCELLATION_LABELS[cancellationPolicy] && (
+            <div className="flex items-center gap-2 text-xs py-2">
+              <span>{CANCELLATION_LABELS[cancellationPolicy].icon}</span>
+              <span className={CANCELLATION_LABELS[cancellationPolicy].color}>
+                {CANCELLATION_LABELS[cancellationPolicy].label}
+              </span>
+            </div>
+          )}
           <PaymentMethodSelector selected={paymentMethod} onSelect={setPaymentMethod} />
           <Button onClick={handleConfirmPayment} className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base">
             <Shield className="w-4 h-4 mr-2" />
