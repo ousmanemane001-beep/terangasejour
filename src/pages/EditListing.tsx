@@ -312,7 +312,13 @@ const EditListing = () => {
                 </div>
               )}
 
-              <Button onClick={handleSave} disabled={saving} className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium gap-2">
+              {/* Prix saisonniers */}
+              {id && listing && (
+                <div className="border-t border-border pt-6 mt-6">
+                  <SeasonalPriceManager listingId={id} basePricePerNight={listing.price_per_night} />
+                </div>
+              )}
+
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {needsModification ? "Sauvegarder et re-soumettre" : "Sauvegarder les modifications"}
               </Button>
