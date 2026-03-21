@@ -58,7 +58,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-[#e5e5e5]">
+      <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-border">
         <div className="container mx-auto flex items-center justify-between h-14 px-4">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
@@ -161,12 +161,12 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center gap-2">
                 <Link to="/signup">
-                  <Button variant="outline" size="sm" className="rounded text-sm border-[#0d9488] text-[#0d9488] bg-transparent hover:bg-[#0d9488]/10">
+                  <Button variant="outline" size="sm" className="rounded text-sm border-primary text-primary bg-transparent hover:bg-primary/10">
                     S'inscrire
                   </Button>
                 </Link>
                 <Link to="/login">
-                  <Button variant="outline" size="sm" className="rounded text-sm border-[#0d9488] text-[#0d9488] bg-transparent hover:bg-[#0d9488]/10">
+                  <Button variant="outline" size="sm" className="rounded text-sm border-primary text-primary bg-transparent hover:bg-primary/10">
                     Se connecter
                   </Button>
                 </Link>
@@ -178,12 +178,12 @@ const Navbar = () => {
           <div className="md:hidden flex items-center gap-2">
             {!user && (
               <Link to="/login">
-                <Button variant="outline" size="sm" className="rounded text-xs border-[#0d9488] text-[#0d9488] bg-transparent hover:bg-[#0d9488]/10 px-3 h-8">
+                <Button variant="outline" size="sm" className="rounded text-xs border-primary text-primary bg-transparent hover:bg-primary/10 px-3 h-8">
                   Se connecter
                 </Button>
               </Link>
             )}
-            <button className="p-2 text-[#333]" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
+            <button className="p-2 text-foreground" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
               <Menu className="w-5 h-5" />
             </button>
           </div>
