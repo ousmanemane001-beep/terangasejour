@@ -108,9 +108,18 @@ const PropertyDetail = () => {
       <Navbar />
       <section className="py-6">
         <div className="container mx-auto px-4">
-          <Link to="/explore" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4">
-            <ArrowLeft className="w-4 h-4" /> Retour aux résultats
-          </Link>
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-1 text-xs text-muted-foreground mb-4 flex-wrap">
+            <Link to="/" className="hover:text-foreground">Accueil</Link>
+            <ChevronRight className="w-3 h-3" />
+            <Link to="/explore" className="hover:text-foreground">Explorer</Link>
+            {listing && (
+              <>
+                <ChevronRight className="w-3 h-3" />
+                <span className="text-foreground font-medium truncate max-w-[200px]">{listing?.title}</span>
+              </>
+            )}
+          </nav>
 
           {/* Image Gallery */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
