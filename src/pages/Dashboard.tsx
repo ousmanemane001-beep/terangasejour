@@ -130,7 +130,7 @@ const Dashboard = () => {
 
   const statCards = [
     { label: "Logements actifs", value: String(activeListings.length), icon: Home, trend: `${listings?.length || 0} total`, tab: "properties", color: "bg-blue-500/10 text-blue-600" },
-    { label: "Réservations reçues", value: String(ownerBookings?.length || 0), icon: CalendarDays, trend: `${thisMonthBookings.length} ce mois`, tab: "reservations", color: "bg-green-500/10 text-green-600" },
+    { label: "Réservations reçues", value: String(ownerBookings?.length || 0), icon: CalendarDays, trend: `${thisMonthBookings.length} ce mois`, tab: "bookings", color: "bg-green-500/10 text-green-600" },
     { label: "Revenus totaux", value: `${totalEarnings.toLocaleString("fr-FR")} F`, icon: CreditCard, trend: "FCFA", tab: "revenue", color: "bg-primary/10 text-primary" },
     { label: "Note moyenne", value: avgRating, icon: Star, trend: `${totalReviews} avis`, tab: "reviews", color: "bg-amber-500/10 text-amber-600" },
   ];
