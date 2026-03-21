@@ -320,18 +320,11 @@ const Dashboard = () => {
                 ) : ownerBookings && ownerBookings.length > 0 ? (
                   <div className="space-y-4">
                     {ownerBookings.map((b) => (
-                      <div key={b.id} className="flex items-center justify-between p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors cursor-pointer">
-                        <div>
-                          <p className="font-medium text-foreground text-sm">
-                            {format(new Date(b.check_in), "d MMM", { locale: fr })} → {format(new Date(b.check_out), "d MMM yyyy", { locale: fr })}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{b.nights} nuit{b.nights > 1 ? "s" : ""} · {b.guests} voyageur{b.guests > 1 ? "s" : ""}</p>
-                        </div>
-                        <div className="text-right">
-                          <Badge variant={statusMap[b.status]?.variant || "secondary"}>{statusMap[b.status]?.label || b.status}</Badge>
-                          <p className="text-sm font-semibold text-foreground mt-1">{b.total_price.toLocaleString("fr-FR")} F</p>
-                        </div>
-                      </div>
+                      <BookingActionCard
+                        key={b.id}
+                        booking={b}
+                        onStatusChange={() => qc.invalidateQueries({ queryKey: ["owner-bookings"] })}
+                      />
                     ))}
                   </div>
                 ) : <p className="text-center text-muted-foreground py-8">Aucune réservation reçue.</p>}
