@@ -1,4 +1,4 @@
-import { Zap, MessageSquare } from "lucide-react";
+import { Globe, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type BookingMode = "instant" | "request";
@@ -37,12 +37,12 @@ const BookingModeStep = ({ bookingMode, onChangeMode }: BookingModeStepProps) =>
               ? "bg-primary/10 text-primary"
               : "bg-muted text-muted-foreground group-hover:text-primary/60"
           )}>
-            <Zap className="w-7 h-7" />
+            <Globe className="w-7 h-7" />
           </div>
           <div className="text-center space-y-1.5">
-            <p className="font-semibold text-foreground">Réservation instantanée</p>
+            <p className="font-semibold text-foreground">Toujours disponible</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Les voyageurs réservent et paient directement. Plus de réservations, moins de gestion.
+              Votre logement est ouvert à la réservation toute l'année. Les voyageurs réservent et paient directement.
             </p>
           </div>
           {bookingMode === "instant" && (
@@ -71,9 +71,9 @@ const BookingModeStep = ({ bookingMode, onChangeMode }: BookingModeStepProps) =>
             <MessageSquare className="w-7 h-7" />
           </div>
           <div className="text-center space-y-1.5">
-            <p className="font-semibold text-foreground">Demande de disponibilité</p>
+            <p className="font-semibold text-foreground">Disponible sur demande</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Les voyageurs doivent demander avant de réserver. Vous gardez le contrôle total.
+              Les voyageurs doivent vous contacter avant de réserver. Vous gardez le contrôle total.
             </p>
           </div>
         </button>
@@ -81,13 +81,13 @@ const BookingModeStep = ({ bookingMode, onChangeMode }: BookingModeStepProps) =>
 
       {bookingMode === "instant" && (
         <div className="bg-accent/50 rounded-xl p-4 text-sm text-muted-foreground animate-fade-in">
-          ⚡ Votre logement sera réservable immédiatement toute l'année. Les dates déjà réservées seront automatiquement bloquées.
+          ⚡ Votre logement sera réservable immédiatement toute l'année. Vous pourrez publier directement après cette étape.
         </div>
       )}
 
       {bookingMode === "request" && (
         <div className="bg-accent/50 rounded-xl p-4 text-sm text-muted-foreground animate-fade-in">
-          📩 Vous pourrez approuver ou refuser chaque demande de réservation individuellement.
+          📩 À l'étape suivante, vous choisirez comment gérer vos disponibilités : par contact direct ou via un calendrier.
         </div>
       )}
     </div>
