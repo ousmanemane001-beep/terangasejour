@@ -1,4 +1,4 @@
-import { Phone, CalendarDays } from "lucide-react";
+import { MessageCircle, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type AvailabilitySubType = "contact" | "calendar";
