@@ -26,9 +26,9 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "fort d'estrees": "/images/destinations/fort-estrees-2.png",
   "fort d estrees": "/images/destinations/fort-estrees-3.png",
   // Saint-Louis
-  "île saint-louis": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
-  "saint-louis": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
-  "saint louis": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
+  "île saint-louis": "/images/destinations/ile-saint-louis.png",
+  "saint-louis": "/images/destinations/ile-saint-louis.png",
+  "saint louis": "/images/destinations/ile-saint-louis.png",
   "fort de podor": "/images/destinations/fort-podor.png",
   "podor": "/images/destinations/fort-podor.png",
   // Touba
@@ -73,6 +73,10 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "ngor": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Dakar_-_Panorama_urbain.jpg/1280px-Dakar_-_Panorama_urbain.jpg",
   "île de karabane": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
   "karabane": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
+  "île aux oiseaux": "/images/destinations/ile-oiseaux.png",
+  "ile aux oiseaux": "/images/destinations/ile-oiseaux.png",
+  "île aux serpents": "/images/destinations/ile-serpents.png",
+  "ile aux serpents": "/images/destinations/ile-serpents.png",
   "îles du saloum": "/images/destinations/iles-saloum.png",
   "iles du saloum": "/images/destinations/iles-saloum.png",
   // Sine Saloum
