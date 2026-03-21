@@ -29,7 +29,14 @@ interface BookingWidgetProps {
   maxGuests: number;
   bookingMode?: string;
   hostId?: string;
+  cancellationPolicy?: string;
 }
+
+const CANCELLATION_LABELS: Record<string, { label: string; icon: string; color: string }> = {
+  flexible: { label: "Annulation gratuite 24h avant", icon: "✅", color: "text-emerald-600" },
+  moderate: { label: "Annulation gratuite 5j avant", icon: "⚠️", color: "text-amber-600" },
+  strict: { label: "Annulation stricte", icon: "🚫", color: "text-red-600" },
+};
 
 const SERVICE_FEE_RATE = 0.15;
 const HOLD_MINUTES = 30;
