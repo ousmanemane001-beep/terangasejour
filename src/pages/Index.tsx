@@ -57,53 +57,58 @@ const Index = () => {
         </div>
       </div>
 
-      {/* ═══ LISTINGS ═══ */}
-      <section className="flex-1 py-4 md:py-6">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base md:text-xl font-bold text-foreground">
-              Logements populaires · Sénégal
-            </h2>
-            <Link to="/explore">
-              <Button variant="ghost" size="icon" className="rounded-full border border-border w-8 h-8">
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-
-          {isLoading ? (
-            <div className="flex justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : dbListings && dbListings.length > 0 ? (
-            <ListingsGrid listings={dbListings} activeCategory={activeCategory} />
-          ) : (
-            <p className="text-center text-muted-foreground py-12">Aucun logement disponible pour le moment.</p>
-          )}
-        </div>
-      </section>
-
-      {/* ═══ CONFIANCE ═══ */}
-      <section className="py-10 md:py-14 border-t border-border">
-        <div className="container mx-auto px-4">
-          <h2 className="text-lg md:text-2xl font-bold text-foreground mb-6 text-center">
-            Pourquoi choisir TerangaSéjour ?
-          </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {trustPoints.map((tp, i) => (
-              <div
-                key={i}
-                className="bg-card rounded-xl border border-border p-4 md:p-5 flex flex-col items-center text-center hover:shadow-md transition-shadow"
-              >
-                <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                  <tp.icon className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground text-sm mb-1">{tp.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{tp.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* ═══ CATEGORIZED LISTINGS ═══ */}
+      <section className="flex-1 py-4 md:py-6 space-y-6 md:space-y-10">
+        <CategorySection
+          title="Appartements à Dakar"
+          listings={dbListings}
+          filterFn={(l) => {
+            const city = (l.city || l.location || "").toLowerCase();
+            const type = l.property_type.toLowerCase();
+            return city.includes("dakar") && (type.includes("appartement") || type.includes("studio") || type.includes("appart"));
+          }}
+          isLoading={isLoading}
+        />
+        <CategorySection
+          title="Maisons au bord de la mer"
+          listings={dbListings}
+          filterFn={(l) => {
+            const city = (l.city || l.location || "").toLowerCase();
+            const type = l.property_type.toLowerCase();
+            return COASTAL_CITIES.some((c) => city.includes(c)) || type.includes("plage") || type.includes("villa");
+          }}
+          isLoading={isLoading}
+        />
+        <CategorySection
+          title="Hôtels & Résidences"
+          listings={dbListings}
+          filterFn={(l) => {
+            const type = l.property_type.toLowerCase();
+            return type.includes("hotel") || type.includes("hôtel") || type.includes("résidence") || type.includes("residence");
+          }}
+          isLoading={isLoading}
+        />
+        <CategorySection
+          title="Logements populaires"
+          listings={dbListings}
+          filterFn={() => true}
+          isLoading={isLoading}
+        />
+        <CategorySection
+          title="Logements vérifiés"
+          listings={dbListings}
+          filterFn={(l) => l.verified}
+          isLoading={isLoading}
+        />
+        <CategorySection
+          title="Logements en région"
+          listings={dbListings}
+          filterFn={(l) => {
+            const city = (l.city || l.location || "").toLowerCase();
+            return REGION_CITIES.some((c) => city.includes(c));
+          }}
+          isLoading={isLoading}
+        />
       </section>
 
       {/* ═══ CTA HÔTE ═══ */}
