@@ -26,9 +26,9 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "fort d'estrees": "/images/destinations/fort-estrees-2.png",
   "fort d estrees": "/images/destinations/fort-estrees-3.png",
   // Saint-Louis
-  "île saint-louis": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
-  "saint-louis": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
-  "saint louis": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
+  "île saint-louis": "/images/destinations/ile-saint-louis.png",
+  "saint-louis": "/images/destinations/ile-saint-louis.png",
+  "saint louis": "/images/destinations/ile-saint-louis.png",
   "fort de podor": "/images/destinations/fort-podor.png",
   "podor": "/images/destinations/fort-podor.png",
   // Touba
