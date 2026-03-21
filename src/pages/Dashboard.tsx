@@ -15,7 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOwnerListings, useOwnerBookings, useGuestBookings } from "@/hooks/useOwnerData";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useListingsRatings } from "@/hooks/useReviews";
-import { useBookingRequests, useRespondToRequest, useNotifications, useMarkAsRead } from "@/hooks/useAdmin";
+import { useBookingRequests, useRespondToRequest, useNotifications } from "@/hooks/useAdmin";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,7 +24,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import BlockedDatesCalendar from "@/components/BlockedDatesCalendar";
 import HostBookingManager from "@/components/dashboard/HostBookingManager";
-import BookingActionCard from "@/components/dashboard/BookingActionCard";
+
 
 const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   confirmed: { label: "Confirmée", variant: "default" },
@@ -116,8 +116,7 @@ const Dashboard = () => {
   const hostTabs = [
     { id: "overview", label: "Dashboard", icon: TrendingUp },
     { id: "properties", label: "Mes logements", icon: Home },
-    { id: "reservations", label: "Réservations reçues", icon: CalendarDays },
-    { id: "requests", label: "Demandes", icon: CalendarDays },
+    { id: "bookings", label: "Réservations", icon: CalendarDays },
     { id: "revenue", label: "Revenus", icon: CreditCard },
     { id: "calendar", label: "Calendrier", icon: CalendarDays },
   ];
@@ -312,32 +311,8 @@ const Dashboard = () => {
             </>
           )}
 
-          {isHost && activeTab === "reservations" && (
-            <Card className="border-none shadow-[var(--shadow-card)]">
-              <CardHeader><CardTitle className="font-display text-lg">Réservations reçues</CardTitle></CardHeader>
-              <CardContent>
-                {bookingsLoading ? (
-                  <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-                ) : ownerBookings && ownerBookings.length > 0 ? (
-                  <div className="space-y-4">
-                    {ownerBookings.map((b) => (
-                      <BookingActionCard
-                        key={b.id}
-                        booking={b}
-                        onStatusChange={() => qc.invalidateQueries({ queryKey: ["owner-bookings"] })}
-                      />
-                    ))}
-                  </div>
-                ) : <p className="text-center text-muted-foreground py-8">Aucune réservation reçue.</p>}
-              </CardContent>
-            </Card>
-          )}
-
-          {isHost && activeTab === "requests" && (
-            <div>
-              <h2 className="font-display text-lg font-semibold text-foreground mb-4">Gestion des demandes</h2>
-              <HostBookingManager />
-            </div>
+          {isHost && activeTab === "bookings" && (
+            <HostBookingManager />
           )}
 
           {isHost && activeTab === "revenue" && (
