@@ -149,10 +149,27 @@ const Explore = () => {
         totalResults={totalResults}
       />
 
-      {/* Main Content */}
+      {/* Sort + Main Content */}
       <div className="flex-1 flex">
         <div className={cn("flex-1 overflow-y-auto", showMap ? "lg:w-[55%]" : "w-full")}>
           <div className="container mx-auto px-4 py-4">
+            {/* Sort controls */}
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-muted-foreground">{totalResults} résultat{totalResults !== 1 ? "s" : ""}</p>
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="text-sm bg-transparent border border-border rounded-lg px-2 py-1 text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="default">Pertinence</option>
+                  <option value="price_asc">Prix croissant</option>
+                  <option value="price_desc">Prix décroissant</option>
+                  <option value="newest">Plus récents</option>
+                </select>
+              </div>
+            </div>
             {filteredDBListings.length > 0 && (
               <DBListingsWithRatings
                 items={filteredDBListings}
