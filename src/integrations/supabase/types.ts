@@ -46,6 +46,36 @@ export type Database = {
           },
         ]
       }
+      booking_guest_details: {
+        Row: {
+          booking_id: string
+          created_at: string
+          guest_email: string | null
+          guest_phone: string | null
+          id: string
+          nationality: string | null
+          passport_number: string | null
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          guest_email?: string | null
+          guest_phone?: string | null
+          id?: string
+          nationality?: string | null
+          passport_number?: string | null
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          guest_email?: string | null
+          guest_phone?: string | null
+          id?: string
+          nationality?: string | null
+          passport_number?: string | null
+        }
+        Relationships: []
+      }
       booking_requests: {
         Row: {
           check_in: string
