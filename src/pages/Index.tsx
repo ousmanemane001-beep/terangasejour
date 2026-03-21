@@ -68,16 +68,58 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar />
 
-      {/* ═══ 1. SEARCH ═══ */}
-      <section className="bg-background pt-4 pb-2 md:pt-6">
-        <div className="container mx-auto px-4">
+      {/* ═══ 1. HERO IMMERSIF ═══ */}
+      <section className="relative min-h-[420px] md:min-h-[520px] flex items-center justify-center overflow-hidden">
+        {/* Background image */}
+        <img
+          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600&q=80&auto=format"
+          alt="Villa au Sénégal"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60" />
+
+        {/* Content */}
+        <div className="relative z-10 w-full container mx-auto px-4 py-12 md:py-20">
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="max-w-3xl mx-auto bg-card rounded-2xl shadow-[var(--shadow-elevated)] border border-border p-3 md:p-4"
+            transition={{ duration: 0.6 }}
+            className="text-center mb-8 md:mb-10"
+          >
+            <h1 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-3 leading-tight drop-shadow-lg">
+              Réservez votre séjour au Sénégal
+            </h1>
+            <p className="text-white/85 text-sm md:text-lg max-w-xl mx-auto drop-shadow">
+              Des logements vérifiés, sans arnaque, avec assistance locale 24h/24.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="max-w-3xl mx-auto bg-card/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 p-3 md:p-4"
           >
             <SearchBar />
+          </motion.div>
+
+          {/* Quick destination chips */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="flex flex-wrap justify-center gap-2 mt-5"
+          >
+            {["Dakar", "Saly", "Somone", "Lac Rose", "Gorée"].map((city) => (
+              <Link
+                key={city}
+                to={`/explore?destination=${encodeURIComponent(city)}`}
+                className="px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-sm text-white text-xs font-medium hover:bg-white/25 transition-colors border border-white/20"
+              >
+                {city}
+              </Link>
+            ))}
           </motion.div>
         </div>
       </section>
