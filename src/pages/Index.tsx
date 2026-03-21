@@ -298,13 +298,42 @@ const Index = () => {
   );
 };
 
-/* ── Listings: 2-col grid on mobile (Airbnb), 4-col on desktop ── */
-const ListingsGrid = ({ listings }: { listings: DBListing[] }) => {
+const COASTAL_CITIES = ["saly", "somone", "mbour", "cap skirring", "gorée", "saint-louis", "ziguinchor"];
+const REGION_CITIES = ["ziguinchor", "tambacounda", "kaolack", "thiès", "kédougou", "fatick", "kolda"];
+
+const ListingsGrid = ({ listings, activeCategory }: { listings: DBListing[]; activeCategory: CategoryKey }) => {
   const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
+
+  const filtered = useMemo(() => {
+    if (activeCategory === "all") return listings;
+    return listings.filter((l) => {
+      const city = (l.city || l.location || "").toLowerCase();
+      const type = l.property_type.toLowerCase();
+      switch (activeCategory) {
+        case "dakar": return city.includes("dakar");
+        case "bord_mer": return COASTAL_CITIES.some((c) => city.includes(c)) || type.includes("plage");
+        case "mieux_notes": return true; // sorted below
+        case "moins_chers": return true; // sorted below
+        case "populaires": return true;
+        case "region": return REGION_CITIES.some((c) => city.includes(c));
+        case "hotels": return type.includes("hotel") || type.includes("hôtel") || type.includes("résidence");
+        case "verifies": return l.verified;
+        default: return true;
+      }
+    }).sort((a, b) => {
+      if (activeCategory === "moins_chers") return a.price_per_night - b.price_per_night;
+      if (activeCategory === "mieux_notes") {
+        const ra = ratingsMap?.[a.id]?.avg ?? 0;
+        const rb = ratingsMap?.[b.id]?.avg ?? 0;
+        return rb - ra;
+      }
+      return 0;
+    });
+  }, [listings, activeCategory, ratingsMap]);
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-      {listings.map((listing, i) => (
+      {filtered.length > 0 ? filtered.map((listing, i) => (
         <motion.div
           key={listing.id}
           initial={{ opacity: 0, y: 16 }}
@@ -314,7 +343,9 @@ const ListingsGrid = ({ listings }: { listings: DBListing[] }) => {
         >
           <ListingCard listing={listing} rating={ratingsMap?.[listing.id]} />
         </motion.div>
-      ))}
+      )) : (
+        <p className="col-span-full text-center text-muted-foreground py-8">Aucun logement dans cette catégorie.</p>
+      )}
     </div>
   );
 };
