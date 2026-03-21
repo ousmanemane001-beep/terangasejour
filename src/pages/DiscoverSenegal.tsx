@@ -57,7 +57,7 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "casamance": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
   "ziguinchor": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
   "oussouye": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
-  "bignona": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
+  "bignona": "/images/destinations/bignona-1.png",
   // Cap Skirring / Diembering
   "cap skirring": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
   "diembering": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/JoolaZiguinchor.JPG/1280px-JoolaZiguinchor.JPG",
