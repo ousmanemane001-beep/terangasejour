@@ -1,55 +1,21 @@
-import { forwardRef, useRef, useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
+import MobileSearchPill from "@/components/MobileSearchPill";
 import ListingCard from "@/components/ListingCard";
 import Footer from "@/components/Footer";
 import OusmaneChatbot from "@/components/OusmaneChatbot";
 import CategoryFilter, { type CategoryKey } from "@/components/CategoryFilter";
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
-import { useDestinationCounts } from "@/hooks/useDestinationCounts";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
-  Loader2, ShieldCheck, BadgeCheck, CreditCard, Headphones,
-  Home, Shield, ChevronLeft, ChevronRight, ArrowRight,
-  Building2, Waves, MapPin, TreePine, Hotel, Star,
-  ShieldX, Search, Bed, DoorOpen, Castle, Plus
+  Loader2, CreditCard, BadgeCheck, Headphones,
+  Home, Shield, ArrowRight, ShieldX
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-/* ── Destinations ── */
-const DESTINATIONS = [
-  { name: "Dakar", image: "https://images.unsplash.com/photo-1611258490565-4a06c019e631?w=600&q=80&auto=format", count: 150 },
-  { name: "Saly", image: "https://images.unsplash.com/photo-1743518576305-652c0e1a6fdb?w=600&q=80&auto=format", count: 80 },
-  { name: "Somone", image: "https://images.unsplash.com/photo-1569103470612-0414542f9355?w=600&q=80&auto=format", count: 40 },
-  { name: "Gorée", image: "https://images.unsplash.com/photo-1590232071814-92dcbf0ed8cd?w=600&q=80&auto=format", count: 25 },
-  { name: "Saint-Louis", image: "https://images.unsplash.com/photo-1590232071814-92dcbf0ed8cd?w=600&q=80&auto=format", count: 30 },
-];
-const DESTINATION_CITIES = ["Dakar", "Saly", "Somone", "Gorée", "Saint-Louis", "Cap Skirring", "Mbour"];
-
-/* ── Filter types (cozycozy style) ── */
-const PRICE_FILTERS = [
-  { label: "- de 25 000 F", query: "maxPrice=25000" },
-  { label: "25k - 50k F", query: "minPrice=25000&maxPrice=50000" },
-  { label: "50k+ F", query: "minPrice=50000" },
-];
-
-const TYPE_FILTERS = [
-  { label: "Locations vacances", icon: DoorOpen, query: "type=Villa" },
-  { label: "Hôtels", icon: Hotel, query: "type=Hotel" },
-  { label: "Chambres d'hôtes", icon: Bed, query: "type=Chambre" },
-  { label: "Maisons", icon: Home, query: "type=Maison" },
-  { label: "Hébergements insolites", icon: Castle, query: "type=Insolite" },
-  { label: "Plus de choix", icon: Plus, query: "" },
-];
-
-const RATING_FILTERS = [
-  { label: "Excellent", score: "9+", query: "minRating=9" },
-  { label: "Très bien", score: "8+", query: "minRating=8" },
-  { label: "Bien", score: "7+", query: "minRating=7" },
-  { label: "Toutes les notes", query: "" },
-];
 
 /* ── Trust ── */
 const trustPoints = [
@@ -59,77 +25,41 @@ const trustPoints = [
   { icon: ShieldX, title: "Zéro arnaque", desc: "Annonces authentiques et vérifiées." },
 ];
 
+const COASTAL_CITIES = ["saly", "somone", "mbour", "cap skirring", "gorée", "saint-louis", "ziguinchor"];
+const REGION_CITIES = ["ziguinchor", "tambacounda", "kaolack", "thiès", "kédougou", "fatick", "kolda"];
+
 /* ══════════════════════════════════════════════════════════ */
 
 const Index = () => {
   const { data: dbListings, isLoading } = useListings(12);
-  const { data: destCounts } = useDestinationCounts(DESTINATION_CITIES);
   const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
+  const isMobile = useIsMobile();
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar />
 
-      {/* ═══ 1. HERO IMMERSIF ═══ */}
-      <section className="relative min-h-[420px] md:min-h-[520px] flex items-center justify-center overflow-hidden">
-        {/* Background image */}
-        <img
-          src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1600&q=80&auto=format"
-          alt="Villa au Sénégal"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        {/* Dark overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60" />
-
-        {/* Content */}
-        <div className="relative z-10 w-full container mx-auto px-4 py-12 md:py-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-8 md:mb-10"
-          >
-            <h1 className="font-display text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-3 leading-tight drop-shadow-lg">
-              Réservez votre séjour au Sénégal
-            </h1>
-            <p className="text-white/85 text-sm md:text-lg max-w-xl mx-auto drop-shadow">
-              Des logements vérifiés, avec assistance locale 24h/24.
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="max-w-3xl mx-auto bg-card/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 p-3 md:p-4"
-          >
-            <SearchBar />
-          </motion.div>
-
+      {/* ═══ SEARCH ═══ */}
+      <div className="sticky top-0 z-30 bg-background border-b border-border">
+        {/* Mobile: compact search pill */}
+        <div className="md:hidden px-4 pt-3 pb-2">
+          <MobileSearchPill />
         </div>
-      </section>
-
-      {/* ═══ CATÉGORIES ═══ */}
-      <section className="border-b border-border sticky top-0 z-20 bg-background">
+        {/* Desktop: full search bar */}
+        <div className="hidden md:block container mx-auto px-4 py-3">
+          <div className="max-w-3xl mx-auto">
+            <SearchBar />
+          </div>
+        </div>
+        {/* Categories */}
         <div className="container mx-auto px-4">
           <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
         </div>
-      </section>
+      </div>
 
-      {/* Listings grid directly below */}
-      <section className="py-6 pb-8">
+      {/* ═══ LISTINGS ═══ */}
+      <section className="flex-1 py-4 md:py-6">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-base md:text-xl font-bold text-foreground">
-              Logements populaires · Sénégal
-            </h2>
-            <Link to="/explore">
-              <Button variant="ghost" size="icon" className="rounded-full border border-border">
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-
           {isLoading ? (
             <div className="flex justify-center py-16">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -142,135 +72,51 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ═══ 4. DESTINATIONS POPULAIRES ═══ */}
-      <section className="py-10 md:py-14 bg-secondary">
+      {/* ═══ CONFIANCE ═══ */}
+      <section className="py-10 md:py-14 border-t border-border">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-end justify-between mb-6"
-          >
-            <div>
-              <h2 className="font-display text-lg md:text-2xl font-bold text-foreground">
-                Destinations populaires
-              </h2>
-              <p className="text-muted-foreground mt-1 text-sm">Les lieux préférés de nos voyageurs</p>
-            </div>
-            <Link to="/explore" className="hidden md:block">
-              <Button variant="outline" size="sm" className="rounded-full gap-1">
-                Tout voir <ArrowRight className="w-3.5 h-3.5" />
-              </Button>
-            </Link>
-          </motion.div>
-
-          <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-hide md:grid md:grid-cols-5 md:overflow-visible md:mx-0 md:px-0">
-            {DESTINATIONS.map((dest, i) => (
-              <motion.div
-                key={dest.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.06, duration: 0.4 }}
-                className="shrink-0 w-[160px] md:w-auto"
-              >
-                <Link
-                  to={`/explore?destination=${encodeURIComponent(dest.name)}`}
-                  className="relative block rounded-xl overflow-hidden group aspect-[3/4]"
-                >
-                  <img
-                    src={dest.image}
-                    alt={dest.name}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
-                    <h3 className="text-white font-display font-bold text-sm md:text-base">{dest.name}</h3>
-                    <p className="text-white/80 text-[11px] mt-0.5">
-                      +{destCounts?.[dest.name.toLowerCase()] || dest.count} logements
-                    </p>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ 5. SECTION CONFIANCE ═══ */}
-      <section className="py-10 md:py-14">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-8"
-          >
-            <h2 className="font-display text-lg md:text-2xl font-bold text-foreground mb-1">
-              Pourquoi choisir TerangaSéjour ?
-            </h2>
-            <p className="text-muted-foreground text-sm">La plateforme de confiance pour réserver au Sénégal</p>
-          </motion.div>
-
+          <h2 className="text-lg md:text-2xl font-bold text-foreground mb-6 text-center">
+            Pourquoi choisir TerangaSéjour ?
+          </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {trustPoints.map((tp, i) => (
-              <motion.div
+              <div
                 key={i}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.07, duration: 0.4 }}
-                className="bg-card rounded-xl border border-border p-4 md:p-5 flex flex-col items-center text-center hover:border-primary/20 hover:shadow-[var(--shadow-card-hover)] transition-all"
+                className="bg-card rounded-xl border border-border p-4 md:p-5 flex flex-col items-center text-center hover:shadow-md transition-shadow"
               >
                 <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center mb-3">
                   <tp.icon className="w-5 h-5 text-primary" />
                 </div>
-                <h3 className="font-display font-semibold text-foreground text-sm mb-1">{tp.title}</h3>
+                <h3 className="font-semibold text-foreground text-sm mb-1">{tp.title}</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">{tp.desc}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ 6. CTA HÔTE ═══ */}
-      <section className="py-10 md:py-14 bg-primary text-primary-foreground">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="font-display text-xl md:text-3xl font-bold mb-3">
-                Gagnez de l'argent avec votre logement
-              </h2>
-              <p className="text-primary-foreground/80 text-sm md:text-base mb-6 max-w-lg mx-auto">
-                Publiez votre logement en quelques minutes et commencez à recevoir des réservations.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link to="/create-listing">
-                  <Button
-                    size="lg"
-                    className="bg-white text-primary hover:bg-white/90 font-semibold rounded-full px-8 gap-2"
-                  >
-                    <Home className="w-4 h-4" />
-                    Publier mon logement
-                  </Button>
-                </Link>
-                <Link to="/certification">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="border-white/30 text-white hover:bg-white/10 rounded-full px-6 gap-2"
-                  >
-                    <Shield className="w-4 h-4" />
-                    Certification hôte
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
+      {/* ═══ CTA HÔTE ═══ */}
+      <section className="py-10 md:py-14 bg-foreground text-background">
+        <div className="container mx-auto px-4 max-w-2xl text-center">
+          <h2 className="text-xl md:text-3xl font-bold mb-3">
+            Gagnez de l'argent avec votre logement
+          </h2>
+          <p className="text-background/70 text-sm md:text-base mb-6">
+            Publiez votre logement en quelques minutes et commencez à recevoir des réservations.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link to="/create-listing">
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 gap-2">
+                <Home className="w-4 h-4" />
+                Publier mon logement
+              </Button>
+            </Link>
+            <Link to="/certification">
+              <Button variant="outline" size="lg" className="border-background/30 text-background hover:bg-background/10 rounded-full px-6 gap-2">
+                <Shield className="w-4 h-4" />
+                Certification hôte
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -281,9 +127,7 @@ const Index = () => {
   );
 };
 
-const COASTAL_CITIES = ["saly", "somone", "mbour", "cap skirring", "gorée", "saint-louis", "ziguinchor"];
-const REGION_CITIES = ["ziguinchor", "tambacounda", "kaolack", "thiès", "kédougou", "fatick", "kolda"];
-
+/* ── Listings Grid ── */
 const ListingsGrid = ({ listings, activeCategory }: { listings: DBListing[]; activeCategory: CategoryKey }) => {
   const { data: ratingsMap } = useListingsRatings(listings.map((l) => l.id));
 
@@ -295,8 +139,8 @@ const ListingsGrid = ({ listings, activeCategory }: { listings: DBListing[]; act
       switch (activeCategory) {
         case "dakar": return city.includes("dakar");
         case "bord_mer": return COASTAL_CITIES.some((c) => city.includes(c)) || type.includes("plage");
-        case "mieux_notes": return true; // sorted below
-        case "moins_chers": return true; // sorted below
+        case "mieux_notes": return true;
+        case "moins_chers": return true;
         case "populaires": return true;
         case "region": return REGION_CITIES.some((c) => city.includes(c));
         case "hotels": return type.includes("hotel") || type.includes("hôtel") || type.includes("résidence");
@@ -315,17 +159,9 @@ const ListingsGrid = ({ listings, activeCategory }: { listings: DBListing[]; act
   }, [listings, activeCategory, ratingsMap]);
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-      {filtered.length > 0 ? filtered.map((listing, i) => (
-        <motion.div
-          key={listing.id}
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: i * 0.04, duration: 0.35 }}
-        >
-          <ListingCard listing={listing} rating={ratingsMap?.[listing.id]} />
-        </motion.div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {filtered.length > 0 ? filtered.map((listing) => (
+        <ListingCard key={listing.id} listing={listing} rating={ratingsMap?.[listing.id]} />
       )) : (
         <p className="col-span-full text-center text-muted-foreground py-8">Aucun logement dans cette catégorie.</p>
       )}
