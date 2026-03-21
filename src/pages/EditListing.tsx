@@ -62,6 +62,8 @@ const EditListing = () => {
       setBathrooms(listing.bathrooms || 1);
       setCapacity(listing.capacity || 2);
       setPrice(String(listing.price_per_night || ""));
+      setBookingMode(listing.booking_mode || "instant");
+      setAvailabilityMode(listing.availability_mode || "always");
     }
   }, [listing]);
 
