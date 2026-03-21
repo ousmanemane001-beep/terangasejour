@@ -112,7 +112,7 @@ const DESTINATION_IMAGES: Record<string, string> = {
   "abéné": "/images/destinations/abene-1.png",
   "abene": "/images/destinations/abene-1.png",
   "djiffer": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
-  "dionewar": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
+  "dionewar": "/images/destinations/dionewar-1.png",
   "fatick": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
   "foundiougne": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Mangroves_de_la_Lagune_de_Somone_12.jpg/1280px-Mangroves_de_la_Lagune_de_Somone_12.jpg",
   "gandiol": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg/1024px-Driving_on_the_Faidherbe_Bridge_in_Saint_Louis.jpg",
