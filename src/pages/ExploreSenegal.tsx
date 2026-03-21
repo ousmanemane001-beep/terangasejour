@@ -7,7 +7,8 @@ import OusmaneChatbot from "@/components/OusmaneChatbot";
 import { useListings } from "@/hooks/useListings";
 import { useDestinations, type DbDestination } from "@/hooks/useDestinations";
 import { haversineKm, formatDistance } from "@/lib/haversine";
-import { Loader2, SlidersHorizontal, X, MapPin, Compass, BedDouble, Users, Layers } from "lucide-react";
+import { Loader2, SlidersHorizontal, X, MapPin, Compass, BedDouble, Users, Layers, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ const CATEGORY_COLOR: Record<string, string> = {
 const PROXIMITY_KM = 20;
 
 const ExploreSenegal = () => {
+  const navigate = useNavigate();
   const { data: listings, isLoading: loadingListings } = useListings();
   const { data: destinations, isLoading: loadingDest } = useDestinations();
   const [showFilters, setShowFilters] = useState(false);
@@ -200,6 +202,14 @@ const ExploreSenegal = () => {
   return (
     <div className="h-screen flex flex-col">
       <Navbar />
+      {/* Mobile back button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="md:hidden fixed top-16 left-3 z-[40] bg-background/90 backdrop-blur-sm border border-border rounded-full p-2 shadow-md"
+        aria-label="Retour"
+      >
+        <ArrowLeft className="w-5 h-5 text-foreground" />
+      </button>
       <div className="flex-1 relative">
         {isLoading ? (
           <div className="w-full h-full flex items-center justify-center bg-secondary">
