@@ -420,7 +420,7 @@ const Dashboard = () => {
 
           {activeTab === "my-bookings" && (
             <Card className="border-none shadow-[var(--shadow-card)]">
-              <CardHeader><CardTitle className="font-display text-lg">Mes réservations</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="font-display text-lg">Mes voyages</CardTitle></CardHeader>
               <CardContent>
                 {guestBookings && guestBookings.length > 0 ? (
                   <div className="space-y-4">
