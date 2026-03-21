@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, User, LogOut, Heart, Home, CalendarDays, MessageCircle, Shield, MapPin, PlusCircle, LogIn } from "lucide-react";
+import { Menu, X, User, LogOut, Heart, Home, CalendarDays, MessageCircle, Shield, MapPin, PlusCircle, LogIn, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -51,7 +51,8 @@ const Navbar = () => {
     { label: "Accueil", path: "/", icon: Home },
     { label: "Destinations", path: "/explore", icon: MapPin },
     ...(user ? [{ label: "Publier un logement", path: isHost ? "/create-listing" : "/become-host", icon: PlusCircle }] : []),
-    ...(user ? [{ label: "Mes voyages", path: "/dashboard", icon: CalendarDays }] : []),
+    ...(user ? [{ label: "Mes voyages", path: "/dashboard/my-bookings", icon: CalendarDays }] : []),
+    ...(user && isHost ? [{ label: "Réservations", path: "/dashboard/bookings", icon: ClipboardList }] : []),
   ];
 
   return (
