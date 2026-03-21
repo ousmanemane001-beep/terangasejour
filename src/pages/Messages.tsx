@@ -22,6 +22,7 @@ const Messages = () => {
   const { data: conversations, isLoading: convsLoading } = useConversations();
   const { data: messages, isLoading: msgsLoading } = useMessages(selectedConv || undefined);
   const sendMessage = useSendMessage();
+  const createNotification = useCreateNotification();
 
   const selectedConversation = conversations?.find((c) => c.id === selectedConv);
 
