@@ -468,7 +468,7 @@ export default function HostBookingManager() {
   // Filter by status
   const pendingItems = allItems.filter((i) => {
     if (i.status !== "pending") return false;
-    const tl = getTimeLeft(i.created_at);
+    const tl = getTimeLeft(i);
     return !tl.expired;
   }).sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
@@ -476,7 +476,7 @@ export default function HostBookingManager() {
 
   const declinedItems = allItems.filter((i) => {
     if (i.status === "cancelled" || i.status === "expired" || i.status === "declined") return true;
-    if (i.status === "pending") return getTimeLeft(i.created_at).expired;
+    if (i.status === "pending") return getTimeLeft(i).expired;
     return false;
   });
 
