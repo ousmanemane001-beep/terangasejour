@@ -165,7 +165,7 @@ const CreateListing = () => {
 
   const canPublishNow = activeStep === 6 || (activeStep === 5 && bookingMode === "instant");
 
-  if (authLoading) {
+  if (authLoading || (user && !profile)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
