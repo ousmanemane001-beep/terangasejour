@@ -132,7 +132,7 @@ const Explore = () => {
       <Navbar />
 
       {/* Header */}
-      <section className="bg-background pt-10 pb-4 md:pt-14 md:pb-6">
+      <section className="bg-background pt-4 pb-2 md:pt-10 md:pb-6">
         <div className="container mx-auto px-4 text-center">
           <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
             {hasDestCoords && destName
