@@ -12,6 +12,8 @@ const SUGGESTIONS = ["Dakar", "Saly", "Somone", "Gorée", "Saint-Louis", "Cap Sk
 
 const MobileSearchPill = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "fr" ? fr : enUS;
   const [expanded, setExpanded] = useState(false);
   const [destination, setDestination] = useState("");
   const [checkIn, setCheckIn] = useState<Date>(new Date());
