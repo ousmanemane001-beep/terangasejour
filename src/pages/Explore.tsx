@@ -130,7 +130,7 @@ const Explore = () => {
   const totalResults = filteredProperties.length + filteredDBListings.length;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar />
 
       {/* Header */}
