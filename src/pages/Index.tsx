@@ -20,7 +20,6 @@ const REGION_CITIES = ["ziguinchor", "tambacounda", "kaolack", "thiès", "kédou
 
 const Index = () => {
   const { data: dbListings, isLoading } = useListings();
-  const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
 
   // Scroll to top on mount
   useEffect(() => {
