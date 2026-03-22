@@ -29,6 +29,7 @@ import EditListing from "./pages/EditListing";
 import Messages from "./pages/Messages";
 import CGU from "./pages/CGU";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RefundPolicy from "./pages/RefundPolicy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -67,6 +68,7 @@ const App = () => (
               <Route path="/messages" element={<Messages />} />
               <Route path="/cgu" element={<CGU />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/refund-policy" element={<RefundPolicy />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
