@@ -177,35 +177,21 @@ const MobileSearchPill = () => {
         <div className="h-px bg-border mx-5" />
 
         {/* Dates — Agoda style big numbers */}
-        <div className="px-5 py-5">
+        <div className="px-5 py-3">
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => setShowCalendar("in")}
-              className="flex-1 text-left"
-            >
-              <p className="text-xs text-muted-foreground font-medium mb-1">Arrivée</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-foreground">{format(checkIn, "d")}</span>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-foreground leading-tight">{format(checkIn, "EEE", { locale: fr })}</span>
-                  <span className="text-sm text-muted-foreground leading-tight">{format(checkIn, "MMM", { locale: fr })}</span>
-                </div>
+            <button onClick={() => setShowCalendar("in")} className="flex-1 text-left">
+              <p className="text-[11px] text-muted-foreground font-medium mb-0.5">Arrivée</p>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold text-foreground">{format(checkIn, "d")}</span>
+                <span className="text-xs text-muted-foreground">{format(checkIn, "EEE MMM", { locale: fr })}</span>
               </div>
             </button>
-
-            <ArrowRight className="w-5 h-5 text-muted-foreground mx-3 shrink-0" />
-
-            <button
-              onClick={() => setShowCalendar("out")}
-              className="flex-1 text-right"
-            >
-              <p className="text-xs text-muted-foreground font-medium mb-1">Départ</p>
-              <div className="flex items-baseline gap-2 justify-end">
-                <span className="text-4xl font-bold text-foreground">{format(checkOut, "d")}</span>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-foreground leading-tight">{format(checkOut, "EEE", { locale: fr })}</span>
-                  <span className="text-sm text-muted-foreground leading-tight">{format(checkOut, "MMM", { locale: fr })}</span>
-                </div>
+            <ArrowRight className="w-4 h-4 text-muted-foreground mx-2 shrink-0" />
+            <button onClick={() => setShowCalendar("out")} className="flex-1 text-right">
+              <p className="text-[11px] text-muted-foreground font-medium mb-0.5">Départ</p>
+              <div className="flex items-baseline gap-1.5 justify-end">
+                <span className="text-2xl font-bold text-foreground">{format(checkOut, "d")}</span>
+                <span className="text-xs text-muted-foreground">{format(checkOut, "EEE MMM", { locale: fr })}</span>
               </div>
             </button>
           </div>
@@ -225,10 +211,10 @@ const MobileSearchPill = () => {
       </div>
 
       {/* Footer CTA */}
-      <div className="px-5 py-4 border-t border-border">
+      <div className="px-5 py-3 border-t border-border">
         <button
           onClick={handleSearch}
-          className="w-full py-4 bg-primary text-primary-foreground rounded-xl text-base font-semibold flex items-center justify-center gap-2"
+          className="w-full py-3.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
         >
           <Search className="w-5 h-5" />
           Rechercher
@@ -248,25 +234,25 @@ const CounterRow = ({
   max: number;
   onChange: (v: number) => void;
 }) => (
-  <div className="flex items-center justify-between py-5">
-    <div className="flex items-baseline gap-3">
-      <span className="text-3xl font-bold text-foreground w-8">{value}</span>
-      <span className="text-base text-foreground font-medium">{label}</span>
+  <div className="flex items-center justify-between py-3">
+    <div className="flex items-baseline gap-2">
+      <span className="text-xl font-bold text-foreground w-6">{value}</span>
+      <span className="text-sm text-foreground font-medium">{label}</span>
     </div>
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2.5">
       <button
         onClick={() => onChange(Math.max(min, value - 1))}
         disabled={value <= min}
-        className="w-9 h-9 rounded-full border-2 border-border flex items-center justify-center disabled:opacity-30 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+        className="w-8 h-8 rounded-full border-2 border-border flex items-center justify-center disabled:opacity-30 text-muted-foreground"
       >
-        <Minus className="w-4 h-4" />
+        <Minus className="w-3.5 h-3.5" />
       </button>
       <button
         onClick={() => onChange(Math.min(max, value + 1))}
         disabled={value >= max}
-        className="w-9 h-9 rounded-full border-2 border-primary flex items-center justify-center text-primary hover:bg-primary/10 transition-colors disabled:opacity-30"
+        className="w-8 h-8 rounded-full border-2 border-primary flex items-center justify-center text-primary disabled:opacity-30"
       >
-        <Plus className="w-4 h-4" />
+        <Plus className="w-3.5 h-3.5" />
       </button>
     </div>
   </div>
