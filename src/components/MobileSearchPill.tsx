@@ -234,25 +234,25 @@ const CounterRow = ({
   max: number;
   onChange: (v: number) => void;
 }) => (
-  <div className="flex items-center justify-between py-5">
-    <div className="flex items-baseline gap-3">
-      <span className="text-3xl font-bold text-foreground w-8">{value}</span>
-      <span className="text-base text-foreground font-medium">{label}</span>
+  <div className="flex items-center justify-between py-3">
+    <div className="flex items-baseline gap-2">
+      <span className="text-xl font-bold text-foreground w-6">{value}</span>
+      <span className="text-sm text-foreground font-medium">{label}</span>
     </div>
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2.5">
       <button
         onClick={() => onChange(Math.max(min, value - 1))}
         disabled={value <= min}
-        className="w-9 h-9 rounded-full border-2 border-border flex items-center justify-center disabled:opacity-30 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+        className="w-8 h-8 rounded-full border-2 border-border flex items-center justify-center disabled:opacity-30 text-muted-foreground"
       >
-        <Minus className="w-4 h-4" />
+        <Minus className="w-3.5 h-3.5" />
       </button>
       <button
         onClick={() => onChange(Math.min(max, value + 1))}
         disabled={value >= max}
-        className="w-9 h-9 rounded-full border-2 border-primary flex items-center justify-center text-primary hover:bg-primary/10 transition-colors disabled:opacity-30"
+        className="w-8 h-8 rounded-full border-2 border-primary flex items-center justify-center text-primary disabled:opacity-30"
       >
-        <Plus className="w-4 h-4" />
+        <Plus className="w-3.5 h-3.5" />
       </button>
     </div>
   </div>
