@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
 import MobileSearchPill from "@/components/MobileSearchPill";
-import CategoryFilter, { type CategoryKey } from "@/components/CategoryFilter";
+
 import ListingCard from "@/components/ListingCard";
 import Footer from "@/components/Footer";
 import OusmaneChatbot from "@/components/OusmaneChatbot";
