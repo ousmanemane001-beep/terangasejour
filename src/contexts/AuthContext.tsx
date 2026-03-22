@@ -64,32 +64,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    let mounted = true;
+
+    // Set up listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        setTimeout(() => {
-          fetchProfile(session.user.id);
-          checkAdmin(session.user.id);
-        }, 0);
+        await Promise.all([
+          fetchProfile(session.user.id),
+          checkAdmin(session.user.id),
+        ]);
       } else {
         setProfile(null);
         setIsAdmin(false);
       }
-      setLoading(false);
+      if (mounted) setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Then check existing session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchProfile(session.user.id);
-        checkAdmin(session.user.id);
+        await Promise.all([
+          fetchProfile(session.user.id),
+          checkAdmin(session.user.id),
+        ]);
       }
-      setLoading(false);
+      if (mounted) setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
