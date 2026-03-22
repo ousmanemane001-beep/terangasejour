@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useListingsRatings } from "@/hooks/useReviews";
 import { Search, Navigation, ArrowUpDown } from "lucide-react";
@@ -19,9 +19,11 @@ const PROXIMITY_RADIUS_KM = 20;
 
 const Explore = () => {
   const [searchParams] = useSearchParams();
+  const destinationParam = searchParams.get("destination") || "";
+  const searchParamsKey = searchParams.toString();
   const { data: dbListings } = useListings();
 
-  const [destination, setDestination] = useState(searchParams.get("destination") || "");
+  const [destination, setDestination] = useState(destinationParam);
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 150000]);
   const [bedroomFilter, setBedroomFilter] = useState(0);
@@ -31,11 +33,24 @@ const Explore = () => {
   const [showMap, setShowMap] = useState(!!searchParams.get("lat"));
   const [hoveredProperty, setHoveredProperty] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<"default" | "price_asc" | "price_desc" | "newest">("default");
+  const resultsSectionRef = useRef<HTMLDivElement | null>(null);
 
-  const destName = searchParams.get("destination") || "";
+  const destName = destinationParam;
   const destLat = searchParams.get("lat") ? parseFloat(searchParams.get("lat")!) : undefined;
   const destLng = searchParams.get("lng") ? parseFloat(searchParams.get("lng")!) : undefined;
   const hasDestCoords = destLat !== undefined && destLng !== undefined && !isNaN(destLat) && !isNaN(destLng);
+
+  useEffect(() => {
+    setDestination(destinationParam);
+  }, [destinationParam]);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      resultsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [searchParamsKey]);
 
   const mapCenter = hasDestCoords ? { lat: destLat, lng: destLng } : undefined;
 
@@ -150,7 +165,7 @@ const Explore = () => {
       />
 
       {/* Sort + Main Content */}
-      <div className="flex-1 flex">
+      <div ref={resultsSectionRef} className="flex-1 flex scroll-mt-24">
         <div className={cn("flex-1 overflow-y-auto", showMap ? "lg:w-[55%]" : "w-full")}>
           <div className="container mx-auto px-4 py-4">
             {/* Sort controls */}
