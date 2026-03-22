@@ -77,7 +77,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop: Logo left */}
-          <Link to="/" className="hidden md:flex items-center gap-2 shrink-0">
+          <Link to="/" className="hidden md:flex items-center gap-2 shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior })}>
             <span className="font-display text-lg font-bold text-primary">TerangaSéjour</span>
           </Link>
 
