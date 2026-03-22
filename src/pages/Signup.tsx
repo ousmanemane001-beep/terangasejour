@@ -160,10 +160,17 @@ const Signup = () => {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Confirmer le mot de passe"
+                    className="h-12 rounded-lg border-border bg-background text-sm"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-12 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm border-0"
+                    className="w-full h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm border-0"
                   >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Créer mon compte"}
                   </Button>
