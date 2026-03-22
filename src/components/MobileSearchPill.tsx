@@ -120,7 +120,7 @@ const MobileSearchPill = () => {
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] bg-background flex flex-col" style={{ height: '100dvh' }}>
+    <div className="fixed inset-0 z-[9999] bg-background flex flex-col">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-3 pb-3 bg-primary">
         <button onClick={close} className="w-9 h-9 rounded-full flex items-center justify-center text-primary-foreground">
@@ -130,7 +130,7 @@ const MobileSearchPill = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0 pb-16">
         {/* Destination */}
         <div className="px-5 py-3">
           <div className="relative">
@@ -195,10 +195,10 @@ const MobileSearchPill = () => {
       </div>
 
       {/* Footer CTA */}
-      <div className="shrink-0 px-5 py-2 border-t border-border bg-background">
+      <div className="fixed bottom-0 left-0 right-0 z-[10000] px-5 py-3 border-t border-border bg-background safe-bottom">
         <button
           onClick={handleSearch}
-          className="w-full py-3 bg-primary text-primary-foreground rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+          className="w-full py-3.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-lg"
         >
           <Search className="w-5 h-5" />
           Rechercher
