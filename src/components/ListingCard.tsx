@@ -81,8 +81,8 @@ const ListingCard = forwardRef<HTMLDivElement, ListingCardProps>(
 
         <Link to={`/property/${listing.id}`} className="block mt-2.5 px-0.5">
           <div className="flex items-start justify-between gap-1">
-            <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-1 capitalize">
-              {listing.property_type}
+            <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-1">
+              {listing.title}
             </h3>
             {showRating && (
               <span className="inline-flex items-center gap-1 text-foreground text-sm shrink-0">
