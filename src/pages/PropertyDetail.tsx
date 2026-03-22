@@ -327,6 +327,32 @@ const PropertyDetail = () => {
           </div>
         </div>
       </section>
+
+      {/* Mobile sticky booking bar */}
+      {listing && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background border-t border-border px-4 py-3 flex items-center justify-between">
+          <div>
+            <span className="text-lg font-bold text-foreground">{listing.price.toLocaleString("fr-FR")} F</span>
+            <span className="text-sm text-muted-foreground"> / nuit</span>
+          </div>
+          {isUUID && id ? (
+            <Button
+              className="rounded-xl px-6 h-11 bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+              onClick={() => {
+                const bookingEl = document.querySelector('[data-booking-widget]');
+                if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
+              Réserver maintenant
+            </Button>
+          ) : (
+            <Button className="rounded-xl px-6 h-11 bg-primary text-primary-foreground font-semibold" disabled>
+              Réserver
+            </Button>
+          )}
+        </div>
+      )}
+
       <Footer />
     </div>
   );
