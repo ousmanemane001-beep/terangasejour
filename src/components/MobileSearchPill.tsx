@@ -265,10 +265,10 @@ const MobileSearchPill = () => {
         </div>
 
         {/* CTA */}
-        <div className="px-4 py-3 border-t border-border safe-bottom">
+        <div className="px-5 py-2 border-t border-border safe-bottom">
           <button
             onClick={handleSearch}
-            className="w-full py-3 bg-primary text-primary-foreground rounded-xl text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+            className="w-[95%] mx-auto py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
           >
             <Search className="w-4 h-4" />
             Rechercher
