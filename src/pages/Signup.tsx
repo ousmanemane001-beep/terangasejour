@@ -16,6 +16,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleEmailContinue = (e: React.FormEvent) => {
@@ -33,6 +34,7 @@ const Signup = () => {
     e.preventDefault();
     if (!password) { toast.error("Veuillez entrer un mot de passe"); return; }
     if (password.length < 6) { toast.error("Le mot de passe doit contenir au moins 6 caractères"); return; }
+    if (password !== confirmPassword) { toast.error("Les mots de passe ne correspondent pas"); return; }
 
     setLoading(true);
     const { error } = await supabase.auth.signUp({ email, password });
@@ -106,7 +108,7 @@ const Signup = () => {
                   />
                   <Button
                     type="submit"
-                    className="w-full h-12 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm border-0"
+                    className="w-full h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm border-0"
                   >
                     Continuer avec une adresse e-mail
                   </Button>
@@ -158,10 +160,17 @@ const Signup = () => {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Confirmer le mot de passe"
+                    className="h-12 rounded-lg border-border bg-background text-sm"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-12 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm border-0"
+                    className="w-full h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm border-0"
                   >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Créer mon compte"}
                   </Button>

@@ -45,9 +45,7 @@ const Explore = () => {
   }, [destinationParam]);
 
   useEffect(() => {
-    requestAnimationFrame(() => {
-      resultsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [searchParamsKey]);
 
   const mapCenter = hasDestCoords ? { lat: destLat, lng: destLng } : undefined;
@@ -130,7 +128,7 @@ const Explore = () => {
   const totalResults = filteredProperties.length + filteredDBListings.length;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar />
 
       {/* Header */}
@@ -195,7 +193,7 @@ const Explore = () => {
               "grid gap-5",
               showMap
                 ? "grid-cols-1 sm:grid-cols-2"
-                : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
             )}>
               {filteredProperties.map((property) => (
                 <div key={property.id} onMouseEnter={() => setHoveredProperty(property.id)} onMouseLeave={() => setHoveredProperty(null)}>

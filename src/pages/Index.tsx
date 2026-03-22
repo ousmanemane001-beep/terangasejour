@@ -115,26 +115,26 @@ const Index = () => {
         />
       </section>
 
-      {/* ═══ CTA HÔTE ═══ */}
+      {/* ═══ CTA DEVENIR HÔTE ═══ */}
       <section className="py-12 md:py-16 bg-foreground text-background">
         <div className="max-w-[1200px] mx-auto px-6 max-w-2xl text-center">
           <h2 className="text-xl md:text-3xl font-bold mb-3">
-            Gagnez de l'argent avec votre logement
+            Devenir hôte
           </h2>
           <p className="text-background/70 text-sm md:text-base mb-6">
-            Publiez votre logement en quelques minutes et commencez à recevoir des réservations.
+            Gagnez de l'argent avec votre logement. Publiez en quelques minutes et recevez des réservations.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link to="/create-listing">
+            <Link to="/become-host">
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 gap-2">
                 <Home className="w-4 h-4" />
-                Publier mon logement
+                Devenir hôte
               </Button>
             </Link>
-            <Link to="/certification">
+            <Link to="/create-listing">
               <Button variant="outline" size="lg" className="border-background/30 text-background hover:bg-background/10 rounded-full px-6 gap-2">
                 <Shield className="w-4 h-4" />
-                Certification hôte
+                Publier mon logement
               </Button>
             </Link>
           </div>

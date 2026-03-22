@@ -8,7 +8,7 @@ import {
   isAcceptedImageFormat,
 } from "./photo-upload/imageProcessor";
 
-const MAX_PHOTOS = 10;
+const MAX_PHOTOS = 5;
 const ACCEPTED_INPUT = "image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif";
 
 export interface PhotoItem {

@@ -103,12 +103,14 @@ const PropertyDetail = () => {
     );
   }
 
+  // For DB listings, don't show all amenities by default — only show what's relevant
+  // In future, amenities should be stored per listing. For now, show common ones for DB listings.
   const amenities = listing.isDB
-    ? Object.entries(amenityMap).map(([, v]) => v)
+    ? [] // No amenities to show unless host has specified them
     : (staticProperty?.amenities || []).map((a) => amenityMap[a] || { icon: Wifi, label: a }).filter(Boolean);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pb-20 md:pb-0">
       <Navbar />
       <section className="py-6">
         <div className="container mx-auto px-4">
@@ -255,20 +257,7 @@ const PropertyDetail = () => {
                 )}
               </div>
 
-              {/* Trust elements */}
-              <div className="flex flex-wrap gap-3">
-                {[
-                  { icon: "🔒", text: "Paiement sécurisé" },
-                  { icon: "✓", text: "Logements vérifiés" },
-                  { icon: "📞", text: "Assistance 7j/7" },
-                  { icon: "⚡", text: "Réservation rapide" },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-full bg-primary/5 text-sm text-foreground border border-primary/10">
-                    <span>{item.icon}</span>
-                    <span>{item.text}</span>
-                  </div>
-                ))}
-              </div>
+              {/* Trust elements removed per request */}
 
               <div className="flex flex-wrap gap-6 py-4 border-y border-border">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground"><Bed className="w-4 h-4" /><span>{listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}</span></div>
@@ -307,12 +296,7 @@ const PropertyDetail = () => {
                 </div>
               )}
 
-              {/* Availability Calendar */}
-              {isUUID && id && (
-                <div className="border-t border-border pt-8">
-                  <AvailabilityCalendar listingId={id} />
-                </div>
-              )}
+              {/* Availability Calendar removed — traveler selects dates in booking widget */}
 
               {isUUID && id && (
                 <div className="border-t border-border pt-8">
@@ -321,7 +305,7 @@ const PropertyDetail = () => {
               )}
             </div>
 
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1" data-booking-widget>
               {isUUID && id ? (
                 <BookingWidget
                   listingId={id}
@@ -339,10 +323,47 @@ const PropertyDetail = () => {
                   <p className="text-sm text-muted-foreground">Contactez l'hôte pour réserver ce logement.</p>
                 </div>
               )}
+
+              {/* Devenir hôte CTA */}
+              <div className="mt-6 bg-primary/5 border border-primary/10 rounded-2xl p-5 text-center">
+                <p className="text-sm font-semibold text-foreground mb-1">Vous avez un logement similaire ?</p>
+                <p className="text-xs text-muted-foreground mb-3">Publiez-le et commencez à gagner de l'argent.</p>
+                <Link to="/become-host">
+                  <Button variant="outline" size="sm" className="rounded-full border-primary text-primary hover:bg-primary/10">
+                    Publier le vôtre
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Mobile sticky booking bar */}
+      {listing && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background border-t border-border px-4 py-3 flex items-center justify-between">
+          <div>
+            <span className="text-lg font-bold text-foreground">{listing.price.toLocaleString("fr-FR")} F</span>
+            <span className="text-sm text-muted-foreground"> / nuit</span>
+          </div>
+          {isUUID && id ? (
+            <Button
+              className="rounded-xl px-6 h-11 bg-primary text-primary-foreground font-semibold hover:bg-primary/90"
+              onClick={() => {
+                const bookingEl = document.querySelector('[data-booking-widget]');
+                if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
+              Réserver maintenant
+            </Button>
+          ) : (
+            <Button className="rounded-xl px-6 h-11 bg-primary text-primary-foreground font-semibold" disabled>
+              Réserver
+            </Button>
+          )}
+        </div>
+      )}
+
       <Footer />
     </div>
   );

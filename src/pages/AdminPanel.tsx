@@ -24,6 +24,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Link, Navigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import DisputesSection from "@/components/admin/DisputesSection";
 
 const statusLabels: Record<string, { label: string; color: string }> = {
   pending_approval: { label: "En attente", color: "bg-yellow-500/10 text-yellow-700" },
@@ -39,7 +40,7 @@ const paymentLabels: Record<string, string> = {
   paydunya: "PayDunya", card: "Carte bancaire",
 };
 
-type AdminSection = "overview" | "properties" | "approvals" | "reservations" | "users" | "payments" | "reviews" | "notifications" | "settings";
+type AdminSection = "overview" | "properties" | "approvals" | "reservations" | "users" | "payments" | "reviews" | "notifications" | "disputes" | "settings";
 
 const sidebarItems: { id: AdminSection; label: string; icon: any }[] = [
   { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard },
@@ -49,6 +50,7 @@ const sidebarItems: { id: AdminSection; label: string; icon: any }[] = [
   { id: "users", label: "Utilisateurs", icon: Users },
   { id: "payments", label: "Paiements", icon: CreditCard },
   { id: "reviews", label: "Avis", icon: Star },
+  { id: "disputes", label: "Conflits / Litiges", icon: AlertTriangle },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "settings", label: "Paramètres", icon: Settings },
 ];
@@ -586,8 +588,8 @@ const AdminPanel = () => {
                                   <Button variant="outline" size="sm" className="rounded-full text-xs gap-1"><Eye className="w-3 h-3" /> Voir</Button>
                                 </Link>
                                 {listing.status !== "published" && (
-                                  <Button size="sm" className="rounded-full bg-green-600 hover:bg-green-700 text-white text-xs gap-1"
-                                    disabled={!canApprove || updatingId === listing.id}
+                                  <Button size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs gap-1"
+                                    disabled={updatingId === listing.id}
                                     onClick={() => handleListingAction(listing.id, "approve")}>
                                     {updatingId === listing.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Approuver
                                   </Button>
@@ -997,6 +999,11 @@ const AdminPanel = () => {
                 )) : <p className="text-center text-muted-foreground py-8">Aucune notification.</p>}
               </div>
             </div>
+          )}
+
+          {/* ============ DISPUTES ============ */}
+          {activeSection === "disputes" && (
+            <DisputesSection />
           )}
 
           {/* ============ SETTINGS ============ */}

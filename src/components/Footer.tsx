@@ -83,8 +83,8 @@ const Footer = () => {
           <div>
             <h4 className="font-display font-semibold mb-3 text-sm">Hôtes</h4>
             <div className="space-y-2">
-              <Link to="/create-listing" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Publier un logement</Link>
               <Link to="/become-host" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Devenir hôte</Link>
+              <Link to="/create-listing" className="block text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">Publier un logement</Link>
             </div>
           </div>
         </div>
@@ -94,6 +94,8 @@ const Footer = () => {
             <Link to="/cgu" className="hover:text-primary-foreground transition-colors">CGU</Link>
             <span>·</span>
             <Link to="/privacy" className="hover:text-primary-foreground transition-colors">Confidentialité</Link>
+            <span>·</span>
+            <Link to="/refund-policy" className="hover:text-primary-foreground transition-colors">Politique de remboursement</Link>
             <span>·</span>
             <span>Wave · Orange Money · Carte bancaire</span>
           </div>
