@@ -47,14 +47,12 @@ const Navbar = () => {
 
   const close = () => setMobileOpen(false);
 
-  // Mobile menu items with icons — Booking.com style
+  // Mobile menu items — role-aware (no Explorer, no Publier for voyageurs)
   const mobileMenuItems = [
     { label: "Accueil", path: "/", icon: Home },
-    { label: "Explorer", path: "/explore", icon: Search },
     { label: "Carte", path: "/explore-senegal", icon: MapIcon },
     { label: "À propos", path: "/about", icon: Info },
     { label: "Contact", path: "/contact", icon: Headphones },
-    ...(user ? [{ label: "Publier un logement", path: isHost ? "/create-listing" : "/become-host", icon: PlusCircle }] : []),
   ];
 
   return (
@@ -103,11 +101,15 @@ const Navbar = () => {
             >
               {lang}
             </button>
-            <Link to="/discover">
-              <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
-                <Bell className="w-5 h-5 text-foreground" />
-              </button>
-            </Link>
+            {user ? (
+              <NotificationDropdown />
+            ) : (
+              <Link to="/login">
+                <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
+                  <Bell className="w-5 h-5 text-foreground" />
+                </button>
+              </Link>
+            )}
             {user ? (
               <Link to="/profile">
                 <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
@@ -248,7 +250,7 @@ const Navbar = () => {
             >
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                <span className="font-display text-lg font-bold text-foreground">TerangaSéjour</span>
+                <Link to="/" onClick={close} className="font-display text-lg font-bold text-primary">TerangaSéjour</Link>
                 <button onClick={close} className="p-1 rounded-full hover:bg-muted transition-colors" aria-label="Fermer">
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
@@ -336,10 +338,20 @@ const Navbar = () => {
                 )}
               </div>
 
-              {/* CTA bottom */}
-              {user && !isAdmin && (
+              {/* CTA bottom — Devenir hôte for voyageurs, Publier for hosts */}
+              {user && !isAdmin && !isHost && (
                 <div className="px-5 py-4 border-t border-border">
-                  <Link to={isHost ? "/create-listing" : "/become-host"} onClick={close}>
+                  <Link to="/become-host" onClick={close}>
+                    <Button className="w-full rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90">
+                      <Home className="w-4 h-4 mr-2" />
+                      Devenir hôte
+                    </Button>
+                  </Link>
+                </div>
+              )}
+              {user && isHost && !isAdmin && (
+                <div className="px-5 py-4 border-t border-border">
+                  <Link to="/create-listing" onClick={close}>
                     <Button className="w-full rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90">
                       <PlusCircle className="w-4 h-4 mr-2" />
                       Publier mon logement
