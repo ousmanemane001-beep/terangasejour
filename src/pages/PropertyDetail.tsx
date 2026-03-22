@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import {
   Star, MapPin, Heart, Share2, Bed, Bath, Users,
   Wifi, Car, AirVent, ChefHat, Waves, ArrowLeft, Loader2,
-  Tv, Lock, Flower2, ShieldCheck, MessageCircle, CheckCircle, AlertTriangle,
+  Tv, Lock, Flower2, ShieldCheck, MessageCircle,
   Eye, Clock, ChevronRight,
 } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -72,7 +72,6 @@ const PropertyDetail = () => {
         rating: dbRating?.avg ?? null, reviewCount: dbRating?.count ?? null, isDB: true, verified: dbListing.verified,
         latitude: dbListing.latitude, longitude: dbListing.longitude,
         address: dbListing.address, city: dbListing.city,
-        cancellationPolicy: (dbListing as any).cancellation_policy || "flexible",
       }
     : staticProperty
     ? {
@@ -85,7 +84,6 @@ const PropertyDetail = () => {
         reviewCount: staticProperty.reviewCount, isDB: false, verified: false,
         latitude: null as number | null, longitude: null as number | null,
         address: null as string | null, city: null as string | null,
-        cancellationPolicy: "flexible",
       }
     : null;
 
