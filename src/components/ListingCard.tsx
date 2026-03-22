@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import FavoriteButton from "@/components/FavoriteButton";
 import type { DBListing } from "@/hooks/useListings";
 import type { ListingRating } from "@/hooks/useReviews";
+import { getDemoPhotos } from "@/lib/demoImages";
 import { forwardRef, useState } from "react";
 
 interface ListingCardProps {
@@ -13,7 +14,7 @@ interface ListingCardProps {
 
 const ListingCard = forwardRef<HTMLDivElement, ListingCardProps>(
   ({ listing, rating, distanceInfo }, ref) => {
-    const photos = listing.photos?.length ? listing.photos : ["/placeholder.svg"];
+    const photos = getDemoPhotos(listing.property_type, listing.id);
     const [currentPhoto, setCurrentPhoto] = useState(0);
     const zone = listing.city || listing.location || "Sénégal";
     const hasMultiplePhotos = photos.length > 1;
