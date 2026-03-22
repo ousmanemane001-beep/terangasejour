@@ -177,35 +177,21 @@ const MobileSearchPill = () => {
         <div className="h-px bg-border mx-5" />
 
         {/* Dates — Agoda style big numbers */}
-        <div className="px-5 py-5">
+        <div className="px-5 py-3">
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => setShowCalendar("in")}
-              className="flex-1 text-left"
-            >
-              <p className="text-xs text-muted-foreground font-medium mb-1">Arrivée</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-foreground">{format(checkIn, "d")}</span>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-foreground leading-tight">{format(checkIn, "EEE", { locale: fr })}</span>
-                  <span className="text-sm text-muted-foreground leading-tight">{format(checkIn, "MMM", { locale: fr })}</span>
-                </div>
+            <button onClick={() => setShowCalendar("in")} className="flex-1 text-left">
+              <p className="text-[11px] text-muted-foreground font-medium mb-0.5">Arrivée</p>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold text-foreground">{format(checkIn, "d")}</span>
+                <span className="text-xs text-muted-foreground">{format(checkIn, "EEE MMM", { locale: fr })}</span>
               </div>
             </button>
-
-            <ArrowRight className="w-5 h-5 text-muted-foreground mx-3 shrink-0" />
-
-            <button
-              onClick={() => setShowCalendar("out")}
-              className="flex-1 text-right"
-            >
-              <p className="text-xs text-muted-foreground font-medium mb-1">Départ</p>
-              <div className="flex items-baseline gap-2 justify-end">
-                <span className="text-4xl font-bold text-foreground">{format(checkOut, "d")}</span>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-foreground leading-tight">{format(checkOut, "EEE", { locale: fr })}</span>
-                  <span className="text-sm text-muted-foreground leading-tight">{format(checkOut, "MMM", { locale: fr })}</span>
-                </div>
+            <ArrowRight className="w-4 h-4 text-muted-foreground mx-2 shrink-0" />
+            <button onClick={() => setShowCalendar("out")} className="flex-1 text-right">
+              <p className="text-[11px] text-muted-foreground font-medium mb-0.5">Départ</p>
+              <div className="flex items-baseline gap-1.5 justify-end">
+                <span className="text-2xl font-bold text-foreground">{format(checkOut, "d")}</span>
+                <span className="text-xs text-muted-foreground">{format(checkOut, "EEE MMM", { locale: fr })}</span>
               </div>
             </button>
           </div>
