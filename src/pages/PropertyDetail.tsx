@@ -255,20 +255,7 @@ const PropertyDetail = () => {
                 )}
               </div>
 
-              {/* Trust elements */}
-              <div className="flex flex-wrap gap-3">
-                {[
-                  { icon: "🔒", text: "Paiement sécurisé" },
-                  { icon: "✓", text: "Logements vérifiés" },
-                  { icon: "📞", text: "Assistance 7j/7" },
-                  { icon: "⚡", text: "Réservation rapide" },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-full bg-primary/5 text-sm text-foreground border border-primary/10">
-                    <span>{item.icon}</span>
-                    <span>{item.text}</span>
-                  </div>
-                ))}
-              </div>
+              {/* Trust elements removed per request */}
 
               <div className="flex flex-wrap gap-6 py-4 border-y border-border">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground"><Bed className="w-4 h-4" /><span>{listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}</span></div>
