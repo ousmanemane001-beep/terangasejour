@@ -1,15 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
 import { Home, Search, Compass, Heart } from "lucide-react";
-
-const items = [
-  { label: "Accueil", path: "/", icon: Home },
-  { label: "Explorer", path: "/explore", icon: Search },
-  { label: "Découvrir", path: "/discover", icon: Compass },
-  { label: "Favoris", path: "/favorites", icon: Heart },
-];
+import { useTranslation } from "react-i18next";
 
 const BottomNav = () => {
   const { pathname } = useLocation();
+  const { t } = useTranslation();
+
+  const items = [
+    { label: t("bottomNav.home"), path: "/", icon: Home },
+    { label: t("bottomNav.explore"), path: "/explore", icon: Search },
+    { label: t("bottomNav.discover"), path: "/discover", icon: Compass },
+    { label: t("bottomNav.favorites"), path: "/favorites", icon: Heart },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border md:hidden">
