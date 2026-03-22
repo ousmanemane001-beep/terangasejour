@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
 import MobileSearchPill from "@/components/MobileSearchPill";
-import CategoryFilter, { type CategoryKey } from "@/components/CategoryFilter";
+
 import ListingCard from "@/components/ListingCard";
 import Footer from "@/components/Footer";
 import OusmaneChatbot from "@/components/OusmaneChatbot";
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
-import { useState } from "react";
+
 import {
   Loader2, Home, Shield, ArrowRight
 } from "lucide-react";
@@ -20,7 +20,6 @@ const REGION_CITIES = ["ziguinchor", "tambacounda", "kaolack", "thiès", "kédou
 
 const Index = () => {
   const { data: dbListings, isLoading } = useListings();
-  const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
 
   // Scroll to top on mount
   useEffect(() => {
@@ -45,12 +44,7 @@ const Index = () => {
         </div>
       </div>
 
-      {/* ═══ CATEGORY FILTER ═══ */}
-      <div className="sticky top-[120px] md:top-[130px] z-20 bg-background border-b border-border">
-        <div className="max-w-[1200px] mx-auto px-4 md:px-6">
-          <CategoryFilter active={activeCategory} onChange={setActiveCategory} />
-        </div>
-      </div>
+
 
       {/* ═══ CATEGORIZED LISTINGS ═══ */}
       <section className="flex-1 py-6 md:py-10 space-y-8 md:space-y-12">
