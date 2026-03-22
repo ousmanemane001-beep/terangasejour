@@ -101,11 +101,15 @@ const Navbar = () => {
             >
               {lang}
             </button>
-            <Link to="/discover">
-              <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
-                <Bell className="w-5 h-5 text-foreground" />
-              </button>
-            </Link>
+            {user ? (
+              <NotificationDropdown />
+            ) : (
+              <Link to="/login">
+                <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
+                  <Bell className="w-5 h-5 text-foreground" />
+                </button>
+              </Link>
+            )}
             {user ? (
               <Link to="/profile">
                 <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
