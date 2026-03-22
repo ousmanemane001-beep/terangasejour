@@ -16,17 +16,20 @@ import pool1 from "@/assets/rooms/pool1.jpg";
 import pool2 from "@/assets/rooms/pool2.jpg";
 import terrace1 from "@/assets/rooms/terrace1.jpg";
 import terrace2 from "@/assets/rooms/terrace2.jpg";
-import exterior1 from "@/assets/rooms/exterior1.jpg";
-import exterior2 from "@/assets/rooms/exterior2.jpg";
-import exterior3 from "@/assets/rooms/exterior3.jpg";
-import exterior4 from "@/assets/rooms/exterior4.jpg";
-import exterior5 from "@/assets/rooms/exterior5.jpg";
-import exterior6 from "@/assets/rooms/exterior6.jpg";
-import exterior7 from "@/assets/rooms/exterior7.jpg";
-import exterior8 from "@/assets/rooms/exterior8.jpg";
 
-// All generated simulation images
-const EXTERIORS = [exterior1, exterior2, exterior3, exterior4, exterior5, exterior6, exterior7, exterior8];
+// Real photos from Unsplash - ONLY for main exterior/facade images
+const EXTERIORS = [
+  "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
+  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
+  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
+  "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80",
+  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80",
+  "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=800&q=80",
+  "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=800&q=80",
+];
+
+// Generated realistic interior photos
 const LIVING_ROOMS = [living1, living2, living3, living4];
 const BEDROOMS = [bedroom1, bedroom2, bedroom3, bedroom4];
 const BATHROOMS = [bathroom1, bathroom2, bathroom3];
@@ -44,7 +47,7 @@ function hashId(id: string): number {
 
 /**
  * Returns 5 unique photos for a listing:
- * 1. Extérieur, 2. Salon, 3. Chambre, 4. Salle de bain, 5. Cuisine ou piscine
+ * 1. Exterior (Unsplash), 2. Salon, 3. Chambre, 4. Salle de bain, 5. Cuisine ou piscine
  */
 export function getDemoPhotos(propertyType: string, listingId: string): string[] {
   const h = hashId(listingId);
