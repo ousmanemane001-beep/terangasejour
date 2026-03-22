@@ -204,7 +204,8 @@ const MobileSearchPill = () => {
           Rechercher
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
