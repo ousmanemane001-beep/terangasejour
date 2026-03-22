@@ -21,20 +21,27 @@ const Login = () => {
     e.preventDefault();
     if (!email || !password) { toast.error("Veuillez remplir tous les champs"); return; }
     setLoading(true);
-    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message === "Invalid login credentials" ? "Email ou mot de passe incorrect"
-        : error.message === "Email not confirmed" ? "Veuillez confirmer votre email"
-        : error.message);
-    } else if (data.session) {
-      toast.success("Connexion réussie !");
-      // Check admin role before redirecting
-      const { data: isAdmin } = await supabase.rpc("has_role", {
-        _user_id: data.session.user.id,
-        _role: "admin" as const,
-      });
-      navigate(isAdmin ? "/admin" : "/dashboard", { replace: true });
+    try {
+      const { error, data } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        toast.error(error.message === "Invalid login credentials" ? "Email ou mot de passe incorrect"
+          : error.message === "Email not confirmed" ? "Veuillez confirmer votre email"
+          : error.message);
+        setLoading(false);
+        return;
+      }
+      if (data.session) {
+        toast.success("Connexion réussie !");
+        // Small delay to let AuthContext process the session
+        setTimeout(() => {
+          navigate("/", { replace: true });
+        }, 100);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      toast.error("Une erreur est survenue");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,14 +56,12 @@ const Login = () => {
         className="max-w-[500px] w-full py-10"
       >
         <div className="flex flex-col gap-8">
-          {/* Logo */}
           <div className="flex justify-center">
             <Link to="/">
               <span className="font-display text-3xl font-bold text-primary">TerangaSéjour</span>
             </Link>
           </div>
 
-          {/* Title */}
           <div className="flex flex-col gap-2 text-center">
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
               Content de vous revoir !
@@ -66,9 +71,7 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Social buttons + Create account */}
           <div className="flex flex-col gap-8 mx-auto max-w-[500px] w-full">
-            {/* Email / Password form */}
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <Input
                 type="email"
@@ -108,14 +111,12 @@ const Login = () => {
               </div>
             </form>
 
-            {/* Separator */}
             <div className="text-center">
               <p className="text-sm font-semibold text-foreground">
                 ou choisissez l'une de ces options
               </p>
             </div>
 
-            {/* Social icon buttons */}
             <SocialLoginButtons variant="icon-only" />
 
             <div className="text-center">
