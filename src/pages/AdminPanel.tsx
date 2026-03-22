@@ -587,8 +587,8 @@ const AdminPanel = () => {
                                   <Button variant="outline" size="sm" className="rounded-full text-xs gap-1"><Eye className="w-3 h-3" /> Voir</Button>
                                 </Link>
                                 {listing.status !== "published" && (
-                                  <Button size="sm" className="rounded-full bg-green-600 hover:bg-green-700 text-white text-xs gap-1"
-                                    disabled={!canApprove || updatingId === listing.id}
+                                  <Button size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs gap-1"
+                                    disabled={updatingId === listing.id}
                                     onClick={() => handleListingAction(listing.id, "approve")}>
                                     {updatingId === listing.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Approuver
                                   </Button>
