@@ -24,6 +24,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Link, Navigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import DisputesSection from "@/components/admin/DisputesSection";
 
 const statusLabels: Record<string, { label: string; color: string }> = {
   pending_approval: { label: "En attente", color: "bg-yellow-500/10 text-yellow-700" },
