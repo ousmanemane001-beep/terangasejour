@@ -294,12 +294,7 @@ const PropertyDetail = () => {
                 </div>
               )}
 
-              {/* Availability Calendar */}
-              {isUUID && id && (
-                <div className="border-t border-border pt-8">
-                  <AvailabilityCalendar listingId={id} />
-                </div>
-              )}
+              {/* Availability Calendar removed — traveler selects dates in booking widget */}
 
               {isUUID && id && (
                 <div className="border-t border-border pt-8">
