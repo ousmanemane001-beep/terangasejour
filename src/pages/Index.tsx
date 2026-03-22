@@ -44,6 +44,29 @@ const Index = () => {
         </div>
       </div>
 
+      {/* ═══ CATEGORY ICONS ═══ */}
+      <section className="py-6 md:py-8">
+        <div className="max-w-[1200px] mx-auto px-4 md:px-6">
+          <div className="flex justify-center gap-6 md:gap-10">
+            {[
+              { label: "Appartements", icon: Building2, type: "appartement" },
+              { label: "Hôtels", icon: Hotel, type: "hotel" },
+              { label: "Villas", icon: TreePalm, type: "villa" },
+            ].map((cat) => (
+              <Link
+                key={cat.type}
+                to={`/explore?type=${encodeURIComponent(cat.type)}`}
+                className="flex flex-col items-center gap-2 group cursor-pointer"
+              >
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <cat.icon className="w-7 h-7 md:w-9 md:h-9 text-primary" />
+                </div>
+                <span className="text-xs md:text-sm font-medium text-foreground">{cat.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
 
       {/* ═══ CATEGORIZED LISTINGS ═══ */}

@@ -338,28 +338,29 @@ const DiscoverSenegal = () => {
 
 function DestinationDetailCard({ destination, nearbyCount, coverImage }: { destination: DbDestination; nearbyCount: number; coverImage: string | null }) {
   const info = CATEGORY_INFO[destination.category] || { label: destination.category, emoji: "📍", color: "bg-muted text-foreground" };
+  const [expanded, setExpanded] = useState(false);
 
-  // Don't hide destinations without image — show fallback
   return (
-    <Link
-      to={`/explore?destination=${encodeURIComponent(destination.name)}${destination.latitude ? `&lat=${destination.latitude}&lng=${destination.longitude}` : ""}`}
-      className="group block bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1"
-    >
-      <div className="relative" style={{ aspectRatio: "4/3" }}>
-        {coverImage ? (
-          <img
-            src={coverImage}
-            alt={destination.name}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-            <span className="text-5xl opacity-80 group-hover:scale-110 transition-transform">{info.emoji}</span>
-          </div>
-        )}
-        <Badge className={`absolute top-2 left-2 text-[10px] ${info.color}`}>{info.emoji} {info.label}</Badge>
-      </div>
+    <div className="group block bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all">
+      <Link
+        to={`/explore?destination=${encodeURIComponent(destination.name)}${destination.latitude ? `&lat=${destination.latitude}&lng=${destination.longitude}` : ""}`}
+      >
+        <div className="relative" style={{ aspectRatio: "4/3" }}>
+          {coverImage ? (
+            <img
+              src={coverImage}
+              alt={destination.name}
+              loading="lazy"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+              <span className="text-5xl opacity-80 group-hover:scale-110 transition-transform">{info.emoji}</span>
+            </div>
+          )}
+          <Badge className={`absolute top-2 left-2 text-[10px] ${info.color}`}>{info.emoji} {info.label}</Badge>
+        </div>
+      </Link>
 
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -375,21 +376,37 @@ function DestinationDetailCard({ destination, nearbyCount, coverImage }: { desti
         )}
 
         {destination.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{destination.description}</p>
+          <>
+            <p className={`text-xs text-muted-foreground mb-2 ${expanded ? "" : "line-clamp-2"}`}>{destination.description}</p>
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs text-primary hover:underline mb-2"
+            >
+              {expanded ? "Voir moins" : "Lire la suite"}
+            </button>
+          </>
         )}
 
         <div className="flex items-center justify-between">
           {nearbyCount > 0 ? (
-            <span className="text-xs font-medium text-primary">
+            <Link
+              to={`/explore?destination=${encodeURIComponent(destination.name)}${destination.latitude ? `&lat=${destination.latitude}&lng=${destination.longitude}` : ""}`}
+              className="text-xs font-medium text-primary hover:underline"
+            >
               🏠 {nearbyCount} logement{nearbyCount > 1 ? "s" : ""} à proximité
-            </span>
+            </Link>
           ) : (
-            <span className="text-xs text-muted-foreground">Explorer →</span>
+            <Link
+              to={`/explore?destination=${encodeURIComponent(destination.name)}${destination.latitude ? `&lat=${destination.latitude}&lng=${destination.longitude}` : ""}`}
+              className="text-xs text-muted-foreground hover:text-primary"
+            >
+              Explorer →
+            </Link>
           )}
           <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 

@@ -303,6 +303,11 @@ const Navbar = () => {
                     <Link to="/dashboard/my-bookings" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
                       <CalendarDays className="w-5 h-5 shrink-0" /> Mes voyages
                     </Link>
+                    {!isHost && !isAdmin && (
+                      <Link to="/become-host" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-primary hover:bg-muted">
+                        <Home className="w-5 h-5 shrink-0" /> Devenir hôte
+                      </Link>
+                    )}
                     {isHost && (
                       <Link to="/dashboard/bookings" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
                         <ClipboardList className="w-5 h-5 shrink-0" /> Réservations
