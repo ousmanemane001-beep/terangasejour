@@ -110,7 +110,7 @@ const PropertyDetail = () => {
     : (staticProperty?.amenities || []).map((a) => amenityMap[a] || { icon: Wifi, label: a }).filter(Boolean);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pb-20 md:pb-0">
       <Navbar />
       <section className="py-6">
         <div className="container mx-auto px-4">
