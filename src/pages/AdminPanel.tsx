@@ -1000,6 +1000,11 @@ const AdminPanel = () => {
             </div>
           )}
 
+          {/* ============ DISPUTES ============ */}
+          {activeSection === "disputes" && (
+            <DisputesSection />
+          )}
+
           {/* ============ SETTINGS ============ */}
           {activeSection === "settings" && (
             <div>
