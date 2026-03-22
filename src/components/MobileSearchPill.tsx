@@ -149,7 +149,6 @@ const MobileSearchPill = () => {
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
               placeholder="Où allez-vous ?"
-              autoFocus
               className="w-full pl-10 pr-4 py-2.5 bg-secondary rounded-xl text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/20 font-medium"
             />
           </div>
