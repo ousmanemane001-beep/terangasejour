@@ -8,23 +8,25 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState } from "react";
-
-const benefits = [
-  { icon: TrendingUp, title: "Gagnez de l'argent", desc: "Transformez votre logement en source de revenus réguliers." },
-  { icon: Shield, title: "Réservations sécurisées", desc: "Paiements protégés et vérification des voyageurs." },
-  { icon: Star, title: "Visibilité maximale", desc: "Votre annonce visible par des milliers de voyageurs." },
-  { icon: Home, title: "Gestion simplifiée", desc: "Dashboard intuitif pour gérer vos logements et réservations." },
-];
+import { useTranslation } from "react-i18next";
 
 const BecomeHost = () => {
   const { user, isHost, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [justBecameHost, setJustBecameHost] = useState(false);
+  const { t } = useTranslation();
+
+  const benefits = [
+    { icon: TrendingUp, title: t("becomeHost.earnMoney"), desc: t("becomeHost.earnMoneyDesc") },
+    { icon: Shield, title: t("becomeHost.secureBookings"), desc: t("becomeHost.secureBookingsDesc") },
+    { icon: Star, title: t("becomeHost.maxVisibility"), desc: t("becomeHost.maxVisibilityDesc") },
+    { icon: Home, title: t("becomeHost.easyManagement"), desc: t("becomeHost.easyManagementDesc") },
+  ];
 
   const handleBecomeHost = async () => {
     if (!user) {
-      toast.error("Veuillez vous connecter d'abord.");
+      toast.error(t("becomeHost.loginFirst"));
       navigate("/login");
       return;
     }
@@ -41,11 +43,10 @@ const BecomeHost = () => {
     } else {
       await refreshProfile();
       setJustBecameHost(true);
-      toast.success("Félicitations ! Vous êtes maintenant hôte sur TerangaSéjour.");
+      toast.success(t("becomeHost.congrats"));
     }
   };
 
-  // Show welcome screen after becoming host or if already host
   if (isHost || justBecameHost) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -61,10 +62,10 @@ const BecomeHost = () => {
               <CheckCircle className="w-10 h-10 text-primary" />
             </div>
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Bienvenue parmi nos hôtes ! 🎉
+              {t("becomeHost.welcomeTitle")}
             </h1>
             <p className="text-muted-foreground text-lg mb-8">
-              Votre compte hôte est activé. Vous pouvez maintenant publier votre premier logement et commencer à recevoir des réservations.
+              {t("becomeHost.welcomeDesc")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -72,14 +73,14 @@ const BecomeHost = () => {
                 className="rounded-full bg-primary text-primary-foreground px-8 h-12 text-base font-semibold gap-2"
               >
                 <PlusCircle className="w-5 h-5" />
-                Publier un logement
+                {t("becomeHost.publishListing")}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => navigate("/dashboard")}
                 className="rounded-full px-8 h-12 text-base font-semibold"
               >
-                Mon tableau de bord
+                {t("becomeHost.myDashboard")}
               </Button>
             </div>
           </motion.div>
@@ -99,10 +100,10 @@ const BecomeHost = () => {
               <Home className="w-8 h-8 text-primary" />
             </div>
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Devenir hôte sur TerangaSéjour
+              {t("becomeHost.title")}
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Publiez votre logement et gagnez de l'argent avec vos locations. Rejoignez des centaines d'hôtes au Sénégal.
+              {t("becomeHost.subtitle")}
             </p>
           </motion.div>
 
@@ -131,10 +132,10 @@ const BecomeHost = () => {
               className="rounded-full bg-primary text-primary-foreground px-10 h-14 text-lg font-semibold"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-              Devenir hôte
+              {t("becomeHost.becomeHostBtn")}
             </Button>
             <p className="text-sm text-muted-foreground mt-4">
-              C'est gratuit et sans engagement. Vous pouvez publier votre premier logement immédiatement.
+              {t("becomeHost.freeNoCommitment")}
             </p>
           </div>
         </div>

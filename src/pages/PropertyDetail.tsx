@@ -22,16 +22,17 @@ import {
   Eye, Clock, ChevronRight,
 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
-const amenityMap: Record<string, { icon: typeof Wifi; label: string }> = {
-  wifi: { icon: Wifi, label: "Wi-Fi" },
-  parking: { icon: Car, label: "Parking" },
-  ac: { icon: AirVent, label: "Climatisation" },
-  kitchen: { icon: ChefHat, label: "Cuisine équipée" },
-  pool: { icon: Waves, label: "Piscine" },
-  tv: { icon: Tv, label: "Télévision" },
-  security: { icon: Lock, label: "Sécurité 24h" },
-  garden: { icon: Flower2, label: "Jardin" },
+const amenityMap: Record<string, { icon: typeof Wifi; labelKey: string }> = {
+  wifi: { icon: Wifi, labelKey: "Wi-Fi" },
+  parking: { icon: Car, labelKey: "Parking" },
+  ac: { icon: AirVent, labelKey: "Climatisation" },
+  kitchen: { icon: ChefHat, labelKey: "Cuisine équipée" },
+  pool: { icon: Waves, labelKey: "Piscine" },
+  tv: { icon: Tv, labelKey: "Télévision" },
+  security: { icon: Lock, labelKey: "Sécurité 24h" },
+  garden: { icon: Flower2, labelKey: "Jardin" },
 };
 
 const PropertyDetail = () => {
@@ -45,8 +46,8 @@ const PropertyDetail = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const startConversation = useStartConversation();
+  const { t } = useTranslation();
 
-  // Social proof (stable random per listing ID)
   const socialProof = useMemo(() => ({
     viewers: Math.floor((id?.charCodeAt?.(0) || 5) % 15) + 3,
     lastBookingHours: Math.floor((id?.charCodeAt?.(1) || 8) % 20) + 1,
@@ -65,7 +66,7 @@ const PropertyDetail = () => {
   const listing = dbListing
     ? {
         id: dbListing.id, title: dbListing.title, description: dbListing.description || "",
-        location: dbListing.location || "Non précisé", type: dbListing.property_type,
+        location: dbListing.location || t("dashboard.notSpecified"), type: dbListing.property_type,
         price: dbListing.price_per_night, bedrooms: dbListing.bedrooms, bathrooms: dbListing.bathrooms,
         guests: dbListing.capacity, images: dbListing.photos || [],
         coverImage: dbListing.photos?.[0] || "/placeholder.svg",
@@ -76,7 +77,7 @@ const PropertyDetail = () => {
     : staticProperty
     ? {
         id: String(staticProperty.id), title: staticProperty.title,
-        description: staticProperty.description || `Bienvenue dans ce magnifique ${staticProperty.type.toLowerCase()} situé à ${staticProperty.location}.`,
+        description: staticProperty.description || "",
         location: staticProperty.location, type: staticProperty.type, price: staticProperty.price,
         bedrooms: staticProperty.bedrooms, bathrooms: staticProperty.bathrooms || 2,
         guests: staticProperty.guests, images: staticProperty.images || [staticProperty.image],
@@ -93,9 +94,9 @@ const PropertyDetail = () => {
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="font-display text-2xl font-bold text-foreground mb-2">Logement non trouvé</h1>
-            <p className="text-muted-foreground mb-4">Ce logement n'existe pas ou a été supprimé.</p>
-            <Link to="/explore" className="text-primary hover:underline">Retour à l'exploration</Link>
+            <h1 className="font-display text-2xl font-bold text-foreground mb-2">{t("listing.notFound")}</h1>
+            <p className="text-muted-foreground mb-4">{t("listing.notFoundDesc")}</p>
+            <Link to="/explore" className="text-primary hover:underline">{t("listing.backToExplore")}</Link>
           </div>
         </div>
         <Footer />
@@ -103,22 +104,19 @@ const PropertyDetail = () => {
     );
   }
 
-  // For DB listings, don't show all amenities by default — only show what's relevant
-  // In future, amenities should be stored per listing. For now, show common ones for DB listings.
   const amenities = listing.isDB
-    ? [] // No amenities to show unless host has specified them
-    : (staticProperty?.amenities || []).map((a) => amenityMap[a] || { icon: Wifi, label: a }).filter(Boolean);
+    ? []
+    : (staticProperty?.amenities || []).map((a) => amenityMap[a] || { icon: Wifi, labelKey: a }).filter(Boolean);
 
   return (
     <div className="min-h-screen flex flex-col pb-20 md:pb-0">
       <Navbar />
       <section className="py-6">
         <div className="container mx-auto px-4">
-          {/* Breadcrumb */}
           <nav className="flex items-center gap-1 text-xs text-muted-foreground mb-4 flex-wrap">
-            <Link to="/" className="hover:text-foreground">Accueil</Link>
+            <Link to="/" className="hover:text-foreground">{t("nav.home")}</Link>
             <ChevronRight className="w-3 h-3" />
-            <Link to="/explore" className="hover:text-foreground">Explorer</Link>
+            <Link to="/explore" className="hover:text-foreground">{t("nav.explore")}</Link>
             {listing && (
               <>
                 <ChevronRight className="w-3 h-3" />
@@ -127,7 +125,6 @@ const PropertyDetail = () => {
             )}
           </nav>
 
-          {/* Image Gallery */}
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8 relative">
             {listing.images.length > 1 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 rounded-2xl overflow-hidden">
@@ -153,18 +150,12 @@ const PropertyDetail = () => {
                 className="absolute bottom-3 right-3 bg-card/90 backdrop-blur-sm border border-border px-3 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-card transition-colors"
               >
                 <Eye className="w-3.5 h-3.5 inline mr-1" />
-                Voir les {listing.images.length} photos
+                {t("listing.viewPhotos", { count: listing.images.length })}
               </button>
             )}
           </motion.div>
 
-          {/* Lightbox */}
-          <PhotoLightbox
-            images={listing.images}
-            initialIndex={selectedImage}
-            open={lightboxOpen}
-            onClose={() => setLightboxOpen(false)}
-          />
+          <PhotoLightbox images={listing.images} initialIndex={selectedImage} open={lightboxOpen} onClose={() => setLightboxOpen(false)} />
 
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
@@ -184,7 +175,7 @@ const PropertyDetail = () => {
                           <span className="mx-2">•</span>
                           <Star className="w-4 h-4 fill-primary text-primary" />
                           <span className="text-sm font-medium text-foreground">{listing.rating}</span>
-                          <span className="text-sm">({listing.reviewCount} avis)</span>
+                          <span className="text-sm">({listing.reviewCount} {t("listing.reviews")})</span>
                         </>
                       )}
                     </div>
@@ -198,7 +189,6 @@ const PropertyDetail = () => {
                         const text = `${listing.title} — ${listing.price.toLocaleString("fr-FR")} F/nuit sur TerangaSéjour\n${url}`;
                         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                       }}
-                      aria-label="Partager sur WhatsApp"
                     >
                       <MessageCircle className="w-4 h-4" />
                     </button>
@@ -211,7 +201,7 @@ const PropertyDetail = () => {
                           try { await navigator.share(shareData); } catch {}
                         } else {
                           await navigator.clipboard.writeText(url);
-                          toast.success("Lien copié dans le presse-papier !");
+                          toast.success(t("listing.linkCopied"));
                         }
                       }}
                     >
@@ -220,19 +210,17 @@ const PropertyDetail = () => {
                   </div>
                 </div>
 
-                {/* Social proof */}
                 <div className="flex flex-wrap gap-3 mt-3">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
                     <Eye className="w-3.5 h-3.5" />
-                    <span>{socialProof.viewers} personnes consultent ce logement</span>
+                    <span>{t("listing.viewersNow", { count: socialProof.viewers })}</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
                     <Clock className="w-3.5 h-3.5" />
-                    <span>Dernière réservation il y a {socialProof.lastBookingHours}h</span>
+                    <span>{t("listing.lastBooking", { hours: socialProof.lastBookingHours })}</span>
                   </div>
                 </div>
 
-                {/* Contact host button */}
                 {isUUID && dbListing && user && user.id !== dbListing.user_id && (
                   <Button
                     variant="outline"
@@ -246,57 +234,45 @@ const PropertyDetail = () => {
                         });
                         navigate(`/messages?conv=${conv.id}`);
                       } catch (e: any) {
-                        toast.error("Impossible de démarrer la conversation");
+                        toast.error(t("auth.error"));
                       }
                     }}
                     disabled={startConversation.isPending}
                   >
                     <MessageCircle className="w-4 h-4" />
-                    Contacter l'hôte
+                    {t("listing.contactHost")}
                   </Button>
                 )}
               </div>
 
-              {/* Trust elements removed per request */}
-
               <div className="flex flex-wrap gap-6 py-4 border-y border-border">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground"><Bed className="w-4 h-4" /><span>{listing.bedrooms} chambre{listing.bedrooms > 1 ? "s" : ""}</span></div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground"><Bath className="w-4 h-4" /><span>{listing.bathrooms} salle{listing.bathrooms > 1 ? "s" : ""} de bain</span></div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground"><Users className="w-4 h-4" /><span>{listing.guests} voyageur{listing.guests > 1 ? "s" : ""}</span></div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground"><Bed className="w-4 h-4" /><span>{listing.bedrooms} {listing.bedrooms > 1 ? t("listing.bedrooms") : t("listing.bedroom")}</span></div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground"><Bath className="w-4 h-4" /><span>{listing.bathrooms} {listing.bathrooms > 1 ? t("listing.bathrooms") : t("listing.bathroom")}</span></div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground"><Users className="w-4 h-4" /><span>{listing.guests} {listing.guests > 1 ? t("listing.guests") : t("listing.guest")}</span></div>
               </div>
 
               <div>
-                <h2 className="font-display text-xl font-semibold text-foreground mb-3">Description</h2>
+                <h2 className="font-display text-xl font-semibold text-foreground mb-3">{t("listing.description")}</h2>
                 <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{listing.description}</p>
               </div>
 
               <div>
-                <h2 className="font-display text-xl font-semibold text-foreground mb-4">Équipements</h2>
+                <h2 className="font-display text-xl font-semibold text-foreground mb-4">{t("listing.amenities")}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {amenities.map((amenity, i) => (
                     <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border">
                       <amenity.icon className="w-5 h-5 text-primary" />
-                      <span className="text-sm text-foreground">{amenity.label}</span>
+                      <span className="text-sm text-foreground">{amenity.labelKey}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Cancellation Policy */}
-              {/* Property Map */}
               {listing.latitude && listing.longitude && (
                 <div className="border-t border-border pt-8">
-                  <PropertyMap
-                    latitude={listing.latitude}
-                    longitude={listing.longitude}
-                    title={listing.title}
-                    address={listing.address || undefined}
-                    city={listing.city || undefined}
-                  />
+                  <PropertyMap latitude={listing.latitude} longitude={listing.longitude} title={listing.title} address={listing.address || undefined} city={listing.city || undefined} />
                 </div>
               )}
-
-              {/* Availability Calendar removed — traveler selects dates in booking widget */}
 
               {isUUID && id && (
                 <div className="border-t border-border pt-8">
@@ -307,30 +283,23 @@ const PropertyDetail = () => {
 
             <div className="lg:col-span-1" data-booking-widget>
               {isUUID && id ? (
-                <BookingWidget
-                  listingId={id}
-                  pricePerNight={listing.price}
-                  maxGuests={listing.guests}
-                  bookingMode={dbListing ? (dbListing as any).booking_mode : "instant"}
-                  hostId={dbListing?.user_id}
-                />
+                <BookingWidget listingId={id} pricePerNight={listing.price} maxGuests={listing.guests} bookingMode={dbListing ? (dbListing as any).booking_mode : "instant"} hostId={dbListing?.user_id} />
               ) : (
                 <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6">
                   <div className="mb-4">
                     <span className="text-2xl font-bold text-foreground">{listing.price.toLocaleString("fr-FR")} F</span>
-                    <span className="text-muted-foreground"> / nuit</span>
+                    <span className="text-muted-foreground"> {t("listing.perNight")}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">Contactez l'hôte pour réserver ce logement.</p>
+                  <p className="text-sm text-muted-foreground">{t("listing.contactHostDesc")}</p>
                 </div>
               )}
 
-              {/* Devenir hôte CTA */}
               <div className="mt-6 bg-primary/5 border border-primary/10 rounded-2xl p-5 text-center">
-                <p className="text-sm font-semibold text-foreground mb-1">Vous avez un logement similaire ?</p>
-                <p className="text-xs text-muted-foreground mb-3">Publiez-le et commencez à gagner de l'argent.</p>
+                <p className="text-sm font-semibold text-foreground mb-1">{t("listing.similarListing")}</p>
+                <p className="text-xs text-muted-foreground mb-3">{t("listing.publishEarn")}</p>
                 <Link to="/become-host">
                   <Button variant="outline" size="sm" className="rounded-full border-primary text-primary hover:bg-primary/10">
-                    Publier le vôtre
+                    {t("listing.publishYours")}
                   </Button>
                 </Link>
               </div>
@@ -339,12 +308,11 @@ const PropertyDetail = () => {
         </div>
       </section>
 
-      {/* Mobile sticky booking bar */}
       {listing && (
         <div className="fixed bottom-16 left-0 right-0 z-50 md:hidden bg-background border-t border-border px-4 py-3 flex items-center justify-between">
           <div>
             <span className="text-lg font-bold text-foreground">{listing.price.toLocaleString("fr-FR")} F</span>
-            <span className="text-sm text-muted-foreground"> / nuit</span>
+            <span className="text-sm text-muted-foreground"> {t("listing.perNight")}</span>
           </div>
           {isUUID && id ? (
             <Button
@@ -354,11 +322,11 @@ const PropertyDetail = () => {
                 if (bookingEl) bookingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
             >
-              Réserver maintenant
+              {t("listing.bookNow")}
             </Button>
           ) : (
             <Button className="rounded-xl px-6 h-11 bg-primary text-primary-foreground font-semibold" disabled>
-              Réserver
+              {t("listing.bookNow")}
             </Button>
           )}
         </div>
