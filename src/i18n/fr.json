@@ -406,6 +406,8 @@
     "directPayment": "Paiement direct · Dates garanties",
     "bookingInProgress": "Réservation en cours...",
     "holdNote": "Votre réservation sera bloquée 30 min pour le paiement",
-    "editDates": "Modifier les dates"
+    "editDates": "Modifier les dates",
+    "confirmReservation": "Confirmer la réservation",
+    "iHavePaid": "J'ai effectué le paiement"
   }
 }
