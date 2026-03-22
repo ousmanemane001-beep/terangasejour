@@ -6,7 +6,7 @@ import MobileSearchPill from "@/components/MobileSearchPill";
 
 import ListingCard from "@/components/ListingCard";
 import Footer from "@/components/Footer";
-import OusmaneChatbot from "@/components/OusmaneChatbot";
+
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
 
