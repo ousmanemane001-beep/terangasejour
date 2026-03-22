@@ -78,7 +78,7 @@ const availabilityModes: Array<{
   {
     value: "contact",
     label: "Me contacter pour demander disponibilité",
-    icon: "📞",
+    icon: "💬",
     desc: "Les voyageurs doivent vous écrire pour vérifier les dates.",
   },
   {
