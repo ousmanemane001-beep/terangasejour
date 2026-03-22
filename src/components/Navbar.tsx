@@ -58,10 +58,25 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-white shadow-sm border-b border-border">
+      <nav className="sticky top-0 z-50 bg-background border-b border-border/50">
         <div className="container mx-auto flex items-center justify-between h-14 px-4">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0">
+
+          {/* Mobile: Hamburger + Logo left */}
+          <div className="md:hidden flex items-center gap-3">
+            <button
+              className="w-10 h-10 rounded-full bg-muted flex items-center justify-center"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Menu"
+            >
+              <Menu className="w-5 h-5 text-foreground" />
+            </button>
+            <Link to="/" className="flex items-center shrink-0">
+              <span className="font-display text-lg font-bold text-primary">TerangaSéjour</span>
+            </Link>
+          </div>
+
+          {/* Desktop: Logo left */}
+          <Link to="/" className="hidden md:flex items-center gap-2 shrink-0">
             <span className="font-display text-lg font-bold text-primary">TerangaSéjour</span>
           </Link>
 
@@ -76,6 +91,32 @@ const Navbar = () => {
                 }`}
               >{link.label}</Link>
             ))}
+          </div>
+
+          {/* Mobile: right icons (notification, heart, user) */}
+          <div className="md:hidden flex items-center gap-1">
+            {user && <NotificationDropdown />}
+            <Link to="/favorites">
+              <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
+                <Heart className="w-5 h-5 text-foreground" />
+              </button>
+            </Link>
+            {user ? (
+              <Link to="/profile">
+                <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
+                  <Avatar className="h-7 w-7">
+                    {avatarUrl && <AvatarImage src={avatarUrl} alt="Avatar" />}
+                    <AvatarFallback className="bg-primary text-primary-foreground text-[10px] font-bold">{initials}</AvatarFallback>
+                  </Avatar>
+                </button>
+              </Link>
+            ) : (
+              <Link to="/login">
+                <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
+                  <User className="w-5 h-5 text-foreground" />
+                </button>
+              </Link>
+            )}
           </div>
 
           {/* Desktop right actions */}
@@ -172,20 +213,6 @@ const Navbar = () => {
                 </Link>
               </div>
             )}
-          </div>
-
-          {/* Mobile: Se connecter + menu button */}
-          <div className="md:hidden flex items-center gap-2">
-            {!user && (
-              <Link to="/login">
-                <Button variant="outline" size="sm" className="rounded text-xs border-primary text-primary bg-transparent hover:bg-primary/10 px-3 h-8">
-                  Se connecter
-                </Button>
-              </Link>
-            )}
-            <button className="p-2 text-foreground" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
-              <Menu className="w-5 h-5" />
-            </button>
           </div>
         </div>
       </nav>
