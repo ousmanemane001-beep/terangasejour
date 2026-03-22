@@ -81,8 +81,8 @@ const ListingCard = forwardRef<HTMLDivElement, ListingCardProps>(
 
         <Link to={`/property/${listing.id}`} className="block mt-2.5 px-0.5">
           <div className="flex items-start justify-between gap-1">
-            <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-1">
-              {zone}
+            <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-1 capitalize">
+              {listing.property_type}
             </h3>
             {showRating && (
               <span className="inline-flex items-center gap-1 text-foreground text-sm shrink-0">
@@ -91,7 +91,7 @@ const ListingCard = forwardRef<HTMLDivElement, ListingCardProps>(
               </span>
             )}
           </div>
-          <p className="text-muted-foreground text-[13px] line-clamp-1 mt-0.5">{listing.title}</p>
+          <p className="text-muted-foreground text-[13px] line-clamp-1 mt-0.5">{zone}</p>
           <p className="text-foreground text-sm mt-1">
             <span className="font-semibold">{listing.price_per_night.toLocaleString("fr-FR")} F</span>
             {" "}
