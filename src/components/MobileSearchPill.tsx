@@ -122,12 +122,12 @@ const MobileSearchPill = () => {
 
   /* ── Expanded bottom-sheet ── */
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex flex-col justify-end" onClick={close}>
+    <div className="fixed inset-0 z-[9999] flex flex-col items-stretch justify-center" onClick={close}>
       <div className="absolute inset-0 bg-black/40" />
 
       <div
-        className="relative bg-background rounded-t-2xl flex flex-col overflow-hidden"
-        style={{ maxHeight: "70vh" }}
+        className="relative bg-background rounded-2xl mx-3 mb-[30vh] flex flex-col overflow-hidden shadow-xl"
+        style={{ maxHeight: "65vh" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle */}
