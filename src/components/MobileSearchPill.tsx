@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Search, X, MapPin, Calendar, Users, Minus, Plus, Building2, Home, Hotel } from "lucide-react";
+import { Search, X, MapPin, ChevronLeft, ChevronRight, Minus, Plus, Building2, Home, Hotel, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -9,40 +9,34 @@ import { cn } from "@/lib/utils";
 const MobileSearchPill = () => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
-  const [step, setStep] = useState<"where" | "when" | "who">("where");
   const [destination, setDestination] = useState("");
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
-  const [guests, setGuests] = useState(1);
+  const [checkIn, setCheckIn] = useState<Date>(new Date());
+  const [checkOut, setCheckOut] = useState<Date>(addDays(new Date(), 1));
+  const [rooms, setRooms] = useState(1);
+  const [adults, setAdults] = useState(2);
+  const [children, setChildren] = useState(0);
+  const [showCalendar, setShowCalendar] = useState<"in" | "out" | null>(null);
 
   const SUGGESTIONS = ["Dakar", "Saly", "Somone", "Gorée", "Saint-Louis", "Cap Skirring", "Lac Rose", "Mbour"];
 
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (destination) params.set("destination", destination);
-    if (dateRange.from) params.set("checkIn", format(dateRange.from, "yyyy-MM-dd"));
-    if (dateRange.to) params.set("checkOut", format(dateRange.to, "yyyy-MM-dd"));
-    if (guests > 1) params.set("guests", String(guests));
+    params.set("checkIn", format(checkIn, "yyyy-MM-dd"));
+    params.set("checkOut", format(checkOut, "yyyy-MM-dd"));
+    const totalGuests = adults + children;
+    if (totalGuests > 1) params.set("guests", String(totalGuests));
     navigate(`/explore?${params.toString()}`);
     setExpanded(false);
   };
 
-  const reset = () => {
-    setDestination("");
-    setDateRange({});
-    setGuests(1);
-    setStep("where");
-  };
-
   const close = () => {
     setExpanded(false);
-    setStep("where");
+    setShowCalendar(null);
   };
 
-  const dateLabel = dateRange.from
-    ? dateRange.to
-      ? `${format(dateRange.from, "d MMM", { locale: fr })} - ${format(dateRange.to, "d MMM", { locale: fr })}`
-      : format(dateRange.from, "d MMM", { locale: fr })
-    : "N'importe quand";
+  const totalGuests = adults + children;
+  const dateLabel = `${format(checkIn, "d MMM", { locale: fr })} - ${format(checkOut, "d MMM", { locale: fr })}`;
 
   const PROPERTY_TYPES = [
     { label: "Appartement", icon: Building2, type: "apartment" },
@@ -61,12 +55,11 @@ const MobileSearchPill = () => {
           <div className="flex flex-col items-start text-left">
             <span className="text-sm font-semibold text-foreground leading-tight">Où allez-vous ?</span>
             <span className="text-xs text-muted-foreground leading-tight">
-              {destination || "N'importe où"} · {dateLabel} · {guests} voyageur{guests > 1 ? "s" : ""}
+              {destination || "N'importe où"} · {dateLabel} · {totalGuests} voyageur{totalGuests > 1 ? "s" : ""}
             </span>
           </div>
         </button>
 
-        {/* Category icons row */}
         <div className="flex items-center justify-around px-2">
           {PROPERTY_TYPES.map((pt) => (
             <button
@@ -85,161 +78,198 @@ const MobileSearchPill = () => {
     );
   }
 
+  // Calendar overlay
+  if (showCalendar) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+        <div className="flex items-center gap-3 px-4 pt-3 pb-3 border-b border-border bg-primary">
+          <button onClick={() => setShowCalendar(null)} className="w-9 h-9 rounded-full flex items-center justify-center text-primary-foreground">
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <span className="text-base font-semibold text-primary-foreground">
+            {showCalendar === "in" ? "Date d'arrivée" : "Date de départ"}
+          </span>
+        </div>
+        <div className="flex-1 overflow-y-auto flex justify-center pt-4">
+          <CalendarComponent
+            mode="single"
+            selected={showCalendar === "in" ? checkIn : checkOut}
+            onSelect={(d) => {
+              if (!d) return;
+              if (showCalendar === "in") {
+                setCheckIn(d);
+                if (d >= checkOut) setCheckOut(addDays(d, 1));
+                setShowCalendar("out");
+              } else {
+                setCheckOut(d);
+                setShowCalendar(null);
+              }
+            }}
+            disabled={(date) => {
+              if (showCalendar === "in") return date < new Date();
+              return date <= checkIn;
+            }}
+            locale={fr}
+            className={cn("p-3 pointer-events-auto")}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Main expanded form (Agoda-style)
   return (
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-3 pb-2">
-        <button onClick={close} className="w-8 h-8 rounded-full border border-border flex items-center justify-center">
-          <X className="w-4 h-4" />
+      <div className="flex items-center gap-3 px-4 pt-3 pb-3 bg-primary">
+        <button onClick={close} className="w-9 h-9 rounded-full flex items-center justify-center text-primary-foreground">
+          <ChevronLeft className="w-5 h-5" />
         </button>
-        <button onClick={reset} className="text-xs font-semibold text-foreground underline">
-          Effacer tout
-        </button>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-2 px-4 mb-4">
-        {[
-          { key: "where" as const, label: "Lieu" },
-          { key: "when" as const, label: "Dates" },
-          { key: "who" as const, label: "Voyageurs" },
-        ].map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setStep(t.key)}
-            className={cn(
-              "flex-1 py-2 rounded-full text-sm font-medium transition-colors",
-              step === t.key
-                ? "bg-foreground text-background"
-                : "bg-secondary text-muted-foreground"
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
+        <span className="text-base font-semibold text-primary-foreground">Modifier la recherche</span>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4">
-        {step === "where" && (
-          <div className="space-y-4">
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                placeholder="Rechercher une destination"
-                autoFocus
-                className="w-full pl-10 pr-4 py-3 bg-secondary rounded-xl text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1">Suggestions</p>
-              <div className="grid grid-cols-2 gap-2">
-                {SUGGESTIONS.filter((s) =>
-                  !destination || s.toLowerCase().includes(destination.toLowerCase())
-                ).map((city) => (
-                  <button
-                    key={city}
-                    onClick={() => {
-                      setDestination(city);
-                      setStep("when");
-                    }}
-                    className="flex items-center gap-2 px-3 py-2.5 bg-secondary rounded-xl text-sm text-foreground hover:bg-accent transition-colors text-left"
-                  >
-                    <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    {city}
-                  </button>
-                ))}
-              </div>
-            </div>
+      <div className="flex-1 overflow-y-auto">
+        {/* Destination */}
+        <div className="px-5 py-4">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <input
+              type="text"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              placeholder="Rechercher une destination"
+              autoFocus
+              className="w-full pl-12 pr-4 py-3.5 bg-secondary rounded-full text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/20 font-medium"
+            />
           </div>
-        )}
-
-        {step === "when" && (
-          <div className="space-y-4">
-            {/* Date labels */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className={cn(
-                "rounded-xl border p-3 text-center transition-colors",
-                !dateRange.from ? "border-primary bg-primary/5" : "border-border"
-              )}>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Arrivée</p>
-                <p className="text-sm font-semibold text-foreground mt-0.5">
-                  {dateRange.from ? format(dateRange.from, "d MMM yyyy", { locale: fr }) : "Choisir"}
-                </p>
-              </div>
-              <div className={cn(
-                "rounded-xl border p-3 text-center transition-colors",
-                dateRange.from && !dateRange.to ? "border-primary bg-primary/5" : "border-border"
-              )}>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Départ</p>
-                <p className="text-sm font-semibold text-foreground mt-0.5">
-                  {dateRange.to ? format(dateRange.to, "d MMM yyyy", { locale: fr }) : "Choisir"}
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-center">
-              <CalendarComponent
-                mode="range"
-                selected={dateRange.from ? { from: dateRange.from, to: dateRange.to } : undefined}
-                onSelect={(range) => {
-                  setDateRange({ from: range?.from, to: range?.to });
-                  if (range?.to) setStep("who");
-                }}
-                numberOfMonths={1}
-                disabled={(date) => date < new Date()}
-                locale={fr}
-                className={cn("p-3 pointer-events-auto")}
-              />
-            </div>
-          </div>
-        )}
-
-        {step === "who" && (
-          <div className="space-y-6 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-foreground">Voyageurs</p>
-                <p className="text-xs text-muted-foreground">Nombre de personnes</p>
-              </div>
-              <div className="flex items-center gap-3">
+          {/* Suggestions if searching */}
+          {destination.length === 0 && (
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              {SUGGESTIONS.map((city) => (
                 <button
-                  onClick={() => setGuests(Math.max(1, guests - 1))}
-                  disabled={guests <= 1}
-                  className="w-8 h-8 rounded-full border border-border flex items-center justify-center disabled:opacity-30"
+                  key={city}
+                  onClick={() => setDestination(city)}
+                  className="flex items-center gap-2 px-3 py-2.5 bg-secondary rounded-xl text-sm text-foreground hover:bg-muted transition-colors text-left"
                 >
-                  <Minus className="w-3.5 h-3.5" />
+                  <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                  {city}
                 </button>
-                <span className="text-sm font-semibold w-6 text-center">{guests}</span>
-                <button
-                  onClick={() => setGuests(Math.min(20, guests + 1))}
-                  className="w-8 h-8 rounded-full border border-border flex items-center justify-center"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              ))}
             </div>
+          )}
+          {destination.length > 0 && (
+            <div className="mt-2">
+              {SUGGESTIONS.filter((s) => s.toLowerCase().includes(destination.toLowerCase())).map((city) => (
+                <button
+                  key={city}
+                  onClick={() => setDestination(city)}
+                  className="w-full flex items-center gap-3 px-3 py-3 hover:bg-muted rounded-xl transition-colors text-left"
+                >
+                  <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <span className="text-sm font-medium text-foreground">{city}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="h-px bg-border mx-5" />
+
+        {/* Dates — Agoda style big numbers */}
+        <div className="px-5 py-5">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setShowCalendar("in")}
+              className="flex-1 text-left"
+            >
+              <p className="text-xs text-muted-foreground font-medium mb-1">Arrivée</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-bold text-foreground">{format(checkIn, "d")}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-foreground leading-tight">{format(checkIn, "EEE", { locale: fr })}</span>
+                  <span className="text-sm text-muted-foreground leading-tight">{format(checkIn, "MMM", { locale: fr })}</span>
+                </div>
+              </div>
+            </button>
+
+            <ArrowRight className="w-5 h-5 text-muted-foreground mx-3 shrink-0" />
+
+            <button
+              onClick={() => setShowCalendar("out")}
+              className="flex-1 text-right"
+            >
+              <p className="text-xs text-muted-foreground font-medium mb-1">Départ</p>
+              <div className="flex items-baseline gap-2 justify-end">
+                <span className="text-4xl font-bold text-foreground">{format(checkOut, "d")}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-foreground leading-tight">{format(checkOut, "EEE", { locale: fr })}</span>
+                  <span className="text-sm text-muted-foreground leading-tight">{format(checkOut, "MMM", { locale: fr })}</span>
+                </div>
+              </div>
+            </button>
           </div>
-        )}
+        </div>
+
+        <div className="h-px bg-border mx-5" />
+
+        {/* Counters — Agoda style */}
+        <div className="px-5 divide-y divide-border">
+          {/* Chambre */}
+          <CounterRow label="Chambre" value={rooms} min={1} max={10} onChange={setRooms} />
+          {/* Adultes */}
+          <CounterRow label="Adultes" value={adults} min={1} max={20} onChange={setAdults} />
+          {/* Enfants */}
+          <CounterRow label="Enfants" value={children} min={0} max={10} onChange={setChildren} />
+        </div>
       </div>
 
-      {/* Footer */}
-      <div className="border-t border-border px-4 py-3 flex items-center justify-between">
-        <button onClick={reset} className="text-sm font-semibold text-foreground underline">
-          Tout effacer
-        </button>
+      {/* Footer CTA */}
+      <div className="px-5 py-4 border-t border-border">
         <button
           onClick={handleSearch}
-          className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl text-sm font-semibold"
+          className="w-full py-4 bg-primary text-primary-foreground rounded-xl text-base font-semibold flex items-center justify-center gap-2"
         >
-          <Search className="w-4 h-4" />
+          <Search className="w-5 h-5" />
           Rechercher
         </button>
       </div>
     </div>
   );
 };
+
+/* Counter row component */
+const CounterRow = ({
+  label, value, min, max, onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (v: number) => void;
+}) => (
+  <div className="flex items-center justify-between py-5">
+    <div className="flex items-baseline gap-3">
+      <span className="text-3xl font-bold text-foreground w-8">{value}</span>
+      <span className="text-base text-foreground font-medium">{label}</span>
+    </div>
+    <div className="flex items-center gap-3">
+      <button
+        onClick={() => onChange(Math.max(min, value - 1))}
+        disabled={value <= min}
+        className="w-9 h-9 rounded-full border-2 border-border flex items-center justify-center disabled:opacity-30 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+      >
+        <Minus className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => onChange(Math.min(max, value + 1))}
+        disabled={value >= max}
+        className="w-9 h-9 rounded-full border-2 border-primary flex items-center justify-center text-primary hover:bg-primary/10 transition-colors disabled:opacity-30"
+      >
+        <Plus className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+);
 
 export default MobileSearchPill;
