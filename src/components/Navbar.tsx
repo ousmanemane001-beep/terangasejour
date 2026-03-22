@@ -250,7 +250,7 @@ const Navbar = () => {
             >
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                <span className="font-display text-lg font-bold text-foreground">TerangaSéjour</span>
+                <Link to="/" onClick={close} className="font-display text-lg font-bold text-primary">TerangaSéjour</Link>
                 <button onClick={close} className="p-1 rounded-full hover:bg-muted transition-colors" aria-label="Fermer">
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
