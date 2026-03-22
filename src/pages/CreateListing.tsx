@@ -49,30 +49,6 @@ const rulesList = [
   "Arrivée autonome (serrure connectée)",
 ];
 
-const cancellationPolicies = [
-  {
-    value: "flexible",
-    label: "Flexible",
-    icon: "✅",
-    desc: "Annulation gratuite jusqu'à 24h avant l'arrivée. Remboursement intégral.",
-    color: "text-emerald-600",
-  },
-  {
-    value: "moderate",
-    label: "Modérée",
-    icon: "⚠️",
-    desc: "Annulation gratuite jusqu'à 5 jours avant l'arrivée. 50% remboursé après.",
-    color: "text-amber-600",
-  },
-  {
-    value: "strict",
-    label: "Stricte",
-    icon: "🚫",
-    desc: "Annulation gratuite dans les 48h suivant la réservation. Aucun remboursement après.",
-    color: "text-red-600",
-  },
-];
-
 const bookingModes: Array<{
   value: "instant" | "request";
   label: string;
@@ -147,8 +123,6 @@ const CreateListing = () => {
   const [bookingMode, setBookingMode] = useState<"instant" | "request">("instant");
   const [availabilityMode, setAvailabilityMode] = useState<"contact" | "calendar">("contact");
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
-  const [cancellationPolicy, setCancellationPolicy] = useState("flexible");
-
   // UI state
   const [step, setStep] = useState(1);
 
@@ -268,7 +242,7 @@ const CreateListing = () => {
           status: "pending_approval",
           booking_mode: bookingMode,
           availability_mode: dbAvailabilityMode,
-          cancellation_policy: cancellationPolicy,
+          cancellation_policy: "flexible",
         } as any)
         .select("id")
         .single();
@@ -571,31 +545,6 @@ const CreateListing = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-[var(--shadow-card)]">
-                  <CardContent className="p-6">
-                    <h3 className="font-display font-semibold text-foreground mb-4">Politique d'annulation</h3>
-                    <p className="text-sm text-muted-foreground mb-4">Définissez les conditions d'annulation pour les voyageurs.</p>
-                    <div className="grid grid-cols-1 gap-3">
-                      {cancellationPolicies.map((policy) => (
-                        <div
-                          key={policy.value}
-                          onClick={() => setCancellationPolicy(policy.value)}
-                          className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                            cancellationPolicy === policy.value ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="text-xl">{policy.icon}</span>
-                            <div className="flex-1">
-                              <p className={`font-medium text-sm ${policy.color}`}>{policy.label}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{policy.desc}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
               </motion.div>
             )}
 
