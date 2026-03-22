@@ -305,7 +305,7 @@ const PropertyDetail = () => {
               )}
             </div>
 
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1" data-booking-widget>
               {isUUID && id ? (
                 <BookingWidget
                   listingId={id}
@@ -323,6 +323,17 @@ const PropertyDetail = () => {
                   <p className="text-sm text-muted-foreground">Contactez l'hôte pour réserver ce logement.</p>
                 </div>
               )}
+
+              {/* Devenir hôte CTA */}
+              <div className="mt-6 bg-primary/5 border border-primary/10 rounded-2xl p-5 text-center">
+                <p className="text-sm font-semibold text-foreground mb-1">Vous avez un logement similaire ?</p>
+                <p className="text-xs text-muted-foreground mb-3">Publiez-le et commencez à gagner de l'argent.</p>
+                <Link to="/become-host">
+                  <Button variant="outline" size="sm" className="rounded-full border-primary text-primary hover:bg-primary/10">
+                    Publier le vôtre
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
