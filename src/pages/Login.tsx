@@ -21,15 +21,20 @@ const Login = () => {
     e.preventDefault();
     if (!email || !password) { toast.error("Veuillez remplir tous les champs"); return; }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
       toast.error(error.message === "Invalid login credentials" ? "Email ou mot de passe incorrect"
         : error.message === "Email not confirmed" ? "Veuillez confirmer votre email"
         : error.message);
-    } else {
+    } else if (data.session) {
       toast.success("Connexion réussie !");
-      navigate("/dashboard");
+      // Check admin role before redirecting
+      const { data: isAdmin } = await supabase.rpc("has_role", {
+        _user_id: data.session.user.id,
+        _role: "admin" as const,
+      });
+      navigate(isAdmin ? "/admin" : "/dashboard", { replace: true });
     }
   };
 
