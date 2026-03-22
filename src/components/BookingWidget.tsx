@@ -285,9 +285,17 @@ const BookingWidget = ({ listingId, pricePerNight, maxGuests, bookingMode = "ins
           <div className="flex justify-between text-sm"><span className="text-muted-foreground">Total payé</span><span className="font-bold text-foreground">{total.toLocaleString("fr-FR")} F</span></div>
           <div className="flex justify-between text-sm"><span className="text-muted-foreground">Nuits</span><span className="text-foreground">{nights}</span></div>
         </div>
-        <Button className="rounded-full bg-primary text-primary-foreground w-full" onClick={() => navigate("/dashboard/my-bookings")}>
+        <Button className="rounded-full bg-primary text-primary-foreground w-full mb-4" onClick={() => navigate("/dashboard/my-bookings")}>
           Voir mes voyages
         </Button>
+        {/* Incitatif Devenir hôte */}
+        <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 text-left">
+          <p className="text-sm font-semibold text-foreground mb-1">🏠 Vous avez un logement ?</p>
+          <p className="text-xs text-muted-foreground mb-3">Gagnez de l'argent en le publiant sur TerangaSéjour.</p>
+          <Button variant="outline" size="sm" className="rounded-full border-primary text-primary hover:bg-primary/10 w-full" onClick={() => navigate("/become-host")}>
+            Devenir hôte
+          </Button>
+        </div>
       </div>
     );
   }
