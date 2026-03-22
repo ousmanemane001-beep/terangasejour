@@ -122,7 +122,7 @@ const MobileSearchPill = () => {
 
   /* ── Expanded bottom-sheet ── */
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex flex-col justify-end" onClick={close}>
+    <div className="fixed inset-0 z-[9999] flex flex-col items-stretch justify-center" onClick={close}>
       <div className="absolute inset-0 bg-black/40" />
 
       <div
