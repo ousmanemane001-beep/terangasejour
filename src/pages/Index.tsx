@@ -142,7 +142,7 @@ const Index = () => {
       </section>
 
       <Footer />
-      <OusmaneChatbot />
+      
     </div>
   );
 };
