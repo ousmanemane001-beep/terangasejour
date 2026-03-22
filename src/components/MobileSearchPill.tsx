@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, X, MapPin, Calendar, Users, Minus, Plus } from "lucide-react";
+import { Search, X, MapPin, Calendar, Users, Minus, Plus, Building2, Home, Hotel } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
