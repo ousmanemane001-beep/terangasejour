@@ -1,48 +1,69 @@
-// Generated property images - local assets
-import ext1 from "@/assets/properties/exterior-1.jpg";
-import ext2 from "@/assets/properties/exterior-2.jpg";
-import ext3 from "@/assets/properties/exterior-3.jpg";
-import ext4 from "@/assets/properties/exterior-4.jpg";
-import ext5 from "@/assets/properties/exterior-5.jpg";
-import ext6 from "@/assets/properties/exterior-6.jpg";
-import ext7 from "@/assets/properties/exterior-7.jpg";
-import ext8 from "@/assets/properties/exterior-8.jpg";
+// Real photos from Unsplash - organized by room type for variety
+const EXTERIORS = [
+  "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
+  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
+  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80",
+  "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80",
+  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80",
+  "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=800&q=80",
+  "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=800&q=80",
+];
 
-import liv1 from "@/assets/properties/living-1.jpg";
-import liv2 from "@/assets/properties/living-2.jpg";
-import liv3 from "@/assets/properties/living-3.jpg";
-import liv4 from "@/assets/properties/living-4.jpg";
-import liv5 from "@/assets/properties/living-5.jpg";
-import liv6 from "@/assets/properties/living-6.jpg";
-import liv7 from "@/assets/properties/living-7.jpg";
-import liv8 from "@/assets/properties/living-8.jpg";
+const LIVING_ROOMS = [
+  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
+  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80",
+  "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80",
+  "https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=800&q=80",
+  "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80",
+  "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=800&q=80",
+  "https://images.unsplash.com/photo-1618219908412-a29a1bb7b86e?w=800&q=80",
+  "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&q=80",
+];
 
-import bed1 from "@/assets/properties/bedroom-1.jpg";
-import bed2 from "@/assets/properties/bedroom-2.jpg";
-import bed3 from "@/assets/properties/bedroom-3.jpg";
-import bed4 from "@/assets/properties/bedroom-4.jpg";
-import bed5 from "@/assets/properties/bedroom-5.jpg";
-import bed6 from "@/assets/properties/bedroom-6.jpg";
-import bed7 from "@/assets/properties/bedroom-7.jpg";
-import bed8 from "@/assets/properties/bedroom-8.jpg";
+const BEDROOMS = [
+  "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&q=80",
+  "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800&q=80",
+  "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&q=80",
+  "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80",
+  "https://images.unsplash.com/photo-1617325247661-675ab4b64ae2?w=800&q=80",
+  "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80",
+  "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800&q=80",
+  "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80",
+];
 
-import bath1 from "@/assets/properties/bathroom-1.jpg";
-import bath2 from "@/assets/properties/bathroom-2.jpg";
-import bath3 from "@/assets/properties/bathroom-3.jpg";
-import bath4 from "@/assets/properties/bathroom-4.jpg";
+const BATHROOMS = [
+  "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&q=80",
+  "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=800&q=80",
+  "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=80",
+  "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80",
+  "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&q=80",
+  "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80",
+  "https://images.unsplash.com/photo-1604709177225-055f99402ea3?w=800&q=80",
+  "https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=800&q=80",
+];
 
-import kit1 from "@/assets/properties/kitchen-1.jpg";
-import kit2 from "@/assets/properties/kitchen-2.jpg";
+const KITCHENS = [
+  "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80",
+  "https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=800&q=80",
+  "https://images.unsplash.com/photo-1600489000022-c2086d79f9d4?w=800&q=80",
+  "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=800&q=80",
+  "https://images.unsplash.com/photo-1588854337236-6889d631faa8?w=800&q=80",
+  "https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=800&q=80",
+  "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=800&q=80",
+  "https://images.unsplash.com/photo-1565538810643-b5bdb714032a?w=800&q=80",
+];
 
-import pool1 from "@/assets/properties/pool-1.jpg";
-import pool2 from "@/assets/properties/pool-2.jpg";
-
-const EXTERIORS = [ext1, ext2, ext3, ext4, ext5, ext6, ext7, ext8];
-const LIVING_ROOMS = [liv1, liv2, liv3, liv4, liv5, liv6, liv7, liv8];
-const BEDROOMS = [bed1, bed2, bed3, bed4, bed5, bed6, bed7, bed8];
-const BATHROOMS = [bath1, bath2, bath3, bath4];
-const KITCHENS = [kit1, kit2];
-const POOLS_TERRACES = [pool1, pool2];
+const POOLS_TERRACES = [
+  "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80",
+  "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80",
+  "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80",
+  "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80",
+  "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800&q=80",
+  "https://images.unsplash.com/photo-1618773928121-c32f1e27e13c?w=800&q=80",
+  "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80",
+  "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800&q=80",
+];
 
 /** Simple hash from string to number */
 function hashId(id: string): number {
@@ -54,8 +75,9 @@ function hashId(id: string): number {
 }
 
 /**
- * Returns 5 unique photos for a listing:
- * 1. Exterior, 2. Salon, 3. Chambre, 4. Salle de bain, 5. Cuisine ou piscine
+ * Returns 5 unique real photos for a listing:
+ * 1. Exterior/facade, 2. Salon, 3. Chambre, 4. Salle de bain, 5. Cuisine ou terrasse
+ * Each listing gets a different photo from each category based on its ID.
  */
 export function getDemoPhotos(propertyType: string, listingId: string): string[] {
   const h = hashId(listingId);
