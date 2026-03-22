@@ -71,13 +71,13 @@ const Navbar = () => {
             >
               <Menu className="w-5 h-5 text-foreground" />
             </button>
-            <Link to="/" className="flex items-center shrink-0">
+            <Link to="/" className="flex items-center shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior })}>
               <span className="font-display text-lg font-bold text-primary">TerangaSéjour</span>
             </Link>
           </div>
 
           {/* Desktop: Logo left */}
-          <Link to="/" className="hidden md:flex items-center gap-2 shrink-0">
+          <Link to="/" className="hidden md:flex items-center gap-2 shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior })}>
             <span className="font-display text-lg font-bold text-primary">TerangaSéjour</span>
           </Link>
 
