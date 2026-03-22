@@ -100,8 +100,8 @@ const Navbar = () => {
                 <Bell className="w-5 h-5 text-foreground" />
               </button>
             </Link>
-            <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors" title="Langue">
-              <Globe className="w-5 h-5 text-foreground" />
+            <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-xs font-bold text-foreground" title="Langue">
+              FR
             </button>
             {user ? (
               <Link to="/profile">
