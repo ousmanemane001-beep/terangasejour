@@ -119,7 +119,7 @@ const MobileSearchPill = () => {
 
   // Main expanded form (Agoda-style)
   return (
-    <div className="fixed inset-0 z-[60] bg-background flex flex-col">
+    <div className="fixed inset-0 z-[100] bg-background flex flex-col" style={{ height: '100dvh' }}>
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-3 pb-3 bg-primary">
         <button onClick={close} className="w-9 h-9 rounded-full flex items-center justify-center text-primary-foreground">
