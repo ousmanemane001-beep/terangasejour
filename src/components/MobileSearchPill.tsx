@@ -3,17 +3,12 @@ import { createPortal } from "react-dom";
 import { Search, MapPin, ChevronLeft, Minus, Plus, Building2, Home, Hotel, CalendarDays, Users, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, addDays } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 const SUGGESTIONS = ["Dakar", "Saly", "Somone", "Gorée", "Saint-Louis", "Cap Skirring", "Lac Rose", "Mbour"];
-
-const PROPERTY_TYPES = [
-  { label: "Appartement", icon: Building2, type: "apartment" },
-  { label: "Villa", icon: Home, type: "villa" },
-  { label: "Hôtel", icon: Hotel, type: "hotel" },
-];
 
 const MobileSearchPill = () => {
   const navigate = useNavigate();
