@@ -9,7 +9,7 @@ import Footer from "@/components/Footer";
 import OusmaneChatbot from "@/components/OusmaneChatbot";
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
-import { useState } from "react";
+
 import {
   Loader2, Home, Shield, ArrowRight
 } from "lucide-react";
