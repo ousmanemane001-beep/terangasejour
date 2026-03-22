@@ -23,16 +23,16 @@ const Favorites = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center bg-secondary">
-          <div className="text-center">
+        <div className="flex-1 flex items-center justify-center px-4 pb-20">
+          <div className="text-center max-w-sm mx-auto">
+            <Heart className="w-14 h-14 text-primary/30 mx-auto mb-5" />
             <h1 className="font-display text-2xl font-bold text-foreground mb-3">Connectez-vous</h1>
-            <p className="text-muted-foreground mb-6">Connectez-vous pour voir vos logements favoris.</p>
-            <Link to="/login"><Button className="rounded-full bg-primary text-primary-foreground">Se connecter</Button></Link>
+            <p className="text-muted-foreground mb-8">Connectez-vous pour voir vos logements favoris.</p>
+            <Link to="/login"><Button size="lg" className="rounded-full bg-primary text-primary-foreground px-8">Se connecter</Button></Link>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
