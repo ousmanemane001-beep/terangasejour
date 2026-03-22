@@ -31,7 +31,7 @@ const SocialLoginButtons = ({ variant = "full" }: SocialLoginButtonsProps) => {
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: window.location.origin,
+        redirect_uri: window.location.origin + "/dashboard",
       });
       if (result.error) {
         toast.error(`Erreur de connexion avec ${provider === "google" ? "Google" : "Apple"}`);
