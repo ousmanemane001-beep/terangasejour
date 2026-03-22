@@ -81,8 +81,8 @@ const MobileSearchPill = () => {
 
   // Calendar overlay
   if (showCalendar) {
-    return (
-      <div className="fixed inset-0 z-[100] bg-background flex flex-col" style={{ height: '100dvh' }}>
+    return createPortal(
+      <div className="fixed inset-0 z-[9999] bg-background flex flex-col" style={{ height: '100dvh' }}>
         <div className="flex items-center gap-3 px-4 pt-3 pb-3 border-b border-border bg-primary">
           <button onClick={() => setShowCalendar(null)} className="w-9 h-9 rounded-full flex items-center justify-center text-primary-foreground">
             <ChevronLeft className="w-5 h-5" />
@@ -114,7 +114,8 @@ const MobileSearchPill = () => {
             className={cn("p-3 pointer-events-auto")}
           />
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
