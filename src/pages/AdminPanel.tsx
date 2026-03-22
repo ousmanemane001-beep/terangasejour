@@ -511,7 +511,6 @@ const AdminPanel = () => {
                     const hasDesc = listing.description && listing.description.length >= 20;
                     const hasLocation = !!listing.location || !!listing.city;
                     const ownerProfile = allProfiles?.find((p) => p.id === listing.user_id);
-                    const ownerProfile = allProfiles?.find((p) => p.id === listing.user_id);
                     const st = statusLabels[listing.status] || { label: listing.status, color: "bg-muted text-muted-foreground" };
 
                     return (
