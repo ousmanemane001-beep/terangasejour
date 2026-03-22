@@ -23,12 +23,13 @@ const Explore = () => {
   const searchParamsKey = searchParams.toString();
   const { data: dbListings } = useListings();
 
+  const typeParam = searchParams.get("type") || "";
   const [destination, setDestination] = useState(destinationParam);
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 150000]);
   const [bedroomFilter, setBedroomFilter] = useState(0);
   const [guestFilter, setGuestFilter] = useState(0);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>(typeParam ? [typeParam] : []);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [showMap, setShowMap] = useState(!!searchParams.get("lat"));
   const [hoveredProperty, setHoveredProperty] = useState<number | null>(null);
