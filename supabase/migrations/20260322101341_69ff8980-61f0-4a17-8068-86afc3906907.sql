@@ -1,0 +1,27 @@
+
+UPDATE listings SET title = 'Villa Teranga', city = 'Dakar', location = 'Almadies', property_type = 'villa' WHERE id = 'b0130a1a-fe54-4d15-a132-68b606643249';
+UPDATE listings SET title = 'Résidence Les Palmiers', city = 'Saly', location = 'Saly Portudal', property_type = 'villa' WHERE id = '88de4925-82b7-4a8e-b6fa-8c2e136d100a';
+UPDATE listings SET title = 'Appartement Vue Océan', city = 'Dakar', location = 'Plateau', property_type = 'appartement' WHERE id = '0337fef1-62ba-461c-a16a-057355e15e6c';
+UPDATE listings SET title = 'Villa Baobab', city = 'Mbour', location = 'Mbour Centre', property_type = 'villa' WHERE id = '71aa4964-4405-4519-a64d-595b65c38cc9';
+UPDATE listings SET title = 'Maison Niokolo', city = 'Saly', location = 'Saly Niakh Niakhal', property_type = 'villa' WHERE id = 'e8a2a861-2ff0-451b-b2bb-763627a55b4d';
+UPDATE listings SET title = 'Studio Corniche', city = 'Dakar', location = 'Corniche Ouest', property_type = 'appartement' WHERE id = 'c24a7dad-59a4-47d7-a79a-4d8fde11ed93';
+UPDATE listings SET title = 'Villa Somone', city = 'Somone', location = 'Somone Lagune', property_type = 'villa' WHERE id = 'a933c16d-26a4-493c-97f3-e945abea01ab';
+UPDATE listings SET title = 'Loft Mermoz', city = 'Dakar', location = 'Mermoz', property_type = 'appartement' WHERE id = '0e6ca12c-d085-48f8-b9f8-8038cf409234';
+UPDATE listings SET title = 'Hôtel Langue de Barbarie', city = 'Saint-Louis', location = 'Langue de Barbarie', property_type = 'hôtel' WHERE id = '2cfb0ef6-bd49-481d-a2ad-64de6fb87d33';
+UPDATE listings SET title = 'Villa Cap Skirring', city = 'Cap Skirring', location = 'Cap Skirring Plage', property_type = 'villa' WHERE id = 'c816c1cc-3cfe-4f36-b3c5-ba5ad28a0ae6';
+UPDATE listings SET title = 'Résidence Fann Hock', city = 'Dakar', location = 'Fann Hock', property_type = 'appartement' WHERE id = 'cc8455a5-4d61-4356-8486-d095a067d06c';
+UPDATE listings SET title = 'Appartement Ngor', city = 'Dakar', location = 'Ngor', property_type = 'appartement' WHERE id = 'c2ff0300-0410-42d7-9581-5304ae438832';
+UPDATE listings SET title = 'Villa Lac Rose', city = 'Rufisque', location = 'Lac Rose', property_type = 'villa' WHERE id = 'd2fe3788-2506-435b-b861-43d06a4752f5';
+UPDATE listings SET title = 'Lodge Casamance', city = 'Ziguinchor', location = 'Ziguinchor Centre', property_type = 'lodge' WHERE id = '056133c4-e9b9-4fad-b6e4-fcf2f5eaf6f9';
+UPDATE listings SET title = 'Villa Pointe des Almadies', city = 'Dakar', location = 'Almadies', property_type = 'villa' WHERE id = '8b5ddbb2-4058-4bb9-b641-b042699badec';
+UPDATE listings SET title = 'Maison Diembéring', city = 'Cap Skirring', location = 'Diembéring', property_type = 'maison' WHERE id = 'e5f662ba-1c5d-48d2-8a56-37127cc2b07b';
+UPDATE listings SET title = 'Appart Parcelles Assainies', city = 'Dakar', location = 'Parcelles Assainies', property_type = 'appartement' WHERE id = 'e878ccfc-93b3-4533-bda9-9efcafca2afe';
+UPDATE listings SET title = 'Villa Grand Mbour', city = 'Mbour', location = 'Grand Mbour', property_type = 'villa' WHERE id = '6b6d774b-55f1-431e-b869-0f819fdcc5dc';
+UPDATE listings SET title = 'Résidence Saint-Louis', city = 'Saint-Louis', location = 'Île de Saint-Louis', property_type = 'villa' WHERE id = '9ce746f8-ad78-43e0-8c47-9e164a25c59b';
+UPDATE listings SET title = 'Villa Nguékhokh', city = 'Mbour', location = 'Nguékhokh', property_type = 'villa' WHERE id = '74e8e018-0917-4e5a-9d4c-4754b682f037';
+UPDATE listings SET title = 'Villa Bougainvilliers', city = 'Saly', location = 'Saly Centre', property_type = 'villa' WHERE id = 'd0bf9914-23a6-48e1-bf32-d116630d8483';
+UPDATE listings SET title = 'Maison Gorée', city = 'Dakar', location = 'Île de Gorée', property_type = 'villa' WHERE id = '6b3e1297-aa43-4d8d-8830-c0bfa4351f96';
+UPDATE listings SET title = 'Résidence Warang', city = 'Mbour', location = 'Warang', property_type = 'villa' WHERE id = 'cdff6096-8baa-42b7-824f-2fdbd861a665';
+UPDATE listings SET title = 'Loft Mbour Plage', city = 'Mbour', location = 'Mbour Plage', property_type = 'loft' WHERE id = '4f129d59-2f97-4fd0-a13c-8138e813199c';
+UPDATE listings SET title = 'Appart Sacré-Cœur', city = 'Dakar', location = 'Sacré-Cœur', property_type = 'appartement' WHERE id = 'fb3a4662-819e-40c3-847d-47b42d4c0973';
+UPDATE listings SET title = 'Villa Saly Tapée', city = 'Mbour', location = 'Saly Tapée', property_type = 'villa' WHERE id = '91d7b87e-5f12-4fda-a866-4993ce1a8287';
