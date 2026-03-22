@@ -46,6 +46,10 @@ const Explore = () => {
   }, [destinationParam]);
 
   useEffect(() => {
+    if (typeParam) setSelectedTypes([typeParam]);
+  }, [typeParam]);
+
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [searchParamsKey]);
 
