@@ -3,25 +3,23 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
 import MobileSearchPill from "@/components/MobileSearchPill";
-
 import ListingCard from "@/components/ListingCard";
 import Footer from "@/components/Footer";
-
 import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
-
 import {
   Loader2, Home, Shield, ArrowRight, Building2, Hotel, TreePalm
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 const COASTAL_CITIES = ["saly", "somone", "mbour", "cap skirring", "gorée", "saint-louis", "ziguinchor"];
 const REGION_CITIES = ["ziguinchor", "tambacounda", "kaolack", "thiès", "kédougou", "fatick", "kolda"];
 
 const Index = () => {
   const { data: dbListings, isLoading } = useListings();
+  const { t } = useTranslation();
 
-  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, []);
@@ -30,13 +28,10 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Navbar />
 
-      {/* ═══ SEARCH ═══ */}
       <div className="sticky top-[56px] z-30 bg-background border-b border-border">
-        {/* Mobile: compact search pill */}
         <div className="md:hidden px-4 pt-3 pb-2">
           <MobileSearchPill />
         </div>
-        {/* Desktop: Airbnb-style pill search */}
         <div className="hidden md:block py-4">
           <div className="max-w-[1200px] mx-auto px-6">
             <SearchBar />
@@ -44,14 +39,13 @@ const Index = () => {
         </div>
       </div>
 
-      {/* ═══ CATEGORY ICONS ═══ */}
       <section className="py-6 md:py-8">
         <div className="max-w-[1200px] mx-auto px-4 md:px-6">
           <div className="flex justify-center gap-6 md:gap-10">
             {[
-              { label: "Appartements", icon: Building2, type: "appartement" },
-              { label: "Hôtels", icon: Hotel, type: "hotel" },
-              { label: "Villas", icon: TreePalm, type: "villa" },
+              { label: t("home.apartments"), icon: Building2, type: "appartement" },
+              { label: t("home.hotels"), icon: Hotel, type: "hotel" },
+              { label: t("home.villas"), icon: TreePalm, type: "villa" },
             ].map((cat) => (
               <Link
                 key={cat.type}
@@ -68,96 +62,32 @@ const Index = () => {
         </div>
       </section>
 
-
-      {/* ═══ CATEGORIZED LISTINGS ═══ */}
       <section className="flex-1 py-6 md:py-10 space-y-8 md:space-y-12">
-        <CategorySection
-          title="Logements populaires"
-          listings={dbListings}
-          filterFn={() => true}
-          isLoading={isLoading}
-        />
-        <CategorySection
-          title="Appartements à Dakar"
-          listings={dbListings}
-          filterFn={(l) => {
-            const city = (l.city || l.location || "").toLowerCase();
-            const type = l.property_type.toLowerCase();
-            return city.includes("dakar") && (type.includes("appartement") || type.includes("studio") || type.includes("appart"));
-          }}
-          isLoading={isLoading}
-        />
-        <CategorySection
-          title="Maisons au bord de la mer"
-          listings={dbListings}
-          filterFn={(l) => {
-            const city = (l.city || l.location || "").toLowerCase();
-            const type = l.property_type.toLowerCase();
-            return COASTAL_CITIES.some((c) => city.includes(c)) || type.includes("plage") || type.includes("villa");
-          }}
-          isLoading={isLoading}
-        />
-        <CategorySection
-          title="Hôtels & Résidences"
-          listings={dbListings}
-          filterFn={(l) => {
-            const type = l.property_type.toLowerCase();
-            return type.includes("hotel") || type.includes("hôtel") || type.includes("résidence") || type.includes("residence") || type.includes("villa") || type.includes("loft");
-          }}
-          isLoading={isLoading}
-        />
-        <CategorySection
-          title="Logements à Mbour"
-          listings={dbListings}
-          filterFn={(l) => {
-            const city = (l.city || l.location || "").toLowerCase();
-            return city.includes("mbour");
-          }}
-          isLoading={isLoading}
-        />
-        <CategorySection
-          title="Logements Île du Saloum"
-          listings={dbListings}
-          filterFn={() => true}
-          isLoading={isLoading}
-        />
-        <CategorySection
-          title="Logements à Saint-Louis"
-          listings={dbListings}
-          filterFn={() => true}
-          isLoading={isLoading}
-        />
-        <CategorySection
-          title="Logements en région"
-          listings={dbListings}
-          filterFn={(l) => {
-            const city = (l.city || l.location || "").toLowerCase();
-            return REGION_CITIES.some((c) => city.includes(c));
-          }}
-          isLoading={isLoading}
-        />
+        <CategorySection title={t("home.popularListings")} listings={dbListings} filterFn={() => true} isLoading={isLoading} />
+        <CategorySection title={t("home.dakarApts")} listings={dbListings} filterFn={(l) => { const city = (l.city || l.location || "").toLowerCase(); const type = l.property_type.toLowerCase(); return city.includes("dakar") && (type.includes("appartement") || type.includes("studio") || type.includes("appart")); }} isLoading={isLoading} />
+        <CategorySection title={t("home.seaside")} listings={dbListings} filterFn={(l) => { const city = (l.city || l.location || "").toLowerCase(); const type = l.property_type.toLowerCase(); return COASTAL_CITIES.some((c) => city.includes(c)) || type.includes("plage") || type.includes("villa"); }} isLoading={isLoading} />
+        <CategorySection title={t("home.hotelsResidences")} listings={dbListings} filterFn={(l) => { const type = l.property_type.toLowerCase(); return type.includes("hotel") || type.includes("hôtel") || type.includes("résidence") || type.includes("residence") || type.includes("villa") || type.includes("loft"); }} isLoading={isLoading} />
+        <CategorySection title={t("home.mbourListings")} listings={dbListings} filterFn={(l) => { const city = (l.city || l.location || "").toLowerCase(); return city.includes("mbour"); }} isLoading={isLoading} />
+        <CategorySection title={t("home.saloumListings")} listings={dbListings} filterFn={() => true} isLoading={isLoading} />
+        <CategorySection title={t("home.stLouisListings")} listings={dbListings} filterFn={() => true} isLoading={isLoading} />
+        <CategorySection title={t("home.regionListings")} listings={dbListings} filterFn={(l) => { const city = (l.city || l.location || "").toLowerCase(); return REGION_CITIES.some((c) => city.includes(c)); }} isLoading={isLoading} />
       </section>
 
-      {/* ═══ CTA DEVENIR HÔTE ═══ */}
       <section className="py-12 md:py-16 bg-foreground text-background">
         <div className="max-w-[1200px] mx-auto px-6 max-w-2xl text-center">
-          <h2 className="text-xl md:text-3xl font-bold mb-3">
-            Devenir hôte
-          </h2>
-          <p className="text-background/70 text-sm md:text-base mb-6">
-            Gagnez de l'argent avec votre logement. Publiez en quelques minutes et recevez des réservations.
-          </p>
+          <h2 className="text-xl md:text-3xl font-bold mb-3">{t("home.becomeHost")}</h2>
+          <p className="text-background/70 text-sm md:text-base mb-6">{t("home.earnMoney")}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link to="/become-host">
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 gap-2">
                 <Home className="w-4 h-4" />
-                Devenir hôte
+                {t("home.becomeHost")}
               </Button>
             </Link>
             <Link to="/create-listing">
               <Button variant="outline" size="lg" className="border-background/30 text-background hover:bg-background/10 rounded-full px-6 gap-2">
                 <Shield className="w-4 h-4" />
-                Publier mon logement
+                {t("home.publishListing")}
               </Button>
             </Link>
           </div>
@@ -165,12 +95,10 @@ const Index = () => {
       </section>
 
       <Footer />
-      
     </div>
   );
 };
 
-/* ── Category Section ── */
 const CategorySection = ({
   title,
   listings,
@@ -182,6 +110,7 @@ const CategorySection = ({
   filterFn: (l: DBListing) => boolean;
   isLoading: boolean;
 }) => {
+  const { t } = useTranslation();
   const filtered = useMemo(() => (listings ?? []).filter(filterFn), [listings, filterFn]);
   const { data: ratingsMap } = useListingsRatings(filtered.map((l) => l.id));
 
@@ -209,12 +138,11 @@ const CategorySection = ({
         <h2 className="text-lg md:text-xl font-bold text-foreground">{title}</h2>
         <Link to="/explore">
           <Button variant="ghost" size="sm" className="rounded-full text-sm text-muted-foreground hover:text-foreground gap-1">
-            Voir tout
+            {t("home.viewAll")}
             <ArrowRight className="w-4 h-4" />
           </Button>
         </Link>
       </div>
-      {/* Mobile: horizontal scroll */}
       <div className="md:hidden flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2">
         {filtered.map((listing) => (
           <div key={listing.id} className="shrink-0 w-[46%]">
@@ -222,7 +150,6 @@ const CategorySection = ({
           </div>
         ))}
       </div>
-      {/* Desktop: 4-column grid */}
       <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-6">
         {filtered.map((listing) => (
           <ListingCard key={listing.id} listing={listing} rating={ratingsMap?.[listing.id]} />
