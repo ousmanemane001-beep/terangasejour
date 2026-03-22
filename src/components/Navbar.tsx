@@ -10,12 +10,19 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import NotificationDropdown from "@/components/NotificationDropdown";
+import { useTranslation } from "react-i18next";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [lang, setLang] = useState<"FR" | "EN">("FR");
   const location = useLocation();
   const { user, isHost, isAdmin, profile, signOut } = useAuth();
+  const { t, i18n } = useTranslation();
+
+  const toggleLang = () => {
+    const next = i18n.language === "fr" ? "en" : "fr";
+    i18n.changeLanguage(next);
+  };
+  const langLabel = i18n.language === "fr" ? "FR" : "EN";
 
   // Close mobile menu on route change
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
@@ -34,25 +41,25 @@ const Navbar = () => {
     : "U";
 
   const navLinks = [
-    { label: "Accueil", path: "/" },
-    { label: "Explorer", path: "/explore" },
-    { label: "Découvrir", path: "/discover" },
-    { label: "Carte", path: "/explore-senegal" },
-    { label: "À propos", path: "/about" },
-    { label: "Contact", path: "/contact" },
+    { label: t("nav.home"), path: "/" },
+    { label: t("nav.explore"), path: "/explore" },
+    { label: t("nav.discover"), path: "/discover" },
+    { label: t("nav.map"), path: "/explore-senegal" },
+    { label: t("nav.about"), path: "/about" },
+    { label: t("nav.contact"), path: "/contact" },
   ];
 
-  const roleLabel = isAdmin ? "Super Admin" : isHost ? "Hôte" : "Voyageur";
+  const roleLabel = isAdmin ? t("roles.admin") : isHost ? t("roles.host") : t("roles.traveler");
   const dashboardPath = isAdmin ? "/admin" : "/dashboard";
 
   const close = () => setMobileOpen(false);
 
-  // Mobile menu items — role-aware (no Explorer, no Publier for voyageurs)
+  // Mobile menu items — role-aware
   const mobileMenuItems = [
-    { label: "Accueil", path: "/", icon: Home },
-    { label: "Carte", path: "/explore-senegal", icon: MapIcon },
-    { label: "À propos", path: "/about", icon: Info },
-    { label: "Contact", path: "/contact", icon: Headphones },
+    { label: t("nav.home"), path: "/", icon: Home },
+    { label: t("nav.map"), path: "/explore-senegal", icon: MapIcon },
+    { label: t("nav.about"), path: "/about", icon: Info },
+    { label: t("nav.contact"), path: "/contact", icon: Headphones },
   ];
 
   return (
@@ -92,14 +99,14 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Mobile: right icons (notification, heart, user) */}
+          {/* Mobile: right icons */}
           <div className="md:hidden flex items-center gap-1">
             <button
-              onClick={() => setLang(lang === "FR" ? "EN" : "FR")}
+              onClick={toggleLang}
               className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-[11px] font-bold text-foreground border border-border"
-              title="Changer de langue"
+              title={t("nav.changeLang")}
             >
-              {lang}
+              {langLabel}
             </button>
             {user ? (
               <NotificationDropdown />
@@ -130,10 +137,17 @@ const Navbar = () => {
 
           {/* Desktop right actions */}
           <div className="hidden md:flex items-center gap-2">
+            <button
+              onClick={toggleLang}
+              className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-[11px] font-bold text-foreground border border-border"
+              title={t("nav.changeLang")}
+            >
+              {langLabel}
+            </button>
             {user && !isAdmin && (
               <Link to={isHost ? "/create-listing" : "/become-host"}>
                 <Button variant="outline" size="sm" className="rounded text-sm border-primary text-primary bg-transparent hover:bg-primary/10">
-                  Ajouter mon logement
+                  {t("nav.addListing")}
                 </Button>
               </Link>
             )}
@@ -152,7 +166,7 @@ const Navbar = () => {
                 <DropdownMenuContent align="end" className="w-52">
                   <DropdownMenuLabel className="font-normal">
                     <p className="text-sm font-medium text-foreground">
-                      {[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Utilisateur"}
+                      {[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || t("roles.user")}
                     </p>
                     <p className="text-xs text-muted-foreground">{roleLabel}</p>
                   </DropdownMenuLabel>
@@ -162,38 +176,38 @@ const Navbar = () => {
                     <>
                       <DropdownMenuItem asChild>
                         <Link to="/admin" className="flex items-center gap-2 text-primary font-medium">
-                          <Shield className="w-4 h-4" /> Panel Admin
+                          <Shield className="w-4 h-4" /> {t("nav.adminPanel")}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
+                        <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> {t("nav.myProfile")}</Link>
                       </DropdownMenuItem>
                     </>
                   ) : (
                     <>
                       <DropdownMenuItem asChild>
-                        <Link to="/dashboard" className="flex items-center gap-2"><Home className="w-4 h-4" /> Mon espace</Link>
+                        <Link to="/dashboard" className="flex items-center gap-2"><Home className="w-4 h-4" /> {t("nav.mySpace")}</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link to="/favorites" className="flex items-center gap-2"><Heart className="w-4 h-4" /> Mes favoris</Link>
+                        <Link to="/favorites" className="flex items-center gap-2"><Heart className="w-4 h-4" /> {t("nav.myFavorites")}</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link to="/messages" className="flex items-center gap-2"><MessageCircle className="w-4 h-4" /> Messages</Link>
+                        <Link to="/messages" className="flex items-center gap-2"><MessageCircle className="w-4 h-4" /> {t("nav.messages")}</Link>
                       </DropdownMenuItem>
                       {isHost && (
                         <DropdownMenuItem asChild>
-                          <Link to="/dashboard?tab=listings" className="flex items-center gap-2"><CalendarDays className="w-4 h-4" /> Mes logements</Link>
+                          <Link to="/dashboard?tab=listings" className="flex items-center gap-2"><CalendarDays className="w-4 h-4" /> {t("nav.myListings")}</Link>
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem asChild>
-                        <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> Profil</Link>
+                        <Link to="/profile" className="flex items-center gap-2"><User className="w-4 h-4" /> {t("nav.myProfile")}</Link>
                       </DropdownMenuItem>
                       {!isHost && (
                         <>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem asChild>
                             <Link to="/become-host" className="flex items-center gap-2 text-primary font-medium">
-                              <Home className="w-4 h-4" /> Devenir hôte
+                              <Home className="w-4 h-4" /> {t("nav.becomeHost")}
                             </Link>
                           </DropdownMenuItem>
                         </>
@@ -203,7 +217,7 @@ const Navbar = () => {
 
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut} className="flex items-center gap-2 text-destructive">
-                    <LogOut className="w-4 h-4" /> Déconnexion
+                    <LogOut className="w-4 h-4" /> {t("nav.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -212,12 +226,12 @@ const Navbar = () => {
               <div className="flex items-center gap-2">
                 <Link to="/signup">
                   <Button variant="outline" size="sm" className="rounded text-sm border-primary text-primary bg-transparent hover:bg-primary/10">
-                    S'inscrire
+                    {t("nav.signup")}
                   </Button>
                 </Link>
                 <Link to="/login">
                   <Button variant="outline" size="sm" className="rounded text-sm border-primary text-primary bg-transparent hover:bg-primary/10">
-                    Se connecter
+                    {t("nav.login")}
                   </Button>
                 </Link>
               </div>
@@ -226,11 +240,10 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile slide-in panel — Booking.com style */}
+      {/* Mobile slide-in panel */}
       <AnimatePresence>
         {mobileOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -240,7 +253,6 @@ const Navbar = () => {
               onClick={close}
             />
 
-            {/* Panel */}
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
@@ -248,15 +260,13 @@ const Navbar = () => {
               transition={{ type: "tween", duration: 0.25 }}
               className="fixed top-0 left-0 bottom-0 w-[80%] max-w-[320px] bg-background z-[70] md:hidden flex flex-col shadow-xl"
             >
-              {/* Header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                 <Link to="/" onClick={close} className="font-display text-lg font-bold text-primary">TerangaSéjour</Link>
-                <button onClick={close} className="p-1 rounded-full hover:bg-muted transition-colors" aria-label="Fermer">
+                <button onClick={close} className="p-1 rounded-full hover:bg-muted transition-colors" aria-label={t("nav.close")}>
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
 
-              {/* User info if logged in */}
               {user && (
                 <div className="px-5 py-4 border-b border-border flex items-center gap-3">
                   <Avatar className="h-10 w-10">
@@ -265,14 +275,13 @@ const Navbar = () => {
                   </Avatar>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">
-                      {[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || "Utilisateur"}
+                      {[profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || t("roles.user")}
                     </p>
                     <p className="text-xs text-muted-foreground">{roleLabel}</p>
                   </div>
                 </div>
               )}
 
-              {/* Navigation items */}
               <div className="flex-1 overflow-y-auto py-2">
                 {mobileMenuItems.map((item) => (
                   <Link
@@ -295,30 +304,30 @@ const Navbar = () => {
                 {user ? (
                   <>
                     <Link to="/favorites" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
-                      <Heart className="w-5 h-5 shrink-0" /> Mes favoris
+                      <Heart className="w-5 h-5 shrink-0" /> {t("nav.myFavorites")}
                     </Link>
                     <Link to="/messages" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
-                      <MessageCircle className="w-5 h-5 shrink-0" /> Messages
+                      <MessageCircle className="w-5 h-5 shrink-0" /> {t("nav.messages")}
                     </Link>
                     <Link to="/dashboard/my-bookings" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
-                      <CalendarDays className="w-5 h-5 shrink-0" /> Mes voyages
+                      <CalendarDays className="w-5 h-5 shrink-0" /> {t("nav.myTrips")}
                     </Link>
                     {!isHost && !isAdmin && (
                       <Link to="/become-host" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-primary hover:bg-muted">
-                        <Home className="w-5 h-5 shrink-0" /> Devenir hôte
+                        <Home className="w-5 h-5 shrink-0" /> {t("nav.becomeHost")}
                       </Link>
                     )}
                     {isHost && (
                       <Link to="/dashboard/bookings" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
-                        <ClipboardList className="w-5 h-5 shrink-0" /> Réservations
+                        <ClipboardList className="w-5 h-5 shrink-0" /> {t("nav.bookings")}
                       </Link>
                     )}
                     <Link to="/profile" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
-                      <User className="w-5 h-5 shrink-0" /> Mon profil
+                      <User className="w-5 h-5 shrink-0" /> {t("nav.myProfile")}
                     </Link>
                     {isAdmin && (
                       <Link to="/admin" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-primary hover:bg-muted">
-                        <Shield className="w-5 h-5 shrink-0" /> Panel Admin
+                        <Shield className="w-5 h-5 shrink-0" /> {t("nav.adminPanel")}
                       </Link>
                     )}
 
@@ -328,28 +337,27 @@ const Navbar = () => {
                       onClick={() => { signOut(); close(); }}
                       className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-destructive hover:bg-muted w-full text-left"
                     >
-                      <LogOut className="w-5 h-5 shrink-0" /> Déconnexion
+                      <LogOut className="w-5 h-5 shrink-0" /> {t("nav.logout")}
                     </button>
                   </>
                 ) : (
                   <>
                     <Link to="/login" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
-                      <LogIn className="w-5 h-5 shrink-0" /> Connexion
+                      <LogIn className="w-5 h-5 shrink-0" /> {t("nav.login")}
                     </Link>
                     <Link to="/signup" onClick={close} className="flex items-center gap-4 px-5 py-[14px] text-sm font-medium text-foreground hover:bg-muted">
-                      <User className="w-5 h-5 shrink-0" /> Créer un compte
+                      <User className="w-5 h-5 shrink-0" /> {t("nav.signupCreate")}
                     </Link>
                   </>
                 )}
               </div>
 
-              {/* CTA bottom — Devenir hôte for voyageurs, Publier for hosts */}
               {user && !isAdmin && !isHost && (
                 <div className="px-5 py-4 border-t border-border">
                   <Link to="/become-host" onClick={close}>
                     <Button className="w-full rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90">
                       <Home className="w-4 h-4 mr-2" />
-                      Devenir hôte
+                      {t("nav.becomeHost")}
                     </Button>
                   </Link>
                 </div>
@@ -359,7 +367,7 @@ const Navbar = () => {
                   <Link to="/create-listing" onClick={close}>
                     <Button className="w-full rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90">
                       <PlusCircle className="w-4 h-4 mr-2" />
-                      Publier mon logement
+                      {t("nav.publishListing")}
                     </Button>
                   </Link>
                 </div>

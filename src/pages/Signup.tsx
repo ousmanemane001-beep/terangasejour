@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -18,13 +19,13 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleEmailContinue = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) { toast.error("Veuillez entrer votre adresse e-mail"); return; }
-    // Basic email validation
+    if (!email) { toast.error(t("auth.enterEmail")); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast.error("Veuillez entrer une adresse e-mail valide");
+      toast.error(t("auth.invalidEmail"));
       return;
     }
     setStep("password");
@@ -32,9 +33,9 @@ const Signup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password) { toast.error("Veuillez entrer un mot de passe"); return; }
-    if (password.length < 6) { toast.error("Le mot de passe doit contenir au moins 6 caractères"); return; }
-    if (password !== confirmPassword) { toast.error("Les mots de passe ne correspondent pas"); return; }
+    if (!password) { toast.error(t("auth.enterPassword")); return; }
+    if (password.length < 6) { toast.error(t("auth.passwordMin")); return; }
+    if (password !== confirmPassword) { toast.error(t("auth.passwordMismatch")); return; }
 
     setLoading(true);
     const { error } = await supabase.auth.signUp({ email, password });
@@ -43,7 +44,7 @@ const Signup = () => {
     if (error) { 
       toast.error(error.message); 
     } else { 
-      toast.success("Compte créé ! Vérifiez votre email pour confirmer votre inscription.");
+      toast.success(t("auth.accountCreated"));
       navigate("/login");
     }
   };
@@ -59,49 +60,41 @@ const Signup = () => {
         className="max-w-[500px] w-full py-10"
       >
         <div className="flex flex-col gap-8">
-          {/* Logo */}
           <div className="flex justify-center">
             <Link to="/">
               <span className="font-display text-3xl font-bold text-primary">TerangaSéjour</span>
             </Link>
           </div>
 
-          {/* Title */}
           <div className="flex flex-col gap-2 text-center">
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
-              Créer un compte
+              {t("auth.signupTitle")}
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              Rejoignez TerangaSéjour pour réserver vos prochains séjours.
+              {t("auth.signupSubtitle")}
             </p>
           </div>
 
           <div className="flex flex-col gap-8 mx-auto max-w-[500px] w-full">
             {step === "email" ? (
               <>
-                {/* Social buttons + Login link */}
                 <div className="flex justify-center md:justify-between gap-4 flex-wrap w-full items-center">
                   <SocialLoginButtons variant="google-only" />
-                  <Link
-                    to="/login"
-                    className="text-sm font-medium text-foreground hover:underline"
-                  >
-                    Se connecter
+                  <Link to="/login" className="text-sm font-medium text-foreground hover:underline">
+                    {t("auth.loginBtn")}
                   </Link>
                 </div>
 
-                {/* Separator */}
                 <div className="text-center">
                   <p className="text-sm font-semibold text-foreground">
-                    ou créer un compte avec votre e-mail
+                    {t("auth.orContinueWith")}
                   </p>
                 </div>
 
-                {/* Email form */}
                 <form onSubmit={handleEmailContinue} className="flex flex-col gap-4">
                   <Input
                     type="email"
-                    placeholder="Adresse e-mail"
+                    placeholder={t("auth.email")}
                     className="h-12 rounded-lg border-border bg-background text-sm"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -110,35 +103,26 @@ const Signup = () => {
                     type="submit"
                     className="w-full h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm border-0"
                   >
-                    Continuer avec une adresse e-mail
+                    {t("auth.continue")}
                   </Button>
                 </form>
-
-                {/* Terms */}
-                <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
-                  En créant un compte, vous acceptez nos{" "}
-                  <Link to="#" className="text-primary underline">Conditions générales</Link> et notre{" "}
-                  <Link to="#" className="text-primary underline">Politique de confidentialité</Link>.
-                </p>
               </>
             ) : (
               <>
-                {/* Back button */}
                 <button
                   type="button"
                   onClick={() => setStep("email")}
                   className="text-sm text-primary hover:underline self-start flex items-center gap-1"
                 >
-                  ← Retour
+                  ← {t("common.back")}
                 </button>
 
-                {/* Password step */}
                 <div className="flex flex-col gap-2 text-center -mt-4">
                   <h2 className="font-display text-xl font-bold text-foreground">
-                    Créez votre mot de passe
+                    {t("auth.password")}
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    Pour le compte <span className="font-medium text-foreground">{email}</span>
+                    {email}
                   </p>
                 </div>
 
@@ -146,7 +130,7 @@ const Signup = () => {
                   <div className="relative">
                     <Input
                       type={showPassword ? "text" : "password"}
-                      placeholder="Mot de passe (6 caractères minimum)"
+                      placeholder={t("auth.passwordPlaceholder")}
                       className="h-12 rounded-lg border-border bg-background text-sm pr-10"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -162,7 +146,7 @@ const Signup = () => {
                   </div>
                   <Input
                     type={showPassword ? "text" : "password"}
-                    placeholder="Confirmer le mot de passe"
+                    placeholder={t("auth.confirmPassword")}
                     className="h-12 rounded-lg border-border bg-background text-sm"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -172,15 +156,18 @@ const Signup = () => {
                     disabled={loading}
                     className="w-full h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm border-0"
                   >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Créer mon compte"}
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("auth.signupBtn")}
                   </Button>
                 </form>
-
-                <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
-                  Vous pourrez compléter votre profil (nom, téléphone) après la création de votre compte.
-                </p>
               </>
             )}
+
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">
+                {t("auth.hasAccount")}{" "}
+                <Link to="/login" className="text-primary font-medium hover:underline">{t("auth.loginBtn")}</Link>
+              </p>
+            </div>
           </div>
         </div>
       </motion.div>

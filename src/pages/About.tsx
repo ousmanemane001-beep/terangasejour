@@ -1,8 +1,11 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const About = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -13,18 +16,12 @@ const About = () => {
             animate={{ opacity: 1, y: 0 }}
             className="font-display text-3xl md:text-4xl font-bold text-foreground mb-6"
           >
-            À propos de TerangaSéjour
+            {t("about.title")}
           </motion.h1>
           <div className="space-y-4 text-muted-foreground leading-relaxed">
-            <p>
-              TerangaSéjour est la première plateforme de réservation de logements dédiée au Sénégal. Notre mission est de connecter les voyageurs avec des hébergements authentiques et de qualité à travers tout le pays.
-            </p>
-            <p>
-              Que vous cherchiez une villa avec piscine à Saly, un appartement moderne à Dakar, ou un éco-lodge en Casamance, TerangaSéjour vous offre une sélection variée pour tous les budgets et tous les goûts.
-            </p>
-            <p>
-              Nous croyons en un tourisme responsable qui bénéficie aux communautés locales. Chaque réservation contribue directement à l'économie sénégalaise et soutient les hôtes locaux.
-            </p>
+            <p>{t("about.p1")}</p>
+            <p>{t("about.p2")}</p>
+            <p>{t("about.p3")}</p>
           </div>
         </div>
       </section>
