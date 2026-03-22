@@ -11,7 +11,7 @@ import { useListings, type DBListing } from "@/hooks/useListings";
 import { useListingsRatings } from "@/hooks/useReviews";
 
 import {
-  Loader2, Home, Shield, ArrowRight
+  Loader2, Home, Shield, ArrowRight, Building2, Hotel, TreePalm
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
