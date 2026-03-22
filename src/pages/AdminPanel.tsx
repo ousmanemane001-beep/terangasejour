@@ -510,7 +510,6 @@ const AdminPanel = () => {
                     const hasEnoughPhotos = photoCount >= 5;
                     const hasDesc = listing.description && listing.description.length >= 20;
                     const hasLocation = !!listing.location || !!listing.city;
-                    const canApprove = hasEnoughPhotos && hasDesc && hasLocation;
                     const ownerProfile = allProfiles?.find((p) => p.id === listing.user_id);
                     const st = statusLabels[listing.status] || { label: listing.status, color: "bg-muted text-muted-foreground" };
 
@@ -584,7 +583,7 @@ const AdminPanel = () => {
 
                               {/* Actions */}
                               <div className="flex gap-2 flex-wrap">
-                                <Link to={`/property/${listing.id}`}>
+                                <Link to={`/property/${listing.id}`} target="_blank" rel="noopener noreferrer">
                                   <Button variant="outline" size="sm" className="rounded-full text-xs gap-1"><Eye className="w-3 h-3" /> Voir</Button>
                                 </Link>
                                 {listing.status !== "published" && (
