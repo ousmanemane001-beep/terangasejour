@@ -95,6 +95,8 @@ const Footer = () => {
             <span>·</span>
             <Link to="/privacy" className="hover:text-primary-foreground transition-colors">Confidentialité</Link>
             <span>·</span>
+            <Link to="/refund-policy" className="hover:text-primary-foreground transition-colors">Politique de remboursement</Link>
+            <span>·</span>
             <span>Wave · Orange Money · Carte bancaire</span>
           </div>
         </div>

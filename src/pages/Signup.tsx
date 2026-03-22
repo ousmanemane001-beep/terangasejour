@@ -108,7 +108,7 @@ const Signup = () => {
                   />
                   <Button
                     type="submit"
-                    className="w-full h-12 rounded-full bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm border-0"
+                    className="w-full h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm border-0"
                   >
                     Continuer avec une adresse e-mail
                   </Button>
