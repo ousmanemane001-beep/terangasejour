@@ -143,14 +143,14 @@ const MobileSearchPill = () => {
               className="w-full pl-12 pr-4 py-3 bg-secondary rounded-full text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/20 font-medium"
             />
           </div>
-          {/* Show filtered results only */}
-          {destination.length > 0 && (
-            <div className="mt-1">
+          {/* Show suggestions only when typing and not exact match */}
+          {destination.length > 0 && !SUGGESTIONS.some(s => s.toLowerCase() === destination.toLowerCase()) && (
+            <div className="mt-1 max-h-32 overflow-y-auto">
               {SUGGESTIONS.filter((s) => s.toLowerCase().includes(destination.toLowerCase())).map((city) => (
                 <button
                   key={city}
                   onClick={() => setDestination(city)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted rounded-xl transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-muted rounded-xl transition-colors text-left"
                 >
                   <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
                   <span className="text-sm font-medium text-foreground">{city}</span>
