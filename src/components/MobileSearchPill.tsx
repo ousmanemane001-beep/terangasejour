@@ -193,8 +193,8 @@ const MobileSearchPill = () => {
         </div>
       </div>
 
-      {/* Footer CTA */}
-      <div className="px-5 py-3 border-t border-border">
+      {/* Footer CTA - always visible */}
+      <div className="shrink-0 px-5 py-3 border-t border-border bg-background">
         <button
           onClick={handleSearch}
           className="w-full py-3.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
