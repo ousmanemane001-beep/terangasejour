@@ -39,7 +39,7 @@ const paymentLabels: Record<string, string> = {
   paydunya: "PayDunya", card: "Carte bancaire",
 };
 
-type AdminSection = "overview" | "properties" | "approvals" | "reservations" | "users" | "payments" | "reviews" | "notifications" | "settings";
+type AdminSection = "overview" | "properties" | "approvals" | "reservations" | "users" | "payments" | "reviews" | "notifications" | "disputes" | "settings";
 
 const sidebarItems: { id: AdminSection; label: string; icon: any }[] = [
   { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard },
@@ -49,6 +49,7 @@ const sidebarItems: { id: AdminSection; label: string; icon: any }[] = [
   { id: "users", label: "Utilisateurs", icon: Users },
   { id: "payments", label: "Paiements", icon: CreditCard },
   { id: "reviews", label: "Avis", icon: Star },
+  { id: "disputes", label: "Conflits / Litiges", icon: AlertTriangle },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "settings", label: "Paramètres", icon: Settings },
 ];
