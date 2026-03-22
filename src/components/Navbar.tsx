@@ -13,6 +13,7 @@ import NotificationDropdown from "@/components/NotificationDropdown";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [lang, setLang] = useState<"FR" | "EN">("FR");
   const location = useLocation();
   const { user, isHost, isAdmin, profile, signOut } = useAuth();
 
