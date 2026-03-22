@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Search, X, MapPin, ChevronLeft, ChevronRight, Minus, Plus, Building2, Home, Hotel, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, addDays } from "date-fns";
