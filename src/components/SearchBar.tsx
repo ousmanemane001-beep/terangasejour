@@ -2,39 +2,33 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, MapPin, Calendar, Users, Navigation, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useDestinations, usePopularDestinations, type DbDestination } from "@/hooks/useDestinations";
+import { useTranslation } from "react-i18next";
 
 const CATEGORY_ICONS: Record<string, string> = {
-  ville: "🏙️",
-  aeroport: "✈️",
-  site_historique: "🏛️",
-  plage: "🏖️",
-  lac: "🌊",
-  restaurant: "🍽️",
-  hotel: "🏨",
-  ile: "🏝️",
-  parc_naturel: "🌿",
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  ville: "Ville",
-  aeroport: "Aéroport",
-  site_historique: "Site historique",
-  plage: "Plage",
-  lac: "Lac",
-  restaurant: "Restaurant",
-  hotel: "Hôtel",
-  ile: "Île",
-  parc_naturel: "Parc naturel",
+  ville: "🏙️", aeroport: "✈️", site_historique: "🏛️", plage: "🏖️",
+  lac: "🌊", restaurant: "🍽️", hotel: "🏨", ile: "🏝️", parc_naturel: "🌿",
 };
 
 const SearchBar = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "fr" ? fr : enUS;
+  const datePlaceholder = i18n.language === "fr" ? "jj/mm/aaaa" : "mm/dd/yyyy";
+
+  const CATEGORY_LABELS: Record<string, string> = {
+    ville: t("discover.cities"), aeroport: i18n.language === "fr" ? "Aéroport" : "Airport",
+    site_historique: t("discover.historical"), plage: t("discover.beaches"),
+    lac: i18n.language === "fr" ? "Lac" : "Lake", restaurant: "Restaurant",
+    hotel: t("search.hotel"), ile: t("discover.islands"),
+    parc_naturel: t("discover.nature"),
+  };
+
   const [destination, setDestination] = useState("");
   const [selectedDest, setSelectedDest] = useState<DbDestination | null>(null);
   const [checkIn, setCheckIn] = useState<Date>();
@@ -46,10 +40,9 @@ const SearchBar = () => {
   const mobileInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  // Debounce search
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(destination), 200);
-    return () => clearTimeout(t);
+    const ti = setTimeout(() => setDebouncedSearch(destination), 200);
+    return () => clearTimeout(ti);
   }, [destination]);
 
   const { data: searchResults, isLoading: searching } = useDestinations(
@@ -91,6 +84,8 @@ const SearchBar = () => {
     navigate(`/explore?${params.toString()}`);
   };
 
+  const guestLabel = `${guestCount} ${guestCount > 1 ? t("search.travelers_plural") : t("search.traveler")}`;
+
   const fieldStyle = "bg-[#fafafa] border border-border rounded-[10px] h-[41px] md:h-[56px] px-4 flex items-center cursor-pointer hover:border-[#ccc] transition-colors";
 
   return (
@@ -100,12 +95,12 @@ const SearchBar = () => {
         <div className="relative flex-1 min-w-[180px]" style={{ zIndex: 1000 }}>
           <div className="flex items-center gap-1.5 mb-1.5">
             <MapPin className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Destination</span>
+            <span className="text-sm font-semibold text-foreground">{t("search.destination")}</span>
           </div>
           <div className={fieldStyle} onClick={() => inputRef.current?.focus()}>
             <Input
               ref={inputRef}
-              placeholder="Ville, plage, site…"
+              placeholder={t("search.cityOrArea")}
               value={destination}
               onChange={(e) => { setDestination(e.target.value); setSelectedDest(null); setShowSuggestions(true); }}
               onFocus={() => setShowSuggestions(true)}
@@ -114,85 +109,75 @@ const SearchBar = () => {
           </div>
           {showSuggestions && (
             <SuggestionsDropdown
-              isSearching={isSearching}
-              searching={searching}
+              isSearching={isSearching} searching={searching}
               filteredDestinations={filteredDestinations}
               popularDestinations={popularDestinations || []}
               selectDestination={selectDestination}
               setShowSuggestions={setShowSuggestions}
-              navigate={navigate}
-              suggestionsRef={suggestionsRef}
+              navigate={navigate} suggestionsRef={suggestionsRef}
+              categoryLabels={CATEGORY_LABELS} t={t}
             />
           )}
         </div>
 
-        {/* Date arrivée */}
         <div className="min-w-[140px]">
           <div className="flex items-center gap-1.5 mb-1.5">
             <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Date arrivée</span>
+            <span className="text-sm font-semibold text-foreground">{t("search.arrival")}</span>
           </div>
           <Popover>
             <PopoverTrigger asChild>
               <div className={cn(fieldStyle)}>
                 <span className={cn("text-[15px] flex-1", checkIn ? "text-foreground" : "text-muted-foreground")}>
-                  {checkIn ? format(checkIn, "dd/MM/yyyy", { locale: fr }) : "jj/mm/aaaa"}
+                  {checkIn ? format(checkIn, "dd/MM/yyyy", { locale: dateLocale }) : datePlaceholder}
                 </span>
                 <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
               </div>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start" side="bottom">
-              <CalendarComponent
-                mode="single" selected={checkIn}
+              <CalendarComponent mode="single" selected={checkIn}
                 onSelect={(d) => { setCheckIn(d); if (checkOut && d && d >= checkOut) setCheckOut(undefined); }}
-                disabled={(date) => date < new Date()}
-                className={cn("pointer-events-auto")}
-              />
+                disabled={(date) => date < new Date()} className={cn("pointer-events-auto")} />
             </PopoverContent>
           </Popover>
         </div>
 
-        {/* Date départ */}
         <div className="min-w-[140px]">
           <div className="flex items-center gap-1.5 mb-1.5">
             <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Date départ</span>
+            <span className="text-sm font-semibold text-foreground">{t("search.departure")}</span>
           </div>
           <Popover>
             <PopoverTrigger asChild>
               <div className={cn(fieldStyle)}>
                 <span className={cn("text-[15px] flex-1", checkOut ? "text-foreground" : "text-muted-foreground")}>
-                  {checkOut ? format(checkOut, "dd/MM/yyyy", { locale: fr }) : "jj/mm/aaaa"}
+                  {checkOut ? format(checkOut, "dd/MM/yyyy", { locale: dateLocale }) : datePlaceholder}
                 </span>
                 <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
               </div>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start" side="bottom">
-              <CalendarComponent
-                mode="single" selected={checkOut}
+              <CalendarComponent mode="single" selected={checkOut}
                 onSelect={setCheckOut}
-                disabled={(date) => date < (checkIn || new Date())}
-                className={cn("pointer-events-auto")}
-              />
+                disabled={(date) => date < (checkIn || new Date())} className={cn("pointer-events-auto")} />
             </PopoverContent>
           </Popover>
         </div>
 
-        {/* Voyageurs */}
         <div className="min-w-[140px]">
           <div className="flex items-center gap-1.5 mb-1.5">
             <Users className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Voyageurs</span>
+            <span className="text-sm font-semibold text-foreground">{t("search.travelers")}</span>
           </div>
           <Popover>
             <PopoverTrigger asChild>
               <div className={cn(fieldStyle, "justify-between")}>
-                <span className="text-[15px] text-foreground">{guestCount} voyageur{guestCount > 1 ? "s" : ""}</span>
+                <span className="text-[15px] text-foreground">{guestLabel}</span>
                 <svg className="w-4 h-4 text-muted-foreground shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
               </div>
             </PopoverTrigger>
             <PopoverContent className="w-56 p-4" align="start">
-              <p className="text-sm font-semibold text-foreground mb-3">Voyageurs</p>
+              <p className="text-sm font-semibold text-foreground mb-3">{t("search.travelers")}</p>
               <div className="flex items-center justify-between">
                 <button className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-foreground hover:border-foreground/30 transition-colors" onClick={() => setGuestCount(Math.max(1, guestCount - 1))}>-</button>
                 <span className="font-semibold text-foreground text-lg">{guestCount}</span>
@@ -205,7 +190,7 @@ const SearchBar = () => {
         <div className="shrink-0 pb-[1px]">
           <div className="mb-1.5 h-5" />
           <button onClick={handleSearch} className="h-[56px] px-8 bg-primary hover:bg-primary/90 text-white rounded-[28px] font-semibold text-base flex items-center justify-center gap-2 transition-colors whitespace-nowrap">
-            Rechercher
+            {t("search.search")}
           </button>
         </div>
       </div>
@@ -215,12 +200,12 @@ const SearchBar = () => {
         <div className="relative" style={{ zIndex: 1000 }}>
           <div className="flex items-center gap-1.5 mb-1.5">
             <MapPin className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Destination</span>
+            <span className="text-sm font-semibold text-foreground">{t("search.destination")}</span>
           </div>
           <div className={fieldStyle} onClick={() => mobileInputRef.current?.focus()}>
             <Input
               ref={mobileInputRef}
-              placeholder="Ville, plage, site…"
+              placeholder={t("search.cityOrArea")}
               value={destination}
               onChange={(e) => { setDestination(e.target.value); setSelectedDest(null); setShowSuggestions(true); }}
               onFocus={() => setShowSuggestions(true)}
@@ -229,14 +214,13 @@ const SearchBar = () => {
           </div>
           {showSuggestions && (
             <SuggestionsDropdown
-              isSearching={isSearching}
-              searching={searching}
+              isSearching={isSearching} searching={searching}
               filteredDestinations={filteredDestinations}
               popularDestinations={popularDestinations || []}
               selectDestination={selectDestination}
               setShowSuggestions={setShowSuggestions}
-              navigate={navigate}
-              suggestionsRef={suggestionsRef}
+              navigate={navigate} suggestionsRef={suggestionsRef}
+              categoryLabels={CATEGORY_LABELS} t={t}
             />
           )}
         </div>
@@ -244,43 +228,37 @@ const SearchBar = () => {
         <div>
           <div className="flex items-center gap-1.5 mb-1.5">
             <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Durée du séjour</span>
+            <span className="text-sm font-semibold text-foreground">{t("search.stayDuration")}</span>
           </div>
           <div className="flex gap-3">
             <Popover>
               <PopoverTrigger asChild>
                 <div className={cn(fieldStyle, "flex-1 !h-[39px] md:!h-[56px]")}>
                   <span className={cn("text-[15px] flex-1", checkIn ? "text-foreground" : "text-muted-foreground")}>
-                    {checkIn ? format(checkIn, "dd/MM/yyyy", { locale: fr }) : "jj/mm/aaaa"}
+                    {checkIn ? format(checkIn, "dd/MM/yyyy", { locale: dateLocale }) : datePlaceholder}
                   </span>
                   <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
                 </div>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start" side="bottom">
-                <CalendarComponent
-                  mode="single" selected={checkIn}
+                <CalendarComponent mode="single" selected={checkIn}
                   onSelect={(d) => { setCheckIn(d); if (checkOut && d && d >= checkOut) setCheckOut(undefined); }}
-                  disabled={(date) => date < new Date()}
-                  className={cn("pointer-events-auto")}
-                />
+                  disabled={(date) => date < new Date()} className={cn("pointer-events-auto")} />
               </PopoverContent>
             </Popover>
             <Popover>
               <PopoverTrigger asChild>
                 <div className={cn(fieldStyle, "flex-1 !h-[39px] md:!h-[56px]")}>
                   <span className={cn("text-[15px] flex-1", checkOut ? "text-foreground" : "text-muted-foreground")}>
-                    {checkOut ? format(checkOut, "dd/MM/yyyy", { locale: fr }) : "jj/mm/aaaa"}
+                    {checkOut ? format(checkOut, "dd/MM/yyyy", { locale: dateLocale }) : datePlaceholder}
                   </span>
                   <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
                 </div>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start" side="bottom">
-                <CalendarComponent
-                  mode="single" selected={checkOut}
+                <CalendarComponent mode="single" selected={checkOut}
                   onSelect={setCheckOut}
-                  disabled={(date) => date < (checkIn || new Date())}
-                  className={cn("pointer-events-auto")}
-                />
+                  disabled={(date) => date < (checkIn || new Date())} className={cn("pointer-events-auto")} />
               </PopoverContent>
             </Popover>
           </div>
@@ -289,17 +267,17 @@ const SearchBar = () => {
         <div>
           <div className="flex items-center gap-1.5 mb-1.5">
             <Users className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Voyageurs</span>
+            <span className="text-sm font-semibold text-foreground">{t("search.travelers")}</span>
           </div>
           <Popover>
             <PopoverTrigger asChild>
               <div className={cn(fieldStyle, "justify-between !h-[28px] md:!h-[56px]")}>
-                <span className="text-[15px] text-foreground">{guestCount} voyageur{guestCount > 1 ? "s" : ""}</span>
+                <span className="text-[15px] text-foreground">{guestLabel}</span>
                 <svg className="w-4 h-4 text-muted-foreground shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
               </div>
             </PopoverTrigger>
             <PopoverContent className="w-56 p-4" align="start">
-              <p className="text-sm font-semibold text-foreground mb-3">Voyageurs</p>
+              <p className="text-sm font-semibold text-foreground mb-3">{t("search.travelers")}</p>
               <div className="flex items-center justify-between">
                 <button className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-foreground hover:border-foreground/30 transition-colors" onClick={() => setGuestCount(Math.max(1, guestCount - 1))}>-</button>
                 <span className="font-semibold text-foreground text-lg">{guestCount}</span>
@@ -311,14 +289,14 @@ const SearchBar = () => {
 
         <button onClick={handleSearch} className="w-full h-[38px] md:h-[56px] bg-primary hover:bg-primary/90 text-white rounded-[28px] font-semibold text-sm flex items-center justify-center gap-2 transition-colors">
           <Search className="w-5 h-5" />
-          Rechercher
+          {t("search.search")}
         </button>
       </div>
     </div>
   );
 };
 
-/* Suggestions dropdown using DB destinations */
+/* Suggestions dropdown */
 interface SuggestionsDropdownProps {
   isSearching: boolean;
   searching: boolean;
@@ -328,11 +306,13 @@ interface SuggestionsDropdownProps {
   setShowSuggestions: (v: boolean) => void;
   navigate: ReturnType<typeof useNavigate>;
   suggestionsRef: React.RefObject<HTMLDivElement>;
+  categoryLabels: Record<string, string>;
+  t: (key: string) => string;
 }
 
 const SuggestionsDropdown = ({
   isSearching, searching, filteredDestinations, popularDestinations,
-  selectDestination, setShowSuggestions, navigate, suggestionsRef,
+  selectDestination, setShowSuggestions, navigate, suggestionsRef, categoryLabels, t,
 }: SuggestionsDropdownProps) => (
   <div
     ref={suggestionsRef}
@@ -345,7 +325,7 @@ const SuggestionsDropdown = ({
           <Loader2 className="w-5 h-5 animate-spin text-primary" />
         </div>
       ) : filteredDestinations.length === 0 ? (
-        <p className="p-5 text-sm text-muted-foreground text-center">Aucun résultat trouvé</p>
+        <p className="p-5 text-sm text-muted-foreground text-center">{t("explore.noResults")}</p>
       ) : (
         <div className="py-1">
           {filteredDestinations.map((d) => (
@@ -360,7 +340,7 @@ const SuggestionsDropdown = ({
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground truncate">{d.name}</p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {CATEGORY_LABELS[d.category] || d.category} · {d.region || "Sénégal"}
+                  {categoryLabels[d.category] || d.category} · {d.region || "Sénégal"}
                 </p>
               </div>
             </button>
@@ -370,7 +350,7 @@ const SuggestionsDropdown = ({
     ) : (
       <div className="py-1">
         <p className="px-4 pt-3 pb-2 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-          Destinations populaires
+          {t("searchBar.popularDestinations")}
         </p>
         {popularDestinations.map((d) => (
           <button
@@ -396,8 +376,8 @@ const SuggestionsDropdown = ({
               <MapPin className="w-4 h-4 text-[#1a56db]" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[#1a56db]">Explorer sur la carte</p>
-              <p className="text-xs text-muted-foreground">Voir tous les logements</p>
+              <p className="text-sm font-medium text-[#1a56db]">{t("searchBar.exploreMap")}</p>
+              <p className="text-xs text-muted-foreground">{t("searchBar.viewAllListings")}</p>
             </div>
           </button>
         </div>
