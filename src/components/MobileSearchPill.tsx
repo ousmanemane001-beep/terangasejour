@@ -99,7 +99,7 @@ const MobileSearchPill = () => {
               if (showCalendar === "in") {
                 setCheckIn(d);
                 if (d >= checkOut) setCheckOut(addDays(d, 1));
-                setShowCalendar("out");
+                setShowCalendar(null);
               } else {
                 setCheckOut(d);
                 setShowCalendar(null);
