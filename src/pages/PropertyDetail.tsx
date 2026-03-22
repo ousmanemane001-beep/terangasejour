@@ -103,8 +103,10 @@ const PropertyDetail = () => {
     );
   }
 
+  // For DB listings, don't show all amenities by default — only show what's relevant
+  // In future, amenities should be stored per listing. For now, show common ones for DB listings.
   const amenities = listing.isDB
-    ? Object.entries(amenityMap).map(([, v]) => v)
+    ? [] // No amenities to show unless host has specified them
     : (staticProperty?.amenities || []).map((a) => amenityMap[a] || { icon: Wifi, label: a }).filter(Boolean);
 
   return (
