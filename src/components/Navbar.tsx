@@ -47,14 +47,12 @@ const Navbar = () => {
 
   const close = () => setMobileOpen(false);
 
-  // Mobile menu items with icons — Booking.com style
+  // Mobile menu items — role-aware (no Explorer, no Publier for voyageurs)
   const mobileMenuItems = [
     { label: "Accueil", path: "/", icon: Home },
-    { label: "Explorer", path: "/explore", icon: Search },
     { label: "Carte", path: "/explore-senegal", icon: MapIcon },
     { label: "À propos", path: "/about", icon: Info },
     { label: "Contact", path: "/contact", icon: Headphones },
-    ...(user ? [{ label: "Publier un logement", path: isHost ? "/create-listing" : "/become-host", icon: PlusCircle }] : []),
   ];
 
   return (
