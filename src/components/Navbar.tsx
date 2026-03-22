@@ -95,7 +95,11 @@ const Navbar = () => {
 
           {/* Mobile: right icons (notification, heart, user) */}
           <div className="md:hidden flex items-center gap-1">
-            {user && <NotificationDropdown />}
+            <Link to="/discover">
+              <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
+                <Bell className="w-5 h-5 text-foreground" />
+              </button>
+            </Link>
             <Link to="/favorites">
               <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
                 <Heart className="w-5 h-5 text-foreground" />
