@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Search, X, MapPin, ChevronLeft, ChevronRight, Minus, Plus, Building2, Home, Hotel, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, addDays } from "date-fns";
@@ -80,8 +81,8 @@ const MobileSearchPill = () => {
 
   // Calendar overlay
   if (showCalendar) {
-    return (
-      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+    return createPortal(
+      <div className="fixed inset-0 z-[9999] bg-background flex flex-col" style={{ height: '100dvh' }}>
         <div className="flex items-center gap-3 px-4 pt-3 pb-3 border-b border-border bg-primary">
           <button onClick={() => setShowCalendar(null)} className="w-9 h-9 rounded-full flex items-center justify-center text-primary-foreground">
             <ChevronLeft className="w-5 h-5" />
@@ -113,13 +114,13 @@ const MobileSearchPill = () => {
             className={cn("p-3 pointer-events-auto")}
           />
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
-  // Main expanded form (Agoda-style)
-  return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] bg-background flex flex-col" style={{ height: '100dvh' }}>
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-3 pb-3 bg-primary">
         <button onClick={close} className="w-9 h-9 rounded-full flex items-center justify-center text-primary-foreground">
@@ -193,8 +194,8 @@ const MobileSearchPill = () => {
         </div>
       </div>
 
-      {/* Footer CTA */}
-      <div className="px-5 py-3 border-t border-border">
+      {/* Footer CTA - always visible */}
+      <div className="shrink-0 px-5 py-3 border-t border-border bg-background">
         <button
           onClick={handleSearch}
           className="w-full py-3.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
@@ -203,7 +204,8 @@ const MobileSearchPill = () => {
           Rechercher
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
