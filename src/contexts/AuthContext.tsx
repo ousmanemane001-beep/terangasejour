@@ -72,15 +72,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        await Promise.all([
-          fetchProfile(session.user.id),
-          checkAdmin(session.user.id),
-        ]);
+        // Use setTimeout to avoid Supabase deadlock on rapid auth changes
+        setTimeout(async () => {
+          if (!mounted) return;
+          try {
+            await Promise.all([
+              fetchProfile(session.user.id),
+              checkAdmin(session.user.id),
+            ]);
+          } catch (err) {
+            console.error("Error loading profile:", err);
+          }
+          if (mounted) setLoading(false);
+        }, 0);
       } else {
         setProfile(null);
         setIsAdmin(false);
+        if (mounted) setLoading(false);
       }
-      if (mounted) setLoading(false);
     });
 
     // Then check existing session
@@ -89,10 +98,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        await Promise.all([
-          fetchProfile(session.user.id),
-          checkAdmin(session.user.id),
-        ]);
+        try {
+          await Promise.all([
+            fetchProfile(session.user.id),
+            checkAdmin(session.user.id),
+          ]);
+        } catch (err) {
+          console.error("Error loading profile:", err);
+        }
       }
       if (mounted) setLoading(false);
     });

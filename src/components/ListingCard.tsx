@@ -34,28 +34,28 @@ const ListingCard = forwardRef<HTMLDivElement, ListingCardProps>(
     return (
       <div ref={ref} className="group w-full">
         <Link to={`/property/${listing.id}`} className="block">
-          <div className="relative overflow-hidden rounded-xl aspect-square">
+          <div className="relative overflow-hidden rounded-2xl aspect-[4/3]">
             <img
               src={photos[currentPhoto]}
               alt={listing.title}
               loading="lazy"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
 
-            <FavoriteButton listingId={listing.id} className="absolute top-2.5 right-2.5 z-10" />
+            <FavoriteButton listingId={listing.id} className="absolute top-3 right-3 z-10" />
 
             {hasMultiplePhotos && (
               <>
                 <button
                   onClick={prevPhoto}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background hover:scale-105 shadow-sm"
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-background hover:scale-110 shadow-md"
                   aria-label="Photo précédente"
                 >
                   <ChevronLeft className="w-4 h-4 text-foreground" />
                 </button>
                 <button
                   onClick={nextPhoto}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background hover:scale-105 shadow-sm"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-background hover:scale-110 shadow-md"
                   aria-label="Photo suivante"
                 >
                   <ChevronRight className="w-4 h-4 text-foreground" />
@@ -64,7 +64,7 @@ const ListingCard = forwardRef<HTMLDivElement, ListingCardProps>(
             )}
 
             {hasMultiplePhotos && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1">
                 {photos.slice(0, 5).map((_, i) => (
                   <span
                     key={i}
@@ -78,15 +78,15 @@ const ListingCard = forwardRef<HTMLDivElement, ListingCardProps>(
           </div>
         </Link>
 
-        <Link to={`/property/${listing.id}`} className="block mt-2 px-0.5">
+        <Link to={`/property/${listing.id}`} className="block mt-2.5 px-0.5">
           <div className="flex items-start justify-between gap-1">
-            <h3 className="font-medium text-foreground text-sm leading-tight line-clamp-1">
-              {listing.property_type} · {zone}
+            <h3 className="font-semibold text-foreground text-sm leading-tight line-clamp-1">
+              {zone}
             </h3>
             {showRating && (
-              <span className="inline-flex items-center gap-0.5 text-foreground text-[13px] shrink-0">
-                <Star className="w-3 h-3 fill-foreground" />
-                {(rating.avg! * 2).toFixed(1)}
+              <span className="inline-flex items-center gap-1 text-foreground text-sm shrink-0">
+                <Star className="w-3.5 h-3.5 fill-foreground" />
+                {rating.avg!.toFixed(1)}
               </span>
             )}
           </div>
