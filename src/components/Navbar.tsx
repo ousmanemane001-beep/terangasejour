@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, User, LogOut, Heart, Home, CalendarDays, MessageCircle, Shield, MapPin, PlusCircle, LogIn, ClipboardList, Search, Map as MapIcon, Info, Headphones, Bell } from "lucide-react";
+import { Menu, X, User, LogOut, Heart, Home, CalendarDays, MessageCircle, Shield, MapPin, PlusCircle, LogIn, ClipboardList, Search, Map as MapIcon, Info, Headphones, Bell, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -100,11 +100,9 @@ const Navbar = () => {
                 <Bell className="w-5 h-5 text-foreground" />
               </button>
             </Link>
-            <Link to="/favorites">
-              <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
-                <Heart className="w-5 h-5 text-foreground" />
-              </button>
-            </Link>
+            <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors" title="Langue">
+              <Globe className="w-5 h-5 text-foreground" />
+            </button>
             {user ? (
               <Link to="/profile">
                 <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
