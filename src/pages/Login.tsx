@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,30 +17,28 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) { toast.error("Veuillez remplir tous les champs"); return; }
+    if (!email || !password) { toast.error(t("auth.fillAllFields")); return; }
     setLoading(true);
     try {
       const { error, data } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        toast.error(error.message === "Invalid login credentials" ? "Email ou mot de passe incorrect"
-          : error.message === "Email not confirmed" ? "Veuillez confirmer votre email"
+        toast.error(error.message === "Invalid login credentials" ? t("auth.invalidCredentials")
+          : error.message === "Email not confirmed" ? t("auth.confirmEmail")
           : error.message);
         setLoading(false);
         return;
       }
       if (data.session) {
-        toast.success("Connexion réussie !");
-        // Small delay to let AuthContext process the session
-        setTimeout(() => {
-          navigate("/", { replace: true });
-        }, 100);
+        toast.success(t("auth.loginSuccess"));
+        setTimeout(() => { navigate("/", { replace: true }); }, 100);
       }
     } catch (err) {
       console.error("Login error:", err);
-      toast.error("Une erreur est survenue");
+      toast.error(t("auth.error"));
     } finally {
       setLoading(false);
     }
@@ -64,10 +63,10 @@ const Login = () => {
 
           <div className="flex flex-col gap-2 text-center">
             <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
-              Content de vous revoir !
+              {t("auth.loginTitle")}
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
-              Connectez-vous pour gérer vos réservations, vos logements et plus encore.
+              {t("auth.loginSubtitle")}
             </p>
           </div>
 
@@ -75,7 +74,7 @@ const Login = () => {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <Input
                 type="email"
-                placeholder="Email"
+                placeholder={t("auth.email")}
                 className="h-12 rounded-lg border-border bg-background text-sm"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -83,7 +82,7 @@ const Login = () => {
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Mot de passe"
+                  placeholder={t("auth.password")}
                   className="h-12 rounded-lg border-border bg-background text-sm pr-10"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -99,21 +98,21 @@ const Login = () => {
 
               <div className="flex items-center justify-between pt-2">
                 <Link to="/forgot-password" className="text-sm font-medium text-foreground hover:underline">
-                  Mot de passe oublié
+                  {t("auth.forgotPassword")}
                 </Link>
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="rounded-full h-11 px-8 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm border-0"
+                  className="rounded-full h-11 px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm border-0"
                 >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Connexion"}
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("auth.loginBtn")}
                 </Button>
               </div>
             </form>
 
             <div className="text-center">
               <p className="text-sm font-semibold text-foreground">
-                ou choisissez l'une de ces options
+                {t("auth.orContinueWith")}
               </p>
             </div>
 
@@ -121,8 +120,8 @@ const Login = () => {
 
             <div className="text-center">
               <p className="text-sm text-muted-foreground">
-                Pas encore de compte ?{" "}
-                <Link to="/signup" className="text-primary font-medium hover:underline">Créer un compte</Link>
+                {t("auth.noAccount")}{" "}
+                <Link to="/signup" className="text-primary font-medium hover:underline">{t("nav.signupCreate")}</Link>
               </p>
             </div>
           </div>
