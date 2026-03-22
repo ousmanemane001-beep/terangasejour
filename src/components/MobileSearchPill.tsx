@@ -81,7 +81,7 @@ const MobileSearchPill = () => {
   // Calendar overlay
   if (showCalendar) {
     return (
-      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+      <div className="fixed inset-0 z-[70] bg-background flex flex-col">
         <div className="flex items-center gap-3 px-4 pt-3 pb-3 border-b border-border bg-primary">
           <button onClick={() => setShowCalendar(null)} className="w-9 h-9 rounded-full flex items-center justify-center text-primary-foreground">
             <ChevronLeft className="w-5 h-5" />
