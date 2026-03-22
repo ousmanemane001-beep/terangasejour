@@ -338,10 +338,20 @@ const Navbar = () => {
                 )}
               </div>
 
-              {/* CTA bottom */}
-              {user && !isAdmin && (
+              {/* CTA bottom — Devenir hôte for voyageurs, Publier for hosts */}
+              {user && !isAdmin && !isHost && (
                 <div className="px-5 py-4 border-t border-border">
-                  <Link to={isHost ? "/create-listing" : "/become-host"} onClick={close}>
+                  <Link to="/become-host" onClick={close}>
+                    <Button className="w-full rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90">
+                      <Home className="w-4 h-4 mr-2" />
+                      Devenir hôte
+                    </Button>
+                  </Link>
+                </div>
+              )}
+              {user && isHost && !isAdmin && (
+                <div className="px-5 py-4 border-t border-border">
+                  <Link to="/create-listing" onClick={close}>
                     <Button className="w-full rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90">
                       <PlusCircle className="w-4 h-4 mr-2" />
                       Publier mon logement
