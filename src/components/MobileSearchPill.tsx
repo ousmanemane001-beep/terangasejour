@@ -126,8 +126,8 @@ const MobileSearchPill = () => {
       <div className="absolute inset-0 bg-black/40" />
 
       <div
-        className="relative bg-background rounded-t-2xl flex flex-col overflow-hidden"
-        style={{ maxHeight: "70vh" }}
+        className="relative bg-background rounded-2xl mx-3 mb-[30vh] flex flex-col overflow-hidden shadow-xl"
+        style={{ maxHeight: "65vh" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle */}
