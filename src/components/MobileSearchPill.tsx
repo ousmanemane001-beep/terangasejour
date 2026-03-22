@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, X, MapPin, Calendar, Users, Minus, Plus } from "lucide-react";
+import { Search, X, MapPin, Calendar, Users, Minus, Plus, Building2, Home, Hotel } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -44,20 +44,44 @@ const MobileSearchPill = () => {
       : format(dateRange.from, "d MMM", { locale: fr })
     : "N'importe quand";
 
+  const PROPERTY_TYPES = [
+    { label: "Appartement", icon: Building2, type: "apartment" },
+    { label: "Villa", icon: Home, type: "villa" },
+    { label: "Hôtel", icon: Hotel, type: "hotel" },
+  ];
+
   if (!expanded) {
     return (
-      <button
-        onClick={() => setExpanded(true)}
-        className="w-full flex items-center gap-3 bg-card border border-border rounded-full px-4 py-3 shadow-sm hover:shadow-md transition-shadow"
-      >
-        <Search className="w-5 h-5 text-foreground shrink-0" />
-        <div className="flex flex-col items-start text-left">
-          <span className="text-sm font-semibold text-foreground leading-tight">Où allez-vous ?</span>
-          <span className="text-xs text-muted-foreground leading-tight">
-            {destination || "N'importe où"} · {dateLabel} · {guests} voyageur{guests > 1 ? "s" : ""}
-          </span>
+      <div className="space-y-4">
+        <button
+          onClick={() => setExpanded(true)}
+          className="w-full flex items-center gap-3 bg-card border border-border rounded-full px-4 py-3 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <Search className="w-5 h-5 text-foreground shrink-0" />
+          <div className="flex flex-col items-start text-left">
+            <span className="text-sm font-semibold text-foreground leading-tight">Où allez-vous ?</span>
+            <span className="text-xs text-muted-foreground leading-tight">
+              {destination || "N'importe où"} · {dateLabel} · {guests} voyageur{guests > 1 ? "s" : ""}
+            </span>
+          </div>
+        </button>
+
+        {/* Category icons row */}
+        <div className="flex items-center justify-around px-2">
+          {PROPERTY_TYPES.map((pt) => (
+            <button
+              key={pt.type}
+              onClick={() => navigate(`/explore?type=${pt.type}`)}
+              className="flex flex-col items-center gap-1.5 group"
+            >
+              <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                <pt.icon className="w-5 h-5 text-foreground" />
+              </div>
+              <span className="text-xs font-medium text-foreground">{pt.label}</span>
+            </button>
+          ))}
         </div>
-      </button>
+      </div>
     );
   }
 
