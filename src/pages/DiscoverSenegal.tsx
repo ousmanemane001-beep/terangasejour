@@ -226,9 +226,9 @@ const DiscoverSenegal = () => {
           <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
             🌍 Découvrir le Sénégal
           </h1>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto mb-8">
-            Explorez les plus belles destinations du Sénégal : plages paradisiaques, parcs naturels, 
-            sites historiques et villes vibrantes.
+          <p className="text-muted-foreground text-sm md:text-lg max-w-2xl mx-auto mb-8">
+            <span className="hidden md:inline">Explorez les plus belles destinations du Sénégal : plages paradisiaques, parcs naturels, sites historiques et villes vibrantes.</span>
+            <span className="md:hidden">Plages, parcs, sites historiques et villes du Sénégal.</span>
           </p>
           <div className="max-w-md mx-auto relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
