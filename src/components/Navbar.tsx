@@ -13,6 +13,7 @@ import NotificationDropdown from "@/components/NotificationDropdown";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [lang, setLang] = useState<"FR" | "EN">("FR");
   const location = useLocation();
   const { user, isHost, isAdmin, profile, signOut } = useAuth();
 
@@ -95,14 +96,18 @@ const Navbar = () => {
 
           {/* Mobile: right icons (notification, heart, user) */}
           <div className="md:hidden flex items-center gap-1">
+            <button
+              onClick={() => setLang(lang === "FR" ? "EN" : "FR")}
+              className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-[11px] font-bold text-foreground border border-border"
+              title="Changer de langue"
+            >
+              {lang}
+            </button>
             <Link to="/discover">
               <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
                 <Bell className="w-5 h-5 text-foreground" />
               </button>
             </Link>
-            <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-xs font-bold text-foreground" title="Langue">
-              FR
-            </button>
             {user ? (
               <Link to="/profile">
                 <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors">
