@@ -34,6 +34,7 @@ const Signup = () => {
     e.preventDefault();
     if (!password) { toast.error("Veuillez entrer un mot de passe"); return; }
     if (password.length < 6) { toast.error("Le mot de passe doit contenir au moins 6 caractères"); return; }
+    if (password !== confirmPassword) { toast.error("Les mots de passe ne correspondent pas"); return; }
 
     setLoading(true);
     const { error } = await supabase.auth.signUp({ email, password });
