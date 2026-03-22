@@ -194,11 +194,11 @@ const MobileSearchPill = () => {
         </div>
       </div>
 
-      {/* Footer CTA - always visible */}
-      <div className="shrink-0 px-5 py-3 border-t border-border bg-background">
+      {/* Footer CTA */}
+      <div className="shrink-0 px-5 py-2 border-t border-border bg-background">
         <button
           onClick={handleSearch}
-          className="w-full py-3.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+          className="w-full py-3 bg-primary text-primary-foreground rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
         >
           <Search className="w-5 h-5" />
           Rechercher
@@ -219,9 +219,9 @@ const CounterRow = ({
   max: number;
   onChange: (v: number) => void;
 }) => (
-  <div className="flex items-center justify-between py-3">
+  <div className="flex items-center justify-between py-2">
     <div className="flex items-baseline gap-2">
-      <span className="text-xl font-bold text-foreground w-6">{value}</span>
+      <span className="text-lg font-bold text-foreground w-6">{value}</span>
       <span className="text-sm text-foreground font-medium">{label}</span>
     </div>
     <div className="flex items-center gap-2.5">
