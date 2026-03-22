@@ -406,6 +406,8 @@
     "directPayment": "Direct payment · Guaranteed dates",
     "bookingInProgress": "Booking in progress...",
     "holdNote": "Your booking will be held for 30 min for payment",
-    "editDates": "Edit dates"
+    "editDates": "Edit dates",
+    "confirmReservation": "Confirm reservation",
+    "iHavePaid": "I have made the payment"
   }
 }
