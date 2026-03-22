@@ -129,9 +129,9 @@ const MobileSearchPill = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {/* Destination */}
-        <div className="px-5 py-4">
+        <div className="px-5 py-3">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
@@ -140,31 +140,17 @@ const MobileSearchPill = () => {
               onChange={(e) => setDestination(e.target.value)}
               placeholder="Rechercher une destination"
               autoFocus
-              className="w-full pl-12 pr-4 py-3.5 bg-secondary rounded-full text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/20 font-medium"
+              className="w-full pl-12 pr-4 py-3 bg-secondary rounded-full text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/20 font-medium"
             />
           </div>
-          {/* Suggestions if searching */}
-          {destination.length === 0 && (
-            <div className="grid grid-cols-2 gap-2 mt-3">
-              {SUGGESTIONS.map((city) => (
-                <button
-                  key={city}
-                  onClick={() => setDestination(city)}
-                  className="flex items-center gap-2 px-3 py-2.5 bg-secondary rounded-xl text-sm text-foreground hover:bg-muted transition-colors text-left"
-                >
-                  <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                  {city}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Show filtered results only */}
           {destination.length > 0 && (
-            <div className="mt-2">
+            <div className="mt-1">
               {SUGGESTIONS.filter((s) => s.toLowerCase().includes(destination.toLowerCase())).map((city) => (
                 <button
                   key={city}
                   onClick={() => setDestination(city)}
-                  className="w-full flex items-center gap-3 px-3 py-3 hover:bg-muted rounded-xl transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted rounded-xl transition-colors text-left"
                 >
                   <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
                   <span className="text-sm font-medium text-foreground">{city}</span>
@@ -176,7 +162,7 @@ const MobileSearchPill = () => {
 
         <div className="h-px bg-border mx-5" />
 
-        {/* Dates — Agoda style big numbers */}
+        {/* Dates */}
         <div className="px-5 py-3">
           <div className="flex items-center justify-between">
             <button onClick={() => setShowCalendar("in")} className="flex-1 text-left">
@@ -199,13 +185,10 @@ const MobileSearchPill = () => {
 
         <div className="h-px bg-border mx-5" />
 
-        {/* Counters — Agoda style */}
+        {/* Counters */}
         <div className="px-5 divide-y divide-border">
-          {/* Chambre */}
           <CounterRow label="Chambre" value={rooms} min={1} max={10} onChange={setRooms} />
-          {/* Adultes */}
           <CounterRow label="Adultes" value={adults} min={1} max={20} onChange={setAdults} />
-          {/* Enfants */}
           <CounterRow label="Enfants" value={children} min={0} max={10} onChange={setChildren} />
         </div>
       </div>
