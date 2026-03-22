@@ -39,28 +39,8 @@ const Index = () => {
         </div>
       </div>
 
-      <section className="py-6 md:py-8">
-        <div className="max-w-[1200px] mx-auto px-4 md:px-6">
-          <div className="flex justify-center gap-6 md:gap-10">
-            {[
-              { label: t("home.apartments"), icon: Building2, type: "appartement" },
-              { label: t("home.hotels"), icon: Hotel, type: "hotel" },
-              { label: t("home.villas"), icon: TreePalm, type: "villa" },
-            ].map((cat) => (
-              <Link
-                key={cat.type}
-                to={`/explore?type=${encodeURIComponent(cat.type)}`}
-                className="flex flex-col items-center gap-2 group cursor-pointer"
-              >
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <cat.icon className="w-7 h-7 md:w-9 md:h-9 text-primary" />
-                </div>
-                <span className="text-xs md:text-sm font-medium text-foreground">{cat.label}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+
+
 
       <section className="flex-1 py-6 md:py-10 space-y-8 md:space-y-12">
         <CategorySection title={t("home.popularListings")} listings={dbListings} filterFn={() => true} isLoading={isLoading} />
@@ -73,24 +53,31 @@ const Index = () => {
         <CategorySection title={t("home.regionListings")} listings={dbListings} filterFn={(l) => { const city = (l.city || l.location || "").toLowerCase(); return REGION_CITIES.some((c) => city.includes(c)); }} isLoading={isLoading} />
       </section>
 
+      {/* CTA Devenir hôte */}
       <section className="py-12 md:py-16 bg-foreground text-background">
         <div className="max-w-[1200px] mx-auto px-6 max-w-2xl text-center">
           <h2 className="text-xl md:text-3xl font-bold mb-3">{t("home.becomeHost")}</h2>
           <p className="text-background/70 text-sm md:text-base mb-6">{t("home.earnMoney")}</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link to="/become-host">
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 gap-2">
-                <Home className="w-4 h-4" />
-                {t("home.becomeHost")}
-              </Button>
-            </Link>
-            <Link to="/create-listing">
-              <Button variant="outline" size="lg" className="border-background/30 text-background hover:bg-background/10 rounded-full px-6 gap-2">
-                <Shield className="w-4 h-4" />
-                {t("home.publishListing")}
-              </Button>
-            </Link>
-          </div>
+          <Link to="/become-host">
+            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 gap-2">
+              <Home className="w-4 h-4" />
+              {t("home.becomeHost")}
+            </Button>
+          </Link>
+        </div>
+      </section>
+
+      {/* CTA Publier logement */}
+      <section className="py-10 md:py-12 bg-card">
+        <div className="max-w-[1200px] mx-auto px-6 max-w-2xl text-center">
+          <h2 className="text-lg md:text-2xl font-bold text-foreground mb-2">{t("home.publishListing")}</h2>
+          <p className="text-muted-foreground text-sm mb-5">Publiez votre logement en quelques minutes.</p>
+          <Link to="/create-listing">
+            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 gap-2">
+              <Shield className="w-4 h-4" />
+              {t("home.publishListing")}
+            </Button>
+          </Link>
         </div>
       </section>
 
