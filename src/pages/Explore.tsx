@@ -45,7 +45,9 @@ const Explore = () => {
   }, [destinationParam]);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    requestAnimationFrame(() => {
+      resultsSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }, [searchParamsKey]);
 
   const mapCenter = hasDestCoords ? { lat: destLat, lng: destLng } : undefined;
