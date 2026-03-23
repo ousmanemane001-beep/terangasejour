@@ -101,6 +101,9 @@ const Footer = () => {
             <span>Wave · Orange Money · Carte bancaire</span>
           </div>
         </div>
+        <p className="text-[10px] text-primary-foreground/40 text-center mt-4">
+          {t("footer.techNotice")}
+        </p>
       </div>
     </footer>
   );

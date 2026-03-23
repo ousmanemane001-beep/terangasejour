@@ -52,23 +52,23 @@ interface BookingDraft {
 }
 
 const saveDraft = (draft: BookingDraft) => {
-  try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(draft)); } catch {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(draft)); } catch {}
 };
 
 const loadDraft = (listingId: string): BookingDraft | null => {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const draft: BookingDraft = JSON.parse(raw);
     if (draft.listingId !== listingId) return null;
-    // Expire after 1 hour
-    if (Date.now() - draft.savedAt > 3600000) { sessionStorage.removeItem(STORAGE_KEY); return null; }
+    // Expire after 24 hours
+    if (Date.now() - draft.savedAt > 86400000) { localStorage.removeItem(STORAGE_KEY); return null; }
     return draft;
   } catch { return null; }
 };
 
 const clearDraft = () => {
-  try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+  try { localStorage.removeItem(STORAGE_KEY); } catch {}
 };
 
 const BookingWidget = ({
@@ -118,8 +118,16 @@ const BookingWidget = ({
       setCheckIn(new Date(draft.checkIn));
       setCheckOut(new Date(draft.checkOut));
       setGuests(draft.guests);
+      toast.info(t("bookingWidget.autoSaved"));
     }
   }, [listingId, user]);
+
+  // Auto-save draft when dates/guests change
+  useEffect(() => {
+    if (checkIn && checkOut) {
+      saveDraft({ listingId, checkIn: checkIn.toISOString(), checkOut: checkOut.toISOString(), guests, savedAt: Date.now() });
+    }
+  }, [checkIn, checkOut, guests, listingId]);
 
   const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
   const subtotal = nights * pricePerNight;
