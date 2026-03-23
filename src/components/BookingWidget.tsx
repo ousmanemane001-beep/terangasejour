@@ -1,14 +1,16 @@
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { format, differenceInDays } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import {
   Loader2, CheckCircle, ChevronDown, Shield,
-  Zap, Clock, AlertTriangle, CalendarDays,
+  Zap, Clock, AlertTriangle, CalendarDays, Eye, EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateBooking } from "@/hooks/useBookings";
@@ -18,6 +20,7 @@ import { useCreateNotification } from "@/hooks/useAdmin";
 import PaymentMethodSelector, { type PaymentMethod } from "@/components/PaymentMethodSelector";
 import CountdownTimer from "@/components/booking/CountdownTimer";
 import BookingStatusBadge from "@/components/booking/BookingStatusBadge";
+import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -37,6 +40,36 @@ const SERVICE_FEE_RATE = 0.15;
 const HOLD_MINUTES = 30;
 
 type BookingStep = "dates" | "confirm" | "payment" | "confirmed" | "expired";
+
+const STORAGE_KEY = "teranga_booking_draft";
+
+interface BookingDraft {
+  listingId: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  savedAt: number;
+}
+
+const saveDraft = (draft: BookingDraft) => {
+  try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(draft)); } catch {}
+};
+
+const loadDraft = (listingId: string): BookingDraft | null => {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const draft: BookingDraft = JSON.parse(raw);
+    if (draft.listingId !== listingId) return null;
+    // Expire after 1 hour
+    if (Date.now() - draft.savedAt > 3600000) { sessionStorage.removeItem(STORAGE_KEY); return null; }
+    return draft;
+  } catch { return null; }
+};
+
+const clearDraft = () => {
+  try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+};
 
 const BookingWidget = ({
   listingId, pricePerNight, maxGuests, bookingMode = "instant",
@@ -64,6 +97,30 @@ const BookingWidget = ({
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [checkOutOpen, setCheckOutOpen] = useState(false);
 
+  // Login dialog state
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+
+  // Restore draft on mount or after login
+  useEffect(() => {
+    const draft = loadDraft(listingId);
+    if (draft && user) {
+      setCheckIn(new Date(draft.checkIn));
+      setCheckOut(new Date(draft.checkOut));
+      setGuests(draft.guests);
+      clearDraft();
+      toast.success(t("bookingWidget.dataSaved"));
+      setTimeout(() => setStep("confirm"), 300);
+    } else if (draft && !user) {
+      setCheckIn(new Date(draft.checkIn));
+      setCheckOut(new Date(draft.checkOut));
+      setGuests(draft.guests);
+    }
+  }, [listingId, user]);
+
   const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
   const subtotal = nights * pricePerNight;
   const serviceFee = Math.round(subtotal * SERVICE_FEE_RATE);
@@ -81,7 +138,6 @@ const BookingWidget = ({
     if (!checkIn) return true;
     if (date <= checkIn) return true;
     if (date < today) return true;
-    // Check if any date between checkIn and this date is disabled
     const current = new Date(checkIn);
     current.setDate(current.getDate() + 1);
     while (current < date) {
@@ -106,9 +162,31 @@ const BookingWidget = ({
   };
 
   const handleReserve = () => {
-    if (!user) { toast.error(t("bookingWidget.loginToBook")); navigate("/login"); return; }
     if (!checkIn || !checkOut || nights < 1) { toast.error(t("listing.selectDates")); return; }
+    if (!user) {
+      // Save draft and show login dialog
+      saveDraft({ listingId, checkIn: checkIn.toISOString(), checkOut: checkOut.toISOString(), guests, savedAt: Date.now() });
+      setShowLoginDialog(true);
+      return;
+    }
     setStep("confirm");
+  };
+
+  const handleDialogLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginEmail || !loginPassword) { toast.error(t("auth.fillAllFields")); return; }
+    setLoginLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
+      if (error) {
+        toast.error(error.message === "Invalid login credentials" ? t("auth.invalidCredentials") : error.message);
+        return;
+      }
+      setShowLoginDialog(false);
+      toast.success(t("bookingWidget.dataSaved"));
+      // The useEffect will restore draft and go to confirm
+    } catch { toast.error(t("auth.error")); }
+    finally { setLoginLoading(false); }
   };
 
   const handleConfirmBooking = async () => {
@@ -125,6 +203,7 @@ const BookingWidget = ({
       setBookingId(result.id);
       setExpiresAt(expiry);
       setStep("payment");
+      clearDraft();
       if (hostId) {
         await createNotification.mutateAsync({
           user_id: hostId, type: "new_booking", title: t("bookingWidget.newBookingNotif"),
@@ -392,6 +471,48 @@ const BookingWidget = ({
           <Zap className="w-4 h-4 mr-2" />
           {nights > 0 ? `${t("listing.bookNow")}` : t("listing.selectDates")}
         </Button>
+
+        {/* Login Dialog */}
+        <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-display text-xl text-center">{t("bookingWidget.loginToBook")}</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground text-center">{t("bookingWidget.loginToBookDesc")}</p>
+            <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 text-center">
+              <p className="text-xs text-primary font-medium">✓ {t("bookingWidget.dataSaved")}</p>
+            </div>
+            <form onSubmit={handleDialogLogin} className="space-y-3">
+              <Input
+                type="email" placeholder={t("auth.email")}
+                className="h-11 rounded-lg" value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+              />
+              <div className="relative">
+                <Input
+                  type={showLoginPassword ? "text" : "password"} placeholder={t("auth.password")}
+                  className="h-11 rounded-lg pr-10" value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                />
+                <button type="button" onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <Button type="submit" disabled={loginLoading}
+                className="w-full rounded-xl h-11 bg-primary text-primary-foreground font-medium">
+                {loginLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("auth.loginBtn")}
+              </Button>
+            </form>
+            <SocialLoginButtons variant="icon-only" />
+            <p className="text-xs text-center text-muted-foreground">
+              {t("auth.noAccount")}{" "}
+              <Link to="/signup" className="text-primary font-medium hover:underline" onClick={() => setShowLoginDialog(false)}>
+                {t("nav.signupCreate")}
+              </Link>
+            </p>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
