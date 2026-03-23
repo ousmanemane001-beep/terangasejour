@@ -203,6 +203,7 @@ const BookingWidget = ({
       setBookingId(result.id);
       setExpiresAt(expiry);
       setStep("payment");
+      clearDraft();
       if (hostId) {
         await createNotification.mutateAsync({
           user_id: hostId, type: "new_booking", title: t("bookingWidget.newBookingNotif"),
