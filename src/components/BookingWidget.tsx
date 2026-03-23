@@ -118,8 +118,16 @@ const BookingWidget = ({
       setCheckIn(new Date(draft.checkIn));
       setCheckOut(new Date(draft.checkOut));
       setGuests(draft.guests);
+      toast.info(t("bookingWidget.autoSaved"));
     }
   }, [listingId, user]);
+
+  // Auto-save draft when dates/guests change
+  useEffect(() => {
+    if (checkIn && checkOut) {
+      saveDraft({ listingId, checkIn: checkIn.toISOString(), checkOut: checkOut.toISOString(), guests, savedAt: Date.now() });
+    }
+  }, [checkIn, checkOut, guests, listingId]);
 
   const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
   const subtotal = nights * pricePerNight;
