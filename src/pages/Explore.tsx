@@ -11,6 +11,7 @@ import ExploreFilters from "@/components/explore/ExploreFilters";
 import HostCTA from "@/components/explore/HostCTA";
 import { properties } from "@/data/properties";
 import { useListings, type DBListing } from "@/hooks/useListings";
+import ExploreGridSkeleton from "@/components/skeletons/ExploreGridSkeleton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { haversineKm, formatDistance } from "@/lib/haversine";
@@ -21,7 +22,7 @@ const Explore = () => {
   const [searchParams] = useSearchParams();
   const destinationParam = searchParams.get("destination") || "";
   const searchParamsKey = searchParams.toString();
-  const { data: dbListings } = useListings();
+  const { data: dbListings, isLoading: dbLoading } = useListings();
 
   const typeParam = searchParams.get("type") || "";
   const [destination, setDestination] = useState(destinationParam);
@@ -186,26 +187,32 @@ const Explore = () => {
                 </select>
               </div>
             </div>
-            {filteredDBListings.length > 0 && (
-              <DBListingsWithRatings
-                items={filteredDBListings}
-                showMap={showMap}
-                destName={destName}
-                hasDestCoords={hasDestCoords}
-              />
-            )}
-            <div className={cn(
-              "grid gap-5",
-              showMap
-                ? "grid-cols-1 sm:grid-cols-2"
-                : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
-            )}>
-              {filteredProperties.map((property) => (
-                <div key={property.id} onMouseEnter={() => setHoveredProperty(property.id)} onMouseLeave={() => setHoveredProperty(null)}>
-                  <PropertyCard {...property} />
+            {dbLoading ? (
+              <ExploreGridSkeleton count={8} columns={cn("grid gap-5", showMap ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4")} />
+            ) : (
+              <>
+                {filteredDBListings.length > 0 && (
+                  <DBListingsWithRatings
+                    items={filteredDBListings}
+                    showMap={showMap}
+                    destName={destName}
+                    hasDestCoords={hasDestCoords}
+                  />
+                )}
+                <div className={cn(
+                  "grid gap-5",
+                  showMap
+                    ? "grid-cols-1 sm:grid-cols-2"
+                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
+                )}>
+                  {filteredProperties.map((property) => (
+                    <div key={property.id} onMouseEnter={() => setHoveredProperty(property.id)} onMouseLeave={() => setHoveredProperty(null)}>
+                      <PropertyCard {...property} />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
             {totalResults === 0 && (
               <div className="text-center py-20">
                 <Search className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />

@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import BlockedDatesCalendar from "@/components/BlockedDatesCalendar";
 import HostBookingManager from "@/components/dashboard/HostBookingManager";
 import { useTranslation } from "react-i18next";
+import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton";
 
 const Dashboard = () => {
   const { user, loading: authLoading, isHost, isAdmin, profile } = useAuth();
@@ -59,12 +60,7 @@ const Dashboard = () => {
   };
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (isAdmin) return <Navigate to="/admin" replace />;

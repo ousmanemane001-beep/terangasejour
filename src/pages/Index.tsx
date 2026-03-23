@@ -104,13 +104,24 @@ const CategorySection = ({
   if (isLoading) {
     return (
       <div className="max-w-[1200px] mx-auto px-4 md:px-6">
-        <div className="h-6 w-48 bg-muted rounded animate-pulse mb-4" />
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="shimmer h-6 w-48 rounded-lg mb-4" />
+        <div className="md:hidden flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="shrink-0 w-[46%]">
+              <div className="shimmer aspect-[4/3] rounded-2xl" />
+              <div className="mt-2 space-y-2">
+                <div className="shimmer h-4 w-3/4 rounded-lg" />
+                <div className="shimmer h-3 w-1/2 rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="space-y-3">
-              <div className="aspect-[4/3] bg-muted rounded-2xl animate-pulse" />
-              <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
-              <div className="h-3 w-1/2 bg-muted rounded animate-pulse" />
+              <div className="shimmer aspect-[4/3] rounded-2xl" />
+              <div className="shimmer h-4 w-3/4 rounded-lg" />
+              <div className="shimmer h-3 w-1/2 rounded-lg" />
             </div>
           ))}
         </div>
