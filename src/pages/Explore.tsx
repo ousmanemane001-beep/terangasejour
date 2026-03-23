@@ -11,6 +11,7 @@ import ExploreFilters from "@/components/explore/ExploreFilters";
 import HostCTA from "@/components/explore/HostCTA";
 import { properties } from "@/data/properties";
 import { useListings, type DBListing } from "@/hooks/useListings";
+import ExploreGridSkeleton from "@/components/skeletons/ExploreGridSkeleton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { haversineKm, formatDistance } from "@/lib/haversine";
