@@ -1,14 +1,16 @@
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { format, differenceInDays } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import {
   Loader2, CheckCircle, ChevronDown, Shield,
-  Zap, Clock, AlertTriangle, CalendarDays,
+  Zap, Clock, AlertTriangle, CalendarDays, Eye, EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreateBooking } from "@/hooks/useBookings";
@@ -18,6 +20,7 @@ import { useCreateNotification } from "@/hooks/useAdmin";
 import PaymentMethodSelector, { type PaymentMethod } from "@/components/PaymentMethodSelector";
 import CountdownTimer from "@/components/booking/CountdownTimer";
 import BookingStatusBadge from "@/components/booking/BookingStatusBadge";
+import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
