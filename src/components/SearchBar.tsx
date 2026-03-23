@@ -90,21 +90,19 @@ const SearchBar = () => {
 
   return (
     <div className="w-full" style={{ zIndex: 1000 }}>
-      {/* Desktop */}
-      <div className="hidden md:flex items-end gap-4">
-        <div className="relative flex-1 min-w-[180px]" style={{ zIndex: 1000 }}>
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <MapPin className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">{t("search.destination")}</span>
-          </div>
-          <div className={fieldStyle} onClick={() => inputRef.current?.focus()}>
+      {/* Desktop — single unified bar */}
+      <div className="hidden md:flex items-center bg-white border border-border rounded-full shadow-lg h-[60px] pl-6 pr-2 relative" style={{ zIndex: 1000 }}>
+        {/* Destination */}
+        <div className="relative flex-1 min-w-0 pr-4" style={{ zIndex: 1000 }}>
+          <div className="flex flex-col justify-center cursor-pointer" onClick={() => inputRef.current?.focus()}>
+            <span className="text-[13px] font-semibold text-foreground leading-tight">{t("search.destination")}</span>
             <Input
               ref={inputRef}
               placeholder={t("search.cityOrArea")}
               value={destination}
               onChange={(e) => { setDestination(e.target.value); setSelectedDest(null); setShowSuggestions(true); }}
               onFocus={() => setShowSuggestions(true)}
-              className="border-0 bg-transparent h-auto p-0 text-[15px] focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground font-normal placeholder:text-muted-foreground"
+              className="border-0 bg-transparent h-auto p-0 text-[14px] focus-visible:ring-0 focus-visible:ring-offset-0 text-muted-foreground font-normal placeholder:text-muted-foreground"
             />
           </div>
           {showSuggestions && (
@@ -120,79 +118,63 @@ const SearchBar = () => {
           )}
         </div>
 
-        <div className="min-w-[140px]">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">{t("search.arrival")}</span>
-          </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <div className={cn(fieldStyle)}>
-                <span className={cn("text-[15px] flex-1", checkIn ? "text-foreground" : "text-muted-foreground")}>
-                  {checkIn ? format(checkIn, "dd/MM/yyyy", { locale: dateLocale }) : datePlaceholder}
-                </span>
-                <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
-              </div>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start" side="bottom">
+        {/* Divider */}
+        <div className="w-px h-8 bg-border shrink-0" />
+
+        {/* Dates */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <div className="flex-1 min-w-0 px-4 flex flex-col justify-center cursor-pointer">
+              <span className="text-[13px] font-semibold text-foreground leading-tight">Dates</span>
+              <span className="text-[14px] text-muted-foreground truncate">
+                {checkIn && checkOut
+                  ? `${format(checkIn, "dd MMM", { locale: dateLocale })} → ${format(checkOut, "dd MMM", { locale: dateLocale })}`
+                  : checkIn
+                    ? format(checkIn, "dd MMM", { locale: dateLocale })
+                    : t("search.when")}
+              </span>
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="center" side="bottom">
+            {!checkIn ? (
               <CalendarComponent mode="single" selected={checkIn}
                 onSelect={(d) => { setCheckIn(d); if (checkOut && d && d >= checkOut) setCheckOut(undefined); }}
                 disabled={(date) => date < new Date()} className={cn("pointer-events-auto")} />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <div className="min-w-[140px]">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">{t("search.departure")}</span>
-          </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <div className={cn(fieldStyle)}>
-                <span className={cn("text-[15px] flex-1", checkOut ? "text-foreground" : "text-muted-foreground")}>
-                  {checkOut ? format(checkOut, "dd/MM/yyyy", { locale: dateLocale }) : datePlaceholder}
-                </span>
-                <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
-              </div>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start" side="bottom">
+            ) : (
               <CalendarComponent mode="single" selected={checkOut}
                 onSelect={setCheckOut}
                 disabled={(date) => date < (checkIn || new Date())} className={cn("pointer-events-auto")} />
-            </PopoverContent>
-          </Popover>
-        </div>
+            )}
+          </PopoverContent>
+        </Popover>
 
-        <div className="min-w-[140px]">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Users className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold text-foreground">{t("search.travelers")}</span>
-          </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <div className={cn(fieldStyle, "justify-between")}>
-                <span className="text-[15px] text-foreground">{guestLabel}</span>
-                <svg className="w-4 h-4 text-muted-foreground shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
-              </div>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-4" align="start">
-              <p className="text-sm font-semibold text-foreground mb-3">{t("search.travelers")}</p>
-              <div className="flex items-center justify-between">
-                <button className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-foreground hover:border-foreground/30 transition-colors" onClick={() => setGuestCount(Math.max(1, guestCount - 1))}>-</button>
-                <span className="font-semibold text-foreground text-lg">{guestCount}</span>
-                <button className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-foreground hover:border-foreground/30 transition-colors" onClick={() => setGuestCount(Math.min(12, guestCount + 1))}>+</button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+        {/* Divider */}
+        <div className="w-px h-8 bg-border shrink-0" />
 
-        <div className="shrink-0 pb-[1px]">
-          <div className="mb-1.5 h-5" />
-          <button onClick={handleSearch} className="h-[56px] px-8 bg-primary hover:bg-primary/90 text-white rounded-[28px] font-semibold text-base flex items-center justify-center gap-2 transition-colors whitespace-nowrap">
-            {t("search.search")}
-          </button>
-        </div>
+        {/* Voyageurs */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <div className="flex-1 min-w-0 px-4 flex flex-col justify-center cursor-pointer">
+              <span className="text-[13px] font-semibold text-foreground leading-tight">{t("search.travelers")}</span>
+              <span className="text-[14px] text-muted-foreground truncate">
+                {guestCount > 1 ? guestLabel : (i18n.language === "fr" ? "Ajouter des ..." : "Add guests ...")}
+              </span>
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-4" align="end">
+            <p className="text-sm font-semibold text-foreground mb-3">{t("search.travelers")}</p>
+            <div className="flex items-center justify-between">
+              <button className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-foreground hover:border-foreground/30 transition-colors" onClick={() => setGuestCount(Math.max(1, guestCount - 1))}>-</button>
+              <span className="font-semibold text-foreground text-lg">{guestCount}</span>
+              <button className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-foreground hover:border-foreground/30 transition-colors" onClick={() => setGuestCount(Math.min(12, guestCount + 1))}>+</button>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Search button */}
+        <button onClick={handleSearch} className="shrink-0 w-12 h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-colors ml-2">
+          <Search className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Mobile */}
