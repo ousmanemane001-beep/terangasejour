@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import PropertyDetailSkeleton from "@/components/skeletons/PropertyDetailSkeleton";
 
 const amenityMap: Record<string, { icon: typeof Wifi; labelKey: string }> = {
   wifi: { icon: Wifi, labelKey: "Wi-Fi" },
