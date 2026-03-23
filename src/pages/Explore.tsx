@@ -22,7 +22,7 @@ const Explore = () => {
   const [searchParams] = useSearchParams();
   const destinationParam = searchParams.get("destination") || "";
   const searchParamsKey = searchParams.toString();
-  const { data: dbListings } = useListings();
+  const { data: dbListings, isLoading: dbLoading } = useListings();
 
   const typeParam = searchParams.get("type") || "";
   const [destination, setDestination] = useState(destinationParam);
