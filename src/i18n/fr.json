@@ -221,7 +221,8 @@
     "cgu": "CGU",
     "privacy": "Confidentialité",
     "refundPolicy": "Politique de remboursement",
-    "allRights": "Tous droits réservés."
+    "allRights": "Tous droits réservés.",
+    "techNotice": "Teranga utilise des technologies pour améliorer votre expérience"
   },
   "bottomNav": {
     "home": "Accueil",
