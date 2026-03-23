@@ -41,6 +41,36 @@ const HOLD_MINUTES = 30;
 
 type BookingStep = "dates" | "confirm" | "payment" | "confirmed" | "expired";
 
+const STORAGE_KEY = "teranga_booking_draft";
+
+interface BookingDraft {
+  listingId: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  savedAt: number;
+}
+
+const saveDraft = (draft: BookingDraft) => {
+  try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(draft)); } catch {}
+};
+
+const loadDraft = (listingId: string): BookingDraft | null => {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const draft: BookingDraft = JSON.parse(raw);
+    if (draft.listingId !== listingId) return null;
+    // Expire after 1 hour
+    if (Date.now() - draft.savedAt > 3600000) { sessionStorage.removeItem(STORAGE_KEY); return null; }
+    return draft;
+  } catch { return null; }
+};
+
+const clearDraft = () => {
+  try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+};
+
 const BookingWidget = ({
   listingId, pricePerNight, maxGuests, bookingMode = "instant",
   hostId, listingImage, listingTitle,
@@ -67,6 +97,30 @@ const BookingWidget = ({
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [checkOutOpen, setCheckOutOpen] = useState(false);
 
+  // Login dialog state
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+
+  // Restore draft on mount or after login
+  useEffect(() => {
+    const draft = loadDraft(listingId);
+    if (draft && user) {
+      setCheckIn(new Date(draft.checkIn));
+      setCheckOut(new Date(draft.checkOut));
+      setGuests(draft.guests);
+      clearDraft();
+      toast.success(t("bookingWidget.dataSaved"));
+      setTimeout(() => setStep("confirm"), 300);
+    } else if (draft && !user) {
+      setCheckIn(new Date(draft.checkIn));
+      setCheckOut(new Date(draft.checkOut));
+      setGuests(draft.guests);
+    }
+  }, [listingId, user]);
+
   const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
   const subtotal = nights * pricePerNight;
   const serviceFee = Math.round(subtotal * SERVICE_FEE_RATE);
@@ -84,7 +138,6 @@ const BookingWidget = ({
     if (!checkIn) return true;
     if (date <= checkIn) return true;
     if (date < today) return true;
-    // Check if any date between checkIn and this date is disabled
     const current = new Date(checkIn);
     current.setDate(current.getDate() + 1);
     while (current < date) {
@@ -109,9 +162,31 @@ const BookingWidget = ({
   };
 
   const handleReserve = () => {
-    if (!user) { toast.error(t("bookingWidget.loginToBook")); navigate("/login"); return; }
     if (!checkIn || !checkOut || nights < 1) { toast.error(t("listing.selectDates")); return; }
+    if (!user) {
+      // Save draft and show login dialog
+      saveDraft({ listingId, checkIn: checkIn.toISOString(), checkOut: checkOut.toISOString(), guests, savedAt: Date.now() });
+      setShowLoginDialog(true);
+      return;
+    }
     setStep("confirm");
+  };
+
+  const handleDialogLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginEmail || !loginPassword) { toast.error(t("auth.fillAllFields")); return; }
+    setLoginLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
+      if (error) {
+        toast.error(error.message === "Invalid login credentials" ? t("auth.invalidCredentials") : error.message);
+        return;
+      }
+      setShowLoginDialog(false);
+      toast.success(t("bookingWidget.dataSaved"));
+      // The useEffect will restore draft and go to confirm
+    } catch { toast.error(t("auth.error")); }
+    finally { setLoginLoading(false); }
   };
 
   const handleConfirmBooking = async () => {
