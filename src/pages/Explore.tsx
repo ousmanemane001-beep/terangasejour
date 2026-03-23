@@ -187,26 +187,32 @@ const Explore = () => {
                 </select>
               </div>
             </div>
-            {filteredDBListings.length > 0 && (
-              <DBListingsWithRatings
-                items={filteredDBListings}
-                showMap={showMap}
-                destName={destName}
-                hasDestCoords={hasDestCoords}
-              />
-            )}
-            <div className={cn(
-              "grid gap-5",
-              showMap
-                ? "grid-cols-1 sm:grid-cols-2"
-                : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
-            )}>
-              {filteredProperties.map((property) => (
-                <div key={property.id} onMouseEnter={() => setHoveredProperty(property.id)} onMouseLeave={() => setHoveredProperty(null)}>
-                  <PropertyCard {...property} />
+            {dbLoading ? (
+              <ExploreGridSkeleton count={8} columns={cn("grid gap-5", showMap ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4")} />
+            ) : (
+              <>
+                {filteredDBListings.length > 0 && (
+                  <DBListingsWithRatings
+                    items={filteredDBListings}
+                    showMap={showMap}
+                    destName={destName}
+                    hasDestCoords={hasDestCoords}
+                  />
+                )}
+                <div className={cn(
+                  "grid gap-5",
+                  showMap
+                    ? "grid-cols-1 sm:grid-cols-2"
+                    : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
+                )}>
+                  {filteredProperties.map((property) => (
+                    <div key={property.id} onMouseEnter={() => setHoveredProperty(property.id)} onMouseLeave={() => setHoveredProperty(null)}>
+                      <PropertyCard {...property} />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
             {totalResults === 0 && (
               <div className="text-center py-20">
                 <Search className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
