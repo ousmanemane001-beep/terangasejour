@@ -471,6 +471,48 @@ const BookingWidget = ({
           <Zap className="w-4 h-4 mr-2" />
           {nights > 0 ? `${t("listing.bookNow")}` : t("listing.selectDates")}
         </Button>
+
+        {/* Login Dialog */}
+        <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-display text-xl text-center">{t("bookingWidget.loginToBook")}</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground text-center">{t("bookingWidget.loginToBookDesc")}</p>
+            <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 text-center">
+              <p className="text-xs text-primary font-medium">✓ {t("bookingWidget.dataSaved")}</p>
+            </div>
+            <form onSubmit={handleDialogLogin} className="space-y-3">
+              <Input
+                type="email" placeholder={t("auth.email")}
+                className="h-11 rounded-lg" value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+              />
+              <div className="relative">
+                <Input
+                  type={showLoginPassword ? "text" : "password"} placeholder={t("auth.password")}
+                  className="h-11 rounded-lg pr-10" value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                />
+                <button type="button" onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <Button type="submit" disabled={loginLoading}
+                className="w-full rounded-xl h-11 bg-primary text-primary-foreground font-medium">
+                {loginLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("auth.loginBtn")}
+              </Button>
+            </form>
+            <SocialLoginButtons variant="icon-only" />
+            <p className="text-xs text-center text-muted-foreground">
+              {t("auth.noAccount")}{" "}
+              <Link to="/signup" className="text-primary font-medium hover:underline" onClick={() => setShowLoginDialog(false)}>
+                {t("nav.signupCreate")}
+              </Link>
+            </p>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
