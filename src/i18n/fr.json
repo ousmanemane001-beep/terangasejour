@@ -368,6 +368,7 @@
     "loginToBook": "Connectez-vous pour réserver",
     "loginToBookDesc": "Connectez-vous pour finaliser votre réservation. Vos dates et informations sont sauvegardées.",
     "dataSaved": "Vos informations ont été sauvegardées",
+    "autoSaved": "Vos informations sont automatiquement sauvegardées",
     "loginToRequest": "Connectez-vous pour faire une demande.",
     "fillNameEmail": "Veuillez remplir au minimum votre nom et email.",
     "newBookingNotif": "Nouvelle réservation",

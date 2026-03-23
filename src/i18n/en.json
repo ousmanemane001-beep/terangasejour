@@ -368,6 +368,7 @@
     "loginToBook": "Log in to book",
     "loginToBookDesc": "Log in to complete your booking. Your dates and info are saved.",
     "dataSaved": "Your information has been saved",
+    "autoSaved": "Your information is automatically saved",
     "loginToRequest": "Log in to make a request.",
     "fillNameEmail": "Please fill in at least your name and email.",
     "newBookingNotif": "New booking",
