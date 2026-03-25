@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,13 +8,30 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsAdmin } from "@/hooks/useAdmin";
 import { toast } from "sonner";
 import { ShieldCheck, X, Loader2, Image, MapPin, FileText } from "lucide-react";
 
 const AdminVerification = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { data: isAdmin, isLoading: adminLoading } = useIsAdmin();
   const qc = useQueryClient();
   const [updating, setUpdating] = useState<string | null>(null);
+
+  if (authLoading || adminLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const { data: listings, isLoading } = useQuery({
     queryKey: ["admin-listings"],
@@ -26,7 +44,7 @@ const AdminVerification = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && isAdmin === true,
   });
 
   const handleVerify = async (id: string, verified: boolean) => {
