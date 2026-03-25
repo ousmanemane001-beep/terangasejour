@@ -18,10 +18,6 @@ export interface Booking {
   created_at: string;
   expires_at: string | null;
   guest_name: string | null;
-  guest_email: string | null;
-  guest_phone: string | null;
-  passport_number: string | null;
-  nationality: string | null;
 }
 
 export function useCreateBooking() {
