@@ -109,6 +109,7 @@ const Dashboard = () => {
 
   const hostTabs = [
     { id: "overview", label: t("dashboard.overview"), icon: TrendingUp },
+    { id: "analytics", label: t("dashboard.analytics"), icon: BarChart3 },
     { id: "properties", label: t("dashboard.myListings"), icon: Home },
     { id: "bookings", label: t("dashboard.bookings"), icon: CalendarDays },
     { id: "revenue", label: t("dashboard.revenue"), icon: CreditCard },
