@@ -414,5 +414,19 @@
     "editDates": "Modifier les dates",
     "confirmReservation": "Confirmer la réservation",
     "iHavePaid": "J'ai effectué le paiement"
+  },
+  "analytics": {
+    "occupancyRate": "Taux d'occupation",
+    "avgStay": "Durée moyenne",
+    "totalGuests": "Voyageurs confirmés",
+    "pendingBookings": "En attente",
+    "revenueTrend": "Tendance des revenus",
+    "bookingStatus": "Statut des réservations",
+    "bookingsPerMonth": "Réservations par mois",
+    "revenueByListing": "Revenus par logement",
+    "revenue": "Revenus",
+    "bookings": "Réservations",
+    "expired": "Expirée",
+    "noData": "Aucune donnée disponible"
   }
 }

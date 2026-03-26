@@ -414,5 +414,19 @@
     "editDates": "Edit dates",
     "confirmReservation": "Confirm reservation",
     "iHavePaid": "I have made the payment"
+  },
+  "analytics": {
+    "occupancyRate": "Occupancy rate",
+    "avgStay": "Avg. stay",
+    "totalGuests": "Confirmed guests",
+    "pendingBookings": "Pending",
+    "revenueTrend": "Revenue trend",
+    "bookingStatus": "Booking status",
+    "bookingsPerMonth": "Bookings per month",
+    "revenueByListing": "Revenue by listing",
+    "revenue": "Revenue",
+    "bookings": "Bookings",
+    "expired": "Expired",
+    "noData": "No data available"
   }
 }
