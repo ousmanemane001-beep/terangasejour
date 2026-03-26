@@ -24,6 +24,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import BlockedDatesCalendar from "@/components/BlockedDatesCalendar";
 import HostBookingManager from "@/components/dashboard/HostBookingManager";
+import HostAnalytics from "@/components/dashboard/HostAnalytics";
 import { useTranslation } from "react-i18next";
 import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton";
 
