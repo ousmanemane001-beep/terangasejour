@@ -303,6 +303,8 @@ const Dashboard = () => {
             </>
           )}
 
+          {isHost && activeTab === "analytics" && <HostAnalytics />}
+
           {isHost && activeTab === "bookings" && <HostBookingManager />}
 
           {isHost && activeTab === "revenue" && (
