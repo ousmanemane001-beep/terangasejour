@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Home, CalendarDays, Star, TrendingUp, Plus, Settings,
-  CreditCard, MapPin, Loader2, Eye, Trash2, Heart, MessageCircle, Pencil, AlertTriangle,
+  CreditCard, MapPin, Loader2, Eye, Trash2, Heart, MessageCircle, Pencil, AlertTriangle, BarChart3,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOwnerListings, useOwnerBookings, useGuestBookings } from "@/hooks/useOwnerData";
@@ -24,6 +24,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import BlockedDatesCalendar from "@/components/BlockedDatesCalendar";
 import HostBookingManager from "@/components/dashboard/HostBookingManager";
+import HostAnalytics from "@/components/dashboard/HostAnalytics";
 import { useTranslation } from "react-i18next";
 import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton";
 
@@ -108,6 +109,7 @@ const Dashboard = () => {
 
   const hostTabs = [
     { id: "overview", label: t("dashboard.overview"), icon: TrendingUp },
+    { id: "analytics", label: t("dashboard.analytics"), icon: BarChart3 },
     { id: "properties", label: t("dashboard.myListings"), icon: Home },
     { id: "bookings", label: t("dashboard.bookings"), icon: CalendarDays },
     { id: "revenue", label: t("dashboard.revenue"), icon: CreditCard },
@@ -300,6 +302,8 @@ const Dashboard = () => {
               )}
             </>
           )}
+
+          {isHost && activeTab === "analytics" && <HostAnalytics />}
 
           {isHost && activeTab === "bookings" && <HostBookingManager />}
 
