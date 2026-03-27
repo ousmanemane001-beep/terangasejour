@@ -94,8 +94,6 @@ const BookingWidget = ({
   const [step, setStep] = useState<BookingStep>("dates");
   const [bookingId, setBookingId] = useState<string>();
   const [expiresAt, setExpiresAt] = useState<string>();
-  const [checkInOpen, setCheckInOpen] = useState(false);
-  const [checkOutOpen, setCheckOutOpen] = useState(false);
 
   // Login dialog state
   const [showLoginDialog, setShowLoginDialog] = useState(false);
