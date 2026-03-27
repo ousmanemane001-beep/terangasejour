@@ -7,8 +7,8 @@ import {
   Zap, Clock, AlertTriangle, CalendarDays, Eye, EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import BookingCalendar from "@/components/booking/BookingCalendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -94,8 +94,6 @@ const BookingWidget = ({
   const [step, setStep] = useState<BookingStep>("dates");
   const [bookingId, setBookingId] = useState<string>();
   const [expiresAt, setExpiresAt] = useState<string>();
-  const [checkInOpen, setCheckInOpen] = useState(false);
-  const [checkOutOpen, setCheckOutOpen] = useState(false);
 
   // Login dialog state
   const [showLoginDialog, setShowLoginDialog] = useState(false);
@@ -155,19 +153,6 @@ const BookingWidget = ({
     return disabledDates.some(d => d.toDateString() === date.toDateString());
   };
 
-  const handleCheckInSelect = (date: Date | undefined) => {
-    if (!date) return;
-    setCheckIn(date);
-    setCheckOut(undefined);
-    setCheckInOpen(false);
-    setTimeout(() => setCheckOutOpen(true), 200);
-  };
-
-  const handleCheckOutSelect = (date: Date | undefined) => {
-    if (!date) return;
-    setCheckOut(date);
-    setCheckOutOpen(false);
-  };
 
   const handleReserve = () => {
     if (!checkIn || !checkOut || nights < 1) { toast.error(t("listing.selectDates")); return; }
@@ -387,50 +372,31 @@ const BookingWidget = ({
           <span className="text-muted-foreground text-sm">{t("listing.perNight")}</span>
         </div>
 
-        {/* Date pickers */}
+        {/* Date display */}
         <div className="grid grid-cols-2 gap-2">
-          <Popover open={checkInOpen} onOpenChange={setCheckInOpen}>
-            <PopoverTrigger asChild>
-              <button className="text-left rounded-xl border border-border p-3 hover:border-primary/40 transition-colors">
-                <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{t("search.arrival")}</label>
-                <p className="text-sm text-foreground font-medium mt-0.5">
-                  {checkIn ? format(checkIn, "d MMM yyyy", { locale: dateLocale }) : t("bookingWidget.select")}
-                </p>
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={checkIn}
-                onSelect={handleCheckInSelect}
-                disabled={isDateDisabled}
-                locale={dateLocale}
-                className="p-3 pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Popover open={checkOutOpen} onOpenChange={setCheckOutOpen}>
-            <PopoverTrigger asChild>
-              <button className="text-left rounded-xl border border-border p-3 hover:border-primary/40 transition-colors">
-                <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{t("search.departure")}</label>
-                <p className="text-sm text-foreground font-medium mt-0.5">
-                  {checkOut ? format(checkOut, "d MMM yyyy", { locale: dateLocale }) : t("bookingWidget.select")}
-                </p>
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                mode="single"
-                selected={checkOut}
-                onSelect={handleCheckOutSelect}
-                disabled={isCheckOutDisabled}
-                locale={dateLocale}
-                className="p-3 pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
+          <div className="text-left rounded-xl border border-border p-3">
+            <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{t("search.arrival")}</label>
+            <p className="text-sm text-foreground font-medium mt-0.5">
+              {checkIn ? format(checkIn, "d MMM yyyy", { locale: dateLocale }) : t("bookingWidget.select")}
+            </p>
+          </div>
+          <div className="text-left rounded-xl border border-border p-3">
+            <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{t("search.departure")}</label>
+            <p className="text-sm text-foreground font-medium mt-0.5">
+              {checkOut ? format(checkOut, "d MMM yyyy", { locale: dateLocale }) : t("bookingWidget.select")}
+            </p>
+          </div>
         </div>
+
+        {/* Inline calendar */}
+        <BookingCalendar
+          checkIn={checkIn}
+          checkOut={checkOut}
+          onSelectCheckIn={(d) => { setCheckIn(d); setCheckOut(undefined); }}
+          onSelectCheckOut={(d) => setCheckOut(d)}
+          isDateDisabled={isDateDisabled}
+          isCheckOutDisabled={isCheckOutDisabled}
+        />
 
         {/* Guests */}
         <Popover>
