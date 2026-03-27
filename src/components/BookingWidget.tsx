@@ -153,19 +153,6 @@ const BookingWidget = ({
     return disabledDates.some(d => d.toDateString() === date.toDateString());
   };
 
-  const handleCheckInSelect = (date: Date | undefined) => {
-    if (!date) return;
-    setCheckIn(date);
-    setCheckOut(undefined);
-    setCheckInOpen(false);
-    setTimeout(() => setCheckOutOpen(true), 200);
-  };
-
-  const handleCheckOutSelect = (date: Date | undefined) => {
-    if (!date) return;
-    setCheckOut(date);
-    setCheckOutOpen(false);
-  };
 
   const handleReserve = () => {
     if (!checkIn || !checkOut || nights < 1) { toast.error(t("listing.selectDates")); return; }
