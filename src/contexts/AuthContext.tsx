@@ -65,9 +65,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
+    let initialLoadDone = false;
+
+    // Safety timeout: never stay loading more than 5 seconds
+    const safetyTimer = setTimeout(() => {
+      if (mounted && !initialLoadDone) {
+        console.warn("Auth loading safety timeout reached");
+        initialLoadDone = true;
+        setLoading(false);
+      }
+    }, 5000);
 
     // Set up listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
@@ -83,18 +93,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           } catch (err) {
             console.error("Error loading profile:", err);
           }
-          if (mounted) setLoading(false);
+          if (mounted) {
+            initialLoadDone = true;
+            setLoading(false);
+          }
         }, 0);
       } else {
         setProfile(null);
         setIsAdmin(false);
-        if (mounted) setLoading(false);
+        if (mounted) {
+          initialLoadDone = true;
+          setLoading(false);
+        }
       }
     });
 
     // Then check existing session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return;
+      if (!mounted || initialLoadDone) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -107,11 +123,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error("Error loading profile:", err);
         }
       }
-      if (mounted) setLoading(false);
+      if (mounted) {
+        initialLoadDone = true;
+        setLoading(false);
+      }
     });
 
     return () => {
       mounted = false;
+      clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
   }, []);
