@@ -7,8 +7,8 @@ import {
   Zap, Clock, AlertTriangle, CalendarDays, Eye, EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import BookingCalendar from "@/components/booking/BookingCalendar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
