@@ -45,49 +45,51 @@ const ScrollToTop = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ScrollToTop />
-          <div className="pb-14 md:pb-0">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/explore" element={<Explore />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/map" element={<MapPage />} />
-              <Route path="/discover" element={<DiscoverSenegal />} />
-              <Route path="/explore-senegal" element={<ExploreSenegal />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/publish" element={<Publish />} />
-              <Route path="/certification" element={<Certification />} />
-              <Route path="/property/:id" element={<PropertyDetail />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dashboard/:tab" element={<Dashboard />} />
-              <Route path="/create-listing" element={<CreateListing />} />
-              <Route path="/edit-listing/:id" element={<EditListing />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/become-host" element={<BecomeHost />} />
-              <Route path="/favorites" element={<Favorites />} />
-              <Route path="/admin/verification" element={<AdminVerification />} />
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/cgu" element={<CGU />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/refund-policy" element={<RefundPolicy />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </div>
-          <BottomNav />
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <ScrollToTop />
+            <div className="pb-14 md:pb-0">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/explore" element={<Explore />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/map" element={<MapPage />} />
+                <Route path="/discover" element={<DiscoverSenegal />} />
+                <Route path="/explore-senegal" element={<ExploreSenegal />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/publish" element={<Publish />} />
+                <Route path="/certification" element={<Certification />} />
+                <Route path="/property/:id" element={<PropertyDetail />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard/:tab" element={<Dashboard />} />
+                <Route path="/create-listing" element={<CreateListing />} />
+                <Route path="/edit-listing/:id" element={<EditListing />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/become-host" element={<BecomeHost />} />
+                <Route path="/favorites" element={<Favorites />} />
+                <Route path="/admin/verification" element={<AdminVerification />} />
+                <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/messages" element={<Messages />} />
+                <Route path="/cgu" element={<CGU />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/refund-policy" element={<RefundPolicy />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+            <BottomNav />
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
