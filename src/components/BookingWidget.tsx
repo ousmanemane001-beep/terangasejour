@@ -156,6 +156,44 @@ const BookingWidget = ({
 
   const isRequestMode = bookingMode === "request";
 
+  const callCreatePaymentFunction = async (bookingId: string) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const accessToken = session?.access_token;
+    if (!accessToken) {
+      throw new Error("Session expirée. Reconnectez-vous puis réessayez.");
+    }
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payment`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ booking_id: bookingId }),
+      }
+    );
+
+    const payload = await response.json().catch(() => ({} as any));
+
+    if (!response.ok) {
+      const message =
+        payload?.details || payload?.error || `Erreur paiement (${response.status})`;
+      throw new Error(message);
+    }
+
+    if (!payload?.payment_url) {
+      throw new Error("Lien de paiement introuvable.");
+    }
+
+    return payload as { payment_url: string; token?: string };
+  };
+
   const handleReserve = () => {
     if (!checkIn || !checkOut || nights < 1) { toast.error(t("listing.selectDates")); return; }
     if (!user) {
@@ -234,60 +272,26 @@ const BookingWidget = ({
         });
       }
 
-      // Redirect to PayDunya payment
       toast.info("Redirection vers le paiement...");
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.access_token) {
-        setStep("payment");
-        toast.error("Session expirée. Reconnectez-vous puis réessayez.");
-        return;
-      }
-
-      const { data: payData, error: payError } = await supabase.functions.invoke("create-payment", {
-        body: { booking_id: result.id },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      if (payError || !payData?.payment_url) {
-        console.error("Payment error:", payError, payData);
-        setStep("payment");
-        toast.error(payData?.details || "Impossible de créer le lien de paiement. Réessayez.");
-        return;
-      }
-      // Open PayDunya checkout
+      const payData = await callCreatePaymentFunction(result.id);
       window.location.href = payData.payment_url;
-    } catch (err: any) { toast.error(err.message || t("bookingWidget.bookingError")); }
+    } catch (err: any) {
+      console.error("Payment creation error:", err);
+      setStep("payment");
+      toast.error(err?.message || t("bookingWidget.bookingError"));
+    }
   };
 
   const handleRetryPayment = async () => {
     if (!bookingId) return;
     try {
       toast.info("Redirection vers le paiement...");
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.access_token) {
-        toast.error("Session expirée. Reconnectez-vous puis réessayez.");
-        return;
-      }
-
-      const { data: payData, error: payError } = await supabase.functions.invoke("create-payment", {
-        body: { booking_id: bookingId },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      if (payError || !payData?.payment_url) {
-        toast.error(payData?.details || "Impossible de créer le lien de paiement. Réessayez.");
-        return;
-      }
+      const payData = await callCreatePaymentFunction(bookingId);
       window.location.href = payData.payment_url;
-    } catch (err: any) { toast.error(err.message || "Erreur de paiement"); }
+    } catch (err: any) {
+      console.error("Payment retry error:", err);
+      toast.error(err?.message || "Erreur de paiement");
+    }
   };
 
   const handleExpire = useCallback(async () => {
