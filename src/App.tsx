@@ -66,6 +66,7 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/publish" element={<Publish />} />
                 <Route path="/certification" element={<Certification />} />
                 <Route path="/property/:id" element={<PropertyDetail />} />
