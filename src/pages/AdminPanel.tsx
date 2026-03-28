@@ -204,13 +204,13 @@ const AdminPanel = () => {
         reject: `Votre logement "${listing.title}" n'a pas été approuvé. Veuillez vérifier les critères.`,
         suspend: `Votre logement "${listing.title}" a été suspendu.`,
       };
-      await supabase.from("notifications").insert({
-        user_id: listing.user_id,
-        type: `listing_${action}`,
-        title: action === "approve" ? "Logement approuvé !" : action === "reject" ? "Logement non approuvé" : "Logement suspendu",
-        message: msgs[action],
-        data: { listing_id: id },
-      } as any);
+      await supabase.rpc("create_notification", {
+        _user_id: listing.user_id,
+        _type: `listing_${action}`,
+        _title: action === "approve" ? "Logement approuvé !" : action === "reject" ? "Logement non approuvé" : "Logement suspendu",
+        _message: msgs[action],
+        _data: { listing_id: id },
+      });
     }
     toast.success(action === "approve" ? "Logement approuvé" : action === "reject" ? "Logement rejeté" : "Logement suspendu");
     qc.invalidateQueries({ queryKey: ["admin-all-listings"] });
@@ -232,13 +232,13 @@ const AdminPanel = () => {
 
     const listing = allListings?.find((l) => l.id === remarkListingId);
     if (listing) {
-      await supabase.from("notifications").insert({
-        user_id: listing.user_id,
-        type: "listing_modification_requested",
-        title: "Modification demandée",
-        message: `Votre logement "${listing.title}" nécessite des modifications : ${remarkText.trim()}`,
-        data: { listing_id: remarkListingId },
-      } as any);
+      await supabase.rpc("create_notification", {
+        _user_id: listing.user_id,
+        _type: "listing_modification_requested",
+        _title: "Modification demandée",
+        _message: `Votre logement "${listing.title}" nécessite des modifications : ${remarkText.trim()}`,
+        _data: { listing_id: remarkListingId },
+      });
     }
 
     toast.success("Demande de modification envoyée");

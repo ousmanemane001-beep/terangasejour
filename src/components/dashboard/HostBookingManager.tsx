@@ -552,6 +552,17 @@ export default function HostBookingManager() {
           {
             onSuccess: async () => {
               toast.success("Demande acceptée !");
+              // Notify guest
+              const listingTitle = listings?.find(l => l.id === item.listing_id)?.title || "votre logement";
+              try {
+                await supabase.rpc("create_notification", {
+                  _user_id: item.guest_id,
+                  _type: "booking_confirmed",
+                  _title: "Réservation confirmée !",
+                  _message: `Votre demande pour "${listingTitle}" a été acceptée.`,
+                  _data: { listing_id: item.listing_id },
+                });
+              } catch {}
               const conflicting = pendingItems.filter(
                 (p) => p.id !== item.id && p.listing_id === item.listing_id && datesOverlap(p, item)
               );
@@ -576,6 +587,17 @@ export default function HostBookingManager() {
         } as any).eq("id", item.id);
         if (error) { toast.error(error.message); return; }
         toast.success("Réservation confirmée !");
+        // Notify guest
+        const listingTitle2 = listings?.find(l => l.id === item.listing_id)?.title || "votre logement";
+        try {
+          await supabase.rpc("create_notification", {
+            _user_id: item.guest_id,
+            _type: "booking_confirmed",
+            _title: "Réservation confirmée !",
+            _message: `Votre réservation pour "${listingTitle2}" a été confirmée.`,
+            _data: { listing_id: item.listing_id },
+          });
+        } catch {}
         const conflicting = pendingItems.filter(
           (p) => p.id !== item.id && p.listing_id === item.listing_id && datesOverlap(p, item)
         );
@@ -600,10 +622,24 @@ export default function HostBookingManager() {
   const handleDecline = async (item: UnifiedBooking, reason: string) => {
     setActionLoading(true);
     try {
+      const listingTitle = listings?.find(l => l.id === item.listing_id)?.title || "votre logement";
       if (item.type === "request") {
         respondToRequest.mutate(
           { requestId: item.id, status: "rejected", response: reason },
-          { onSuccess: () => toast.success("Demande refusée.") }
+          {
+            onSuccess: async () => {
+              toast.success("Demande refusée.");
+              try {
+                await supabase.rpc("create_notification", {
+                  _user_id: item.guest_id,
+                  _type: "booking_declined",
+                  _title: "Demande refusée",
+                  _message: `Votre demande pour "${listingTitle}" a été refusée. ${reason ? `Motif : ${reason}` : ""}`,
+                  _data: { listing_id: item.listing_id },
+                });
+              } catch {}
+            },
+          }
         );
       } else {
         const { error } = await supabase.from("bookings").update({
@@ -611,6 +647,15 @@ export default function HostBookingManager() {
         } as any).eq("id", item.id);
         if (error) { toast.error(error.message); return; }
         toast.success("Réservation refusée.");
+        try {
+          await supabase.rpc("create_notification", {
+            _user_id: item.guest_id,
+            _type: "booking_declined",
+            _title: "Réservation refusée",
+            _message: `Votre réservation pour "${listingTitle}" a été annulée par l'hôte. ${reason ? `Motif : ${reason}` : ""}`,
+            _data: { listing_id: item.listing_id },
+          });
+        } catch {}
         qc.invalidateQueries({ queryKey: ["owner-bookings"] });
       }
     } finally {

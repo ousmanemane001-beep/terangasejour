@@ -12,10 +12,21 @@ import { useQueryClient } from "@tanstack/react-query";
 
 const typeIcons: Record<string, string> = {
   booking: "🏨",
+  new_booking: "🏨",
+  booking_confirmed: "✅",
+  booking_declined: "❌",
   message: "💬",
+  new_message: "💬",
   listing: "🏠",
+  listing_approve: "✅",
+  listing_reject: "❌",
+  listing_suspend: "⚠️",
+  listing_modification_requested: "✏️",
+  new_listing: "🏠",
+  listing_resubmitted: "🔄",
   review: "⭐",
   admin: "🛡️",
+  dispute: "🚩",
   default: "🔔",
 };
 

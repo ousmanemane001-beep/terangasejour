@@ -145,13 +145,13 @@ const EditListing = () => {
             .eq("role", "admin");
           if (admins) {
             for (const admin of admins) {
-              await supabase.from("notifications").insert({
-                user_id: admin.user_id,
-                type: "listing_resubmitted",
-                title: "Logement re-soumis",
-                message: `"${title.trim()}" a été modifié et re-soumis pour approbation.`,
-                data: { listing_id: listing.id },
-              } as any);
+              await supabase.rpc("create_notification", {
+                _user_id: admin.user_id,
+                _type: "listing_resubmitted",
+                _title: "Logement re-soumis",
+                _message: `"${title.trim()}" a été modifié et re-soumis pour approbation.`,
+                _data: { listing_id: listing.id },
+              });
             }
           }
         } catch {}

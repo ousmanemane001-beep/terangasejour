@@ -270,13 +270,13 @@ const CreateListing = () => {
           .eq("role", "admin");
         if (admins) {
           for (const admin of admins) {
-            await supabase.from("notifications").insert({
-              user_id: admin.user_id,
-              type: "new_listing",
-              title: "Nouveau logement soumis",
-              message: `${title.trim()} à ${location.trim()} est en attente d'approbation.`,
-              data: { listing_id: data.id },
-            } as any);
+            await supabase.rpc("create_notification", {
+              _user_id: admin.user_id,
+              _type: "new_listing",
+              _title: "Nouveau logement soumis",
+              _message: `${title.trim()} à ${location.trim()} est en attente d'approbation.`,
+              _data: { listing_id: data.id },
+            });
           }
         }
       } catch {}
