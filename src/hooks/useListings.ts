@@ -20,6 +20,10 @@ export interface DBListing {
   verified: boolean;
   created_at: string;
   user_id: string;
+  booking_mode: string;
+  availability_mode: string;
+  cancellation_policy: string;
+  admin_remark: string | null;
 }
 
 export function useListings(limit?: number) {
