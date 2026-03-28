@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 const typeIcons: Record<string, string> = {
   booking: "🏨",
   new_booking: "🏨",
+  booking_request: "🔔",
   booking_confirmed: "✅",
   booking_declined: "❌",
   message: "💬",
@@ -36,7 +37,7 @@ function getNotificationLink(notification: Notification): string | null {
   const type = notification.type;
 
   if (type === "message" || type === "new_message") return "/messages";
-  if (type === "booking" || type === "new_booking" || type === "booking_confirmed" || type === "booking_declined" || type === "payment_confirmed") return "/dashboard";
+  if (type === "booking" || type === "new_booking" || type === "booking_request" || type === "booking_confirmed" || type === "booking_declined" || type === "payment_confirmed") return "/dashboard";
   if (type === "listing" || type === "listing_approve" || type === "listing_reject" || type === "listing_suspend" || type === "listing_modification_requested" || type === "new_listing" || type === "listing_resubmitted") {
     const listingId = data?.listing_id;
     return listingId ? `/property/${listingId}` : "/dashboard";
