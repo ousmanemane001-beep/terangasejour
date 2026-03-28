@@ -71,10 +71,14 @@ export default function ConversationList({
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground truncate">{listingsMap?.[conv.listing_id] || "Logement"}</p>
-                  {lastMessagesMap?.[conv.id] && (
+                  {lastMessagesMap?.[conv.id] ? (
                     <p className="text-xs text-muted-foreground/70 truncate mt-0.5">
                       {lastMessagesMap[conv.id].sender_id === (currentUserId || userId) ? "Vous : " : ""}
                       {lastMessagesMap[conv.id].content}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground/50 truncate mt-0.5 italic">
+                      Aucun message encore
                     </p>
                   )}
                 </div>
