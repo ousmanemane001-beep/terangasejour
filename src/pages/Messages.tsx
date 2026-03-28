@@ -53,6 +53,30 @@ const Messages = () => {
     enabled: (conversations?.length ?? 0) > 0,
   });
 
+  // Fetch last message for each conversation
+  const convIds = conversations?.map((c) => c.id) || [];
+  const { data: lastMessagesMap } = useQuery({
+    queryKey: ["last-messages", convIds.join(",")],
+    queryFn: async () => {
+      if (!conversations || conversations.length === 0) return {};
+      const map: Record<string, { content: string; sender_id: string }> = {};
+      // Fetch last message per conversation
+      for (const conv of conversations) {
+        const { data } = await supabase
+          .from("messages")
+          .select("content, sender_id")
+          .eq("conversation_id", conv.id)
+          .order("created_at", { ascending: false })
+          .limit(1);
+        if (data && data.length > 0) {
+          map[conv.id] = { content: data[0].content, sender_id: data[0].sender_id };
+        }
+      }
+      return map;
+    },
+    enabled: (conversations?.length ?? 0) > 0,
+  });
+
   // Profiles
   const participantIds = conversations
     ?.flatMap((c) => [c.guest_id, c.host_id])
@@ -135,6 +159,8 @@ const Messages = () => {
               profiles={profiles}
               listingsMap={listingsMap}
               bookingStatusMap={allBookingStatuses || {}}
+              lastMessagesMap={lastMessagesMap || {}}
+              currentUserId={user.id}
             />
             <ChatArea
               conversation={selectedConversation}

@@ -16,6 +16,8 @@ interface Props {
   profiles: Record<string, { first_name: string | null; last_name: string | null }> | undefined;
   listingsMap: Record<string, string> | undefined;
   bookingStatusMap: Record<string, boolean>;
+  lastMessagesMap?: Record<string, { content: string; sender_id: string }>;
+  currentUserId?: string;
 }
 
 function getOtherName(
@@ -33,7 +35,7 @@ function getInitials(name: string) {
 }
 
 export default function ConversationList({
-  conversations, isLoading, selectedId, onSelect, userId, profiles, listingsMap, bookingStatusMap,
+  conversations, isLoading, selectedId, onSelect, userId, profiles, listingsMap, bookingStatusMap, lastMessagesMap, currentUserId,
 }: Props) {
   return (
     <Card className="border-none shadow-[var(--shadow-card)] overflow-hidden">
@@ -69,6 +71,12 @@ export default function ConversationList({
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground truncate">{listingsMap?.[conv.listing_id] || "Logement"}</p>
+                  {lastMessagesMap?.[conv.id] && (
+                    <p className="text-xs text-muted-foreground/70 truncate mt-0.5">
+                      {lastMessagesMap[conv.id].sender_id === (currentUserId || userId) ? "Vous : " : ""}
+                      {lastMessagesMap[conv.id].content}
+                    </p>
+                  )}
                 </div>
                 <span className="text-xs text-muted-foreground shrink-0">
                   {format(new Date(conv.updated_at), "d MMM", { locale: fr })}
