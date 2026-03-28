@@ -225,7 +225,6 @@ const BookingWidget = ({
       await supabase.from("bookings").update({ expires_at: expiry } as any).eq("id", result.id);
       setBookingId(result.id);
       setExpiresAt(expiry);
-      setStep("payment");
       clearDraft();
       if (hostId) {
         await createNotification.mutateAsync({
@@ -234,7 +233,20 @@ const BookingWidget = ({
           data: { listing_id: listingId, booking_id: result.id },
         });
       }
-      toast.success(t("bookingWidget.bookingCreated"));
+
+      // Redirect to PayDunya payment
+      toast.info("Redirection vers le paiement...");
+      const { data: payData, error: payError } = await supabase.functions.invoke("create-payment", {
+        body: { booking_id: result.id },
+      });
+      if (payError || !payData?.payment_url) {
+        // Fallback to manual payment step
+        setStep("payment");
+        toast.error("Impossible de créer le lien de paiement. Utilisez le mode manuel.");
+        return;
+      }
+      // Open PayDunya checkout
+      window.location.href = payData.payment_url;
     } catch (err: any) { toast.error(err.message || t("bookingWidget.bookingError")); }
   };
 
