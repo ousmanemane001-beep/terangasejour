@@ -39,7 +39,7 @@ interface BookingWidgetProps {
 const SERVICE_FEE_RATE = 0.15;
 const HOLD_MINUTES = 30;
 
-type BookingStep = "dates" | "confirm" | "payment" | "confirmed" | "expired";
+type BookingStep = "dates" | "confirm" | "payment" | "confirmed" | "expired" | "request_sent";
 
 const STORAGE_KEY = "teranga_booking_draft";
 
@@ -154,15 +154,45 @@ const BookingWidget = ({
   };
 
 
+  const isRequestMode = bookingMode === "request";
+
   const handleReserve = () => {
     if (!checkIn || !checkOut || nights < 1) { toast.error(t("listing.selectDates")); return; }
     if (!user) {
-      // Save draft and show login dialog
       saveDraft({ listingId, checkIn: checkIn.toISOString(), checkOut: checkOut.toISOString(), guests, savedAt: Date.now() });
       setShowLoginDialog(true);
       return;
     }
-    setStep("confirm");
+    if (isRequestMode) {
+      handleSendRequest();
+    } else {
+      setStep("confirm");
+    }
+  };
+
+  const handleSendRequest = async () => {
+    if (!user || !checkIn || !checkOut) return;
+    try {
+      const { error } = await supabase.from("booking_requests").insert({
+        listing_id: listingId,
+        guest_id: user.id,
+        check_in: format(checkIn, "yyyy-MM-dd"),
+        check_out: format(checkOut, "yyyy-MM-dd"),
+        guests,
+        message: `Demande de réservation du ${format(checkIn, "d MMM", { locale: dateLocale })} au ${format(checkOut, "d MMM", { locale: dateLocale })} pour ${guests} voyageur(s).`,
+      });
+      if (error) throw error;
+      if (hostId) {
+        await createNotification.mutateAsync({
+          user_id: hostId, type: "booking_request", title: "Nouvelle demande de réservation",
+          message: `${format(checkIn, "d MMM", { locale: dateLocale })} → ${format(checkOut, "d MMM", { locale: dateLocale })} · ${guests} voyageur(s)`,
+          data: { listing_id: listingId },
+        });
+      }
+      clearDraft();
+      toast.success("Votre demande de réservation a été envoyée à l'hôte !");
+      setStep("request_sent" as BookingStep);
+    } catch (err: any) { toast.error(err.message || "Erreur lors de l'envoi de la demande"); }
   };
 
   const handleDialogLogin = async (e: React.FormEvent) => {
@@ -232,6 +262,22 @@ const BookingWidget = ({
     if (!checkIn || !checkOut) return "";
     return `${format(checkIn, "d MMM", { locale: dateLocale })} → ${format(checkOut, "d MMM", { locale: dateLocale })}`;
   };
+
+  // ─── REQUEST SENT ───
+  if (step === "request_sent") {
+    return (
+      <div className="sticky top-24 bg-card rounded-2xl shadow-lg border border-border p-6 text-center">
+        <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+          <Clock className="w-7 h-7 text-primary" />
+        </div>
+        <h3 className="font-display text-lg font-bold text-foreground mb-2">Demande envoyée !</h3>
+        <p className="text-sm text-muted-foreground mb-4">L'hôte va examiner votre demande et vous répondra bientôt.</p>
+        <Button className="w-full rounded-xl h-11 bg-primary text-primary-foreground" onClick={() => navigate("/dashboard")}>
+          Voir mes demandes
+        </Button>
+      </div>
+    );
+  }
 
   // ─── CONFIRMED ───
   if (step === "confirmed") {
@@ -442,9 +488,18 @@ const BookingWidget = ({
         {/* Reserve button */}
         <Button onClick={handleReserve} disabled={!nights}
           className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50">
-          <Zap className="w-4 h-4 mr-2" />
-          {nights > 0 ? `${t("listing.bookNow")}` : t("listing.selectDates")}
+          {isRequestMode ? (
+            <><Clock className="w-4 h-4 mr-2" /> {nights > 0 ? "Demander une réservation" : t("listing.selectDates")}</>
+          ) : (
+            <><Zap className="w-4 h-4 mr-2" /> {nights > 0 ? t("listing.bookNow") : t("listing.selectDates")}</>
+          )}
         </Button>
+
+        {isRequestMode && (
+          <p className="text-xs text-center text-muted-foreground">
+            L'hôte confirmera votre demande sous 24h
+          </p>
+        )}
 
         {/* Login Dialog */}
         <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
