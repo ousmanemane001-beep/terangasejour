@@ -329,7 +329,7 @@ const Publish = () => {
             bedrooms, bathrooms, capacity,
             price_per_night: safePrice,
             photos: photoUrls,
-            status: "published",
+            status: "pending_approval",
             booking_mode: dbBookingMode,
             availability_mode: dbAvailabilityMode,
           }).select("id").single()
@@ -348,9 +348,30 @@ const Publish = () => {
         );
       }
 
+      // Notify admins about new listing submission
+      if (insertedListing) {
+        try {
+          const { data: admins } = await supabase
+            .from("user_roles")
+            .select("user_id")
+            .eq("role", "admin");
+          if (admins) {
+            for (const admin of admins) {
+              await supabase.rpc("create_notification", {
+                _user_id: admin.user_id,
+                _type: "new_listing",
+                _title: "Nouveau logement soumis",
+                _message: `${title.trim()} à ${location.trim()} est en attente d'approbation.`,
+                _data: { listing_id: insertedListing.id },
+              });
+            }
+          }
+        } catch {}
+      }
+
       queryClient.invalidateQueries({ queryKey: ["listings"] });
       queryClient.invalidateQueries({ queryKey: ["owner-listings"] });
-      toast.success("Logement publié avec succès !");
+      toast.success("Votre logement a été soumis pour approbation !");
       try { localStorage.removeItem(DRAFT_STORAGE_KEY); } catch {}
       navigate("/dashboard");
     } catch (err: any) {
