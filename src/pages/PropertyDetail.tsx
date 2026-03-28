@@ -278,7 +278,7 @@ const PropertyDetail = () => {
 
             <div className="lg:col-span-1" data-booking-widget>
               {isUUID && id ? (
-                <BookingWidget listingId={id} pricePerNight={listing.price} maxGuests={listing.guests} bookingMode={dbListing ? (dbListing as any).booking_mode : "instant"} hostId={dbListing?.user_id} listingImage={listing.coverImage} listingTitle={listing.title} />
+                <BookingWidget listingId={id} pricePerNight={listing.price} maxGuests={listing.guests} bookingMode={dbListing?.booking_mode ?? "instant"} hostId={dbListing?.user_id} listingImage={listing.coverImage} listingTitle={listing.title} />
               ) : (
                 <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6">
                   <div className="mb-4">
