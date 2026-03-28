@@ -61,6 +61,7 @@ export default function ChatArea({
 
     await onSend(text);
     if (!content) setNewMessage("");
+    toast.success("Message envoyé ✓");
   };
 
   if (!conversation) {
