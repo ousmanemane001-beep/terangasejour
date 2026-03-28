@@ -16,6 +16,8 @@ interface Props {
   profiles: Record<string, { first_name: string | null; last_name: string | null }> | undefined;
   listingsMap: Record<string, string> | undefined;
   bookingStatusMap: Record<string, boolean>;
+  lastMessagesMap?: Record<string, { content: string; sender_id: string }>;
+  currentUserId?: string;
 }
 
 function getOtherName(
