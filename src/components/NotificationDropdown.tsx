@@ -9,6 +9,7 @@ import { fr } from "date-fns/locale";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 const typeIcons: Record<string, string> = {
   booking: "🏨",
@@ -30,15 +31,36 @@ const typeIcons: Record<string, string> = {
   default: "🔔",
 };
 
-function NotificationItem({ notification, onMarkRead }: { notification: Notification; onMarkRead: (id: string) => void }) {
+function getNotificationLink(notification: Notification): string | null {
+  const data = notification.data as Record<string, any> | null;
+  const type = notification.type;
+
+  if (type === "message" || type === "new_message") return "/messages";
+  if (type === "booking" || type === "new_booking" || type === "booking_confirmed" || type === "booking_declined" || type === "payment_confirmed") return "/dashboard";
+  if (type === "listing" || type === "listing_approve" || type === "listing_reject" || type === "listing_suspend" || type === "listing_modification_requested" || type === "new_listing" || type === "listing_resubmitted") {
+    const listingId = data?.listing_id;
+    return listingId ? `/property/${listingId}` : "/dashboard";
+  }
+  if (type === "review") {
+    const listingId = data?.listing_id;
+    return listingId ? `/property/${listingId}` : "/dashboard";
+  }
+  if (type === "dispute") return "/dashboard";
+  return null;
+}
+
+function NotificationItem({ notification, onMarkRead, onClick }: { notification: Notification; onMarkRead: (id: string) => void; onClick: (notification: Notification) => void }) {
   const icon = typeIcons[notification.type] || typeIcons.default;
   const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: fr });
+  const hasLink = !!getNotificationLink(notification);
 
   return (
-    <div
-      className={`flex items-start gap-3 px-4 py-3 border-b border-border last:border-b-0 transition-colors ${
-        notification.read ? "bg-background opacity-70" : "bg-accent/30"
-      }`}
+    <button
+      type="button"
+      onClick={() => onClick(notification)}
+      className={`w-full text-left flex items-start gap-3 px-4 py-3 border-b border-border last:border-b-0 transition-colors ${
+        hasLink ? "cursor-pointer hover:bg-muted" : "cursor-default"
+      } ${notification.read ? "bg-background opacity-70" : "bg-accent/30"}`}
     >
       <span className="text-lg mt-0.5">{icon}</span>
       <div className="flex-1 min-w-0">
@@ -59,7 +81,7 @@ function NotificationItem({ notification, onMarkRead }: { notification: Notifica
           <Check className="w-3.5 h-3.5" />
         </Button>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -67,6 +89,7 @@ export default function NotificationDropdown() {
   const { data: notifications = [] } = useNotifications();
   const markAsRead = useMarkAsRead();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -77,6 +100,15 @@ export default function NotificationDropdown() {
       qc.invalidateQueries({ queryKey: ["notifications"] });
     } else {
       markAsRead.mutate(id);
+    }
+  };
+
+  const handleClick = (notification: Notification) => {
+    const link = getNotificationLink(notification);
+    if (!notification.read) handleMarkRead(notification.id);
+    if (link) {
+      setOpen(false);
+      navigate(link);
     }
   };
 
@@ -120,7 +152,7 @@ export default function NotificationDropdown() {
             <p className="text-center text-sm text-muted-foreground py-8">Aucune notification</p>
           ) : (
             notifications.map((n) => (
-              <NotificationItem key={n.id} notification={n} onMarkRead={handleMarkRead} />
+              <NotificationItem key={n.id} notification={n} onMarkRead={handleMarkRead} onClick={handleClick} />
             ))
           )}
         </ScrollArea>
