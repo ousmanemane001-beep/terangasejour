@@ -250,15 +250,19 @@ const BookingWidget = ({
     } catch (err: any) { toast.error(err.message || t("bookingWidget.bookingError")); }
   };
 
-  const handlePaymentDone = async () => {
+  const handleRetryPayment = async () => {
     if (!bookingId) return;
     try {
-      await supabase.from("bookings").update({
-        payment_status: "paid", status: "confirmed", updated_at: new Date().toISOString(),
-      } as any).eq("id", bookingId);
-      setStep("confirmed");
-      toast.success(t("bookingWidget.paymentConfirmed"));
-    } catch (err: any) { toast.error(err.message || t("bookingWidget.paymentError")); }
+      toast.info("Redirection vers le paiement...");
+      const { data: payData, error: payError } = await supabase.functions.invoke("create-payment", {
+        body: { booking_id: bookingId },
+      });
+      if (payError || !payData?.payment_url) {
+        toast.error("Impossible de créer le lien de paiement. Réessayez.");
+        return;
+      }
+      window.location.href = payData.payment_url;
+    } catch (err: any) { toast.error(err.message || "Erreur de paiement"); }
   };
 
   const handleExpire = useCallback(async () => {
@@ -358,13 +362,12 @@ const BookingWidget = ({
               <span className="text-lg">{total.toLocaleString("fr-FR")} F</span>
             </div>
           </div>
-          <PaymentMethodSelector selected={paymentMethod} onSelect={setPaymentMethod} />
-          <Button onClick={handlePaymentDone} className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base">
-            <CheckCircle className="w-4 h-4 mr-2" />
-            {t("bookingWidget.iHavePaid")} · {total.toLocaleString("fr-FR")} F
+          <Button onClick={handleRetryPayment} className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base">
+            <Shield className="w-4 h-4 mr-2" />
+            Payer maintenant · {total.toLocaleString("fr-FR")} F
           </Button>
           <p className="text-[10px] text-center text-muted-foreground flex items-center justify-center gap-1">
-            <Shield className="w-3 h-3" /> {t("bookingWidget.securePayment")}
+            <Shield className="w-3 h-3" /> Paiement sécurisé via PayDunya
           </p>
         </div>
       </div>
