@@ -89,6 +89,7 @@ export default function NotificationDropdown() {
   const { data: notifications = [] } = useNotifications();
   const markAsRead = useMarkAsRead();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -99,6 +100,15 @@ export default function NotificationDropdown() {
       qc.invalidateQueries({ queryKey: ["notifications"] });
     } else {
       markAsRead.mutate(id);
+    }
+  };
+
+  const handleClick = (notification: Notification) => {
+    const link = getNotificationLink(notification);
+    if (!notification.read) handleMarkRead(notification.id);
+    if (link) {
+      setOpen(false);
+      navigate(link);
     }
   };
 
@@ -142,7 +152,7 @@ export default function NotificationDropdown() {
             <p className="text-center text-sm text-muted-foreground py-8">Aucune notification</p>
           ) : (
             notifications.map((n) => (
-              <NotificationItem key={n.id} notification={n} onMarkRead={handleMarkRead} />
+              <NotificationItem key={n.id} notification={n} onMarkRead={handleMarkRead} onClick={handleClick} />
             ))
           )}
         </ScrollArea>
