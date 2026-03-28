@@ -406,7 +406,7 @@ const BookingWidget = ({
             </div>
           </div>
 
-          <PaymentMethodSelector selected={paymentMethod} onSelect={setPaymentMethod} />
+          
 
           <Button onClick={handleConfirmBooking} disabled={createBooking.isPending}
             className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base">
