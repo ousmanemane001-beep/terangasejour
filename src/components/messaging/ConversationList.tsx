@@ -35,7 +35,7 @@ function getInitials(name: string) {
 }
 
 export default function ConversationList({
-  conversations, isLoading, selectedId, onSelect, userId, profiles, listingsMap, bookingStatusMap,
+  conversations, isLoading, selectedId, onSelect, userId, profiles, listingsMap, bookingStatusMap, lastMessagesMap, currentUserId,
 }: Props) {
   return (
     <Card className="border-none shadow-[var(--shadow-card)] overflow-hidden">
