@@ -786,6 +786,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      notify_admins_new_listing: {
+        Args: { _data?: Json; _message: string; _title: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
