@@ -44,7 +44,7 @@ const Signup = () => {
     if (error) { 
       toast.error(error.message); 
     } else { 
-      toast.success(t("auth.accountCreated"));
+      toast.success("Un email de confirmation a été envoyé. Vérifiez votre boîte de réception pour activer votre compte.");
       navigate("/login");
     }
   };
