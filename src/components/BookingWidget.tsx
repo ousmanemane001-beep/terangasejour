@@ -250,15 +250,19 @@ const BookingWidget = ({
     } catch (err: any) { toast.error(err.message || t("bookingWidget.bookingError")); }
   };
 
-  const handlePaymentDone = async () => {
+  const handleRetryPayment = async () => {
     if (!bookingId) return;
     try {
-      await supabase.from("bookings").update({
-        payment_status: "paid", status: "confirmed", updated_at: new Date().toISOString(),
-      } as any).eq("id", bookingId);
-      setStep("confirmed");
-      toast.success(t("bookingWidget.paymentConfirmed"));
-    } catch (err: any) { toast.error(err.message || t("bookingWidget.paymentError")); }
+      toast.info("Redirection vers le paiement...");
+      const { data: payData, error: payError } = await supabase.functions.invoke("create-payment", {
+        body: { booking_id: bookingId },
+      });
+      if (payError || !payData?.payment_url) {
+        toast.error("Impossible de créer le lien de paiement. Réessayez.");
+        return;
+      }
+      window.location.href = payData.payment_url;
+    } catch (err: any) { toast.error(err.message || "Erreur de paiement"); }
   };
 
   const handleExpire = useCallback(async () => {
