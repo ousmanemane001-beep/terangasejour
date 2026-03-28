@@ -240,9 +240,9 @@ const BookingWidget = ({
         body: { booking_id: result.id },
       });
       if (payError || !payData?.payment_url) {
-        // Fallback to manual payment step
+        console.error("Payment error:", payError, payData);
         setStep("payment");
-        toast.error("Impossible de créer le lien de paiement. Utilisez le mode manuel.");
+        toast.error(payData?.details || "Impossible de créer le lien de paiement. Réessayez.");
         return;
       }
       // Open PayDunya checkout
