@@ -622,10 +622,24 @@ export default function HostBookingManager() {
   const handleDecline = async (item: UnifiedBooking, reason: string) => {
     setActionLoading(true);
     try {
+      const listingTitle = listings?.find(l => l.id === item.listing_id)?.title || "votre logement";
       if (item.type === "request") {
         respondToRequest.mutate(
           { requestId: item.id, status: "rejected", response: reason },
-          { onSuccess: () => toast.success("Demande refusée.") }
+          {
+            onSuccess: async () => {
+              toast.success("Demande refusée.");
+              try {
+                await supabase.rpc("create_notification", {
+                  _user_id: item.guest_id,
+                  _type: "booking_declined",
+                  _title: "Demande refusée",
+                  _message: `Votre demande pour "${listingTitle}" a été refusée. ${reason ? `Motif : ${reason}` : ""}`,
+                  _data: { listing_id: item.listing_id },
+                });
+              } catch {}
+            },
+          }
         );
       } else {
         const { error } = await supabase.from("bookings").update({
@@ -633,6 +647,15 @@ export default function HostBookingManager() {
         } as any).eq("id", item.id);
         if (error) { toast.error(error.message); return; }
         toast.success("Réservation refusée.");
+        try {
+          await supabase.rpc("create_notification", {
+            _user_id: item.guest_id,
+            _type: "booking_declined",
+            _title: "Réservation refusée",
+            _message: `Votre réservation pour "${listingTitle}" a été annulée par l'hôte. ${reason ? `Motif : ${reason}` : ""}`,
+            _data: { listing_id: item.listing_id },
+          });
+        } catch {}
         qc.invalidateQueries({ queryKey: ["owner-bookings"] });
       }
     } finally {
