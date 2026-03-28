@@ -151,11 +151,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const adminClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
     const { error: updateError } = await adminClient
       .from("bookings")
       .update({ transaction_id: paydunyaData.token })
