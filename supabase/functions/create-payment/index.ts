@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
     }
 
     // Verify the booking belongs to the user
-    if (booking.guest_id !== claimsData.claims.sub) {
+    if (booking.guest_id !== userId) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: corsHeaders,
