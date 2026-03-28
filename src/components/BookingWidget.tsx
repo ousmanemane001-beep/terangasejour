@@ -362,13 +362,12 @@ const BookingWidget = ({
               <span className="text-lg">{total.toLocaleString("fr-FR")} F</span>
             </div>
           </div>
-          <PaymentMethodSelector selected={paymentMethod} onSelect={setPaymentMethod} />
-          <Button onClick={handlePaymentDone} className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base">
-            <CheckCircle className="w-4 h-4 mr-2" />
-            {t("bookingWidget.iHavePaid")} · {total.toLocaleString("fr-FR")} F
+          <Button onClick={handleRetryPayment} className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base">
+            <Shield className="w-4 h-4 mr-2" />
+            Payer maintenant · {total.toLocaleString("fr-FR")} F
           </Button>
           <p className="text-[10px] text-center text-muted-foreground flex items-center justify-center gap-1">
-            <Shield className="w-3 h-3" /> {t("bookingWidget.securePayment")}
+            <Shield className="w-3 h-3" /> Paiement sécurisé via PayDunya
           </p>
         </div>
       </div>
