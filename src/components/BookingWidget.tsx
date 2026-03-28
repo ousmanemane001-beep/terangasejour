@@ -302,8 +302,6 @@ const BookingWidget = ({
     }
     setStep("expired");
   }, [bookingId]);
-    setStep("expired");
-  }, [bookingId]);
 
   const formatDateRange = () => {
     if (!checkIn || !checkOut) return "";
