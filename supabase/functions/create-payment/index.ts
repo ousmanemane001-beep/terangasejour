@@ -121,9 +121,9 @@ Deno.serve(async (req) => {
       return response.json();
     };
 
-    // Utiliser directement l'API de production PayDunya
+    // Utiliser l'API sandbox/test de PayDunya
     const paydunyaData = await requestInvoice(
-      "https://app.paydunya.com/api/v1/checkout-invoice/create"
+      "https://app.paydunya.com/sandbox-api/v1/checkout-invoice/create"
     );
 
     if (paydunyaData.response_code !== "00") {
