@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 const typeIcons: Record<string, string> = {
   booking: "🏨",
   new_booking: "🏨",
+  booking_request: "🔔",
   booking_confirmed: "✅",
   booking_declined: "❌",
   message: "💬",
