@@ -9,6 +9,7 @@ import { fr } from "date-fns/locale";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 const typeIcons: Record<string, string> = {
   booking: "🏨",
