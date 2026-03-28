@@ -59,16 +59,22 @@ function NotificationItem({ notification, onMarkRead, onClick }: { notification:
       type="button"
       onClick={() => onClick(notification)}
       className={`w-full text-left flex items-start gap-3 px-4 py-3 border-b border-border last:border-b-0 transition-colors ${
-        hasLink ? "cursor-pointer hover:bg-muted" : "cursor-default"
-      } ${notification.read ? "bg-background opacity-70" : "bg-accent/30"}`}
+        hasLink ? "cursor-pointer hover:bg-muted/60" : "cursor-default"
+      } ${notification.read ? "bg-background" : "bg-primary/5 border-l-2 border-l-primary"}`}
     >
-      <span className="text-lg mt-0.5">{icon}</span>
+      {/* Blue dot for unread */}
+      <div className="relative shrink-0 mt-0.5">
+        <span className="text-lg">{icon}</span>
+        {!notification.read && (
+          <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
+        )}
+      </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm ${notification.read ? "text-muted-foreground" : "text-foreground font-semibold"}`}>
+        <p className={`text-sm ${notification.read ? "text-muted-foreground font-normal" : "text-foreground font-semibold"}`}>
           {notification.title}
         </p>
-        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{notification.message}</p>
-        <p className="text-[10px] text-muted-foreground/60 mt-1">{timeAgo}</p>
+        <p className={`text-xs line-clamp-2 mt-0.5 ${notification.read ? "text-muted-foreground/60" : "text-muted-foreground"}`}>{notification.message}</p>
+        <p className={`text-[10px] mt-1 ${notification.read ? "text-muted-foreground/40" : "text-muted-foreground/60"}`}>{timeAgo}</p>
       </div>
       {!notification.read && (
         <Button
