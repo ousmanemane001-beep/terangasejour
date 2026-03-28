@@ -17,6 +17,7 @@ import ExploreSenegal from "./pages/ExploreSenegal";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Publish from "./pages/Publish";
 import Certification from "./pages/Certification";
 import PropertyDetail from "./pages/PropertyDetail";
@@ -65,6 +66,7 @@ const App = () => (
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/publish" element={<Publish />} />
                 <Route path="/certification" element={<Certification />} />
                 <Route path="/property/:id" element={<PropertyDetail />} />

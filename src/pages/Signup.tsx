@@ -38,7 +38,11 @@ const Signup = () => {
     if (password !== confirmPassword) { toast.error(t("auth.passwordMismatch")); return; }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: window.location.origin },
+    });
     setLoading(false);
 
     if (error) { 
