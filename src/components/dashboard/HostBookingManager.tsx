@@ -552,6 +552,15 @@ export default function HostBookingManager() {
           {
             onSuccess: async () => {
               toast.success("Demande acceptée !");
+              // Notify guest
+              const listingTitle = listings?.find(l => l.id === item.listing_id)?.title || "votre logement";
+              await supabase.rpc("create_notification", {
+                _user_id: item.guest_id,
+                _type: "booking_confirmed",
+                _title: "Réservation confirmée !",
+                _message: `Votre demande pour "${listingTitle}" a été acceptée.`,
+                _data: { listing_id: item.listing_id },
+              }).catch(() => {});
               const conflicting = pendingItems.filter(
                 (p) => p.id !== item.id && p.listing_id === item.listing_id && datesOverlap(p, item)
               );
