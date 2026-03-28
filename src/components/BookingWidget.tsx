@@ -263,6 +263,22 @@ const BookingWidget = ({
     return `${format(checkIn, "d MMM", { locale: dateLocale })} → ${format(checkOut, "d MMM", { locale: dateLocale })}`;
   };
 
+  // ─── REQUEST SENT ───
+  if (step === "request_sent") {
+    return (
+      <div className="sticky top-24 bg-card rounded-2xl shadow-lg border border-border p-6 text-center">
+        <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+          <Clock className="w-7 h-7 text-primary" />
+        </div>
+        <h3 className="font-display text-lg font-bold text-foreground mb-2">Demande envoyée !</h3>
+        <p className="text-sm text-muted-foreground mb-4">L'hôte va examiner votre demande et vous répondra bientôt.</p>
+        <Button className="w-full rounded-xl h-11 bg-primary text-primary-foreground" onClick={() => navigate("/dashboard")}>
+          Voir mes demandes
+        </Button>
+      </div>
+    );
+  }
+
   // ─── CONFIRMED ───
   if (step === "confirmed") {
     return (
