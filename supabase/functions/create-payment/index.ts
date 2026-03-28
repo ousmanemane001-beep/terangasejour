@@ -43,13 +43,13 @@ Deno.serve(async (req) => {
       return jsonResponse(400, { error: "booking_id is required" });
     }
 
-    const supabase = createClient(
+    // Use service role to validate the user token (avoids "Auth session missing" issue)
+    const adminClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: `Bearer ${token}` } } }
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    const { data: userData, error: userError } = await adminClient.auth.getUser(token);
     if (userError || !userData?.user) {
       console.error("Auth error:", userError?.message || "No user data");
       return jsonResponse(401, {
@@ -60,6 +60,13 @@ Deno.serve(async (req) => {
 
     const userId = userData.user.id;
     console.log("Authenticated user:", userId);
+
+    // Use user-scoped client for RLS-protected queries
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: `Bearer ${token}` } } }
+    );
 
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
