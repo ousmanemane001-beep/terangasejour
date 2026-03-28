@@ -144,6 +144,7 @@ export type Database = {
           service_fee: number
           status: string
           total_price: number
+          transaction_id: string | null
           updated_at: string
         }
         Insert: {
@@ -163,6 +164,7 @@ export type Database = {
           service_fee?: number
           status?: string
           total_price: number
+          transaction_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -182,6 +184,7 @@ export type Database = {
           service_fee?: number
           status?: string
           total_price?: number
+          transaction_id?: string | null
           updated_at?: string
         }
         Relationships: [
