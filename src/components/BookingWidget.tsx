@@ -202,7 +202,14 @@ const BookingWidget = ({
       );
 
       const rawPayload = await response.text();
-      const payload = rawPayload ? JSON.parse(rawPayload) : {};
+      let payload: Record<string, any> = {};
+      if (rawPayload) {
+        try {
+          payload = JSON.parse(rawPayload);
+        } catch {
+          payload = { error: rawPayload };
+        }
+      }
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
