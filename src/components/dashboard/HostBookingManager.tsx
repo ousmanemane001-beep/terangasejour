@@ -587,6 +587,17 @@ export default function HostBookingManager() {
         } as any).eq("id", item.id);
         if (error) { toast.error(error.message); return; }
         toast.success("Réservation confirmée !");
+        // Notify guest
+        const listingTitle2 = listings?.find(l => l.id === item.listing_id)?.title || "votre logement";
+        try {
+          await supabase.rpc("create_notification", {
+            _user_id: item.guest_id,
+            _type: "booking_confirmed",
+            _title: "Réservation confirmée !",
+            _message: `Votre réservation pour "${listingTitle2}" a été confirmée.`,
+            _data: { listing_id: item.listing_id },
+          });
+        } catch {}
         const conflicting = pendingItems.filter(
           (p) => p.id !== item.id && p.listing_id === item.listing_id && datesOverlap(p, item)
         );
