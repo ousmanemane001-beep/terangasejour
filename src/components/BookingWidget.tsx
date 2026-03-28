@@ -236,8 +236,21 @@ const BookingWidget = ({
 
       // Redirect to PayDunya payment
       toast.info("Redirection vers le paiement...");
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        setStep("payment");
+        toast.error("Session expirée. Reconnectez-vous puis réessayez.");
+        return;
+      }
+
       const { data: payData, error: payError } = await supabase.functions.invoke("create-payment", {
         body: { booking_id: result.id },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
       if (payError || !payData?.payment_url) {
         console.error("Payment error:", payError, payData);
@@ -254,11 +267,23 @@ const BookingWidget = ({
     if (!bookingId) return;
     try {
       toast.info("Redirection vers le paiement...");
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        toast.error("Session expirée. Reconnectez-vous puis réessayez.");
+        return;
+      }
+
       const { data: payData, error: payError } = await supabase.functions.invoke("create-payment", {
         body: { booking_id: bookingId },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
       if (payError || !payData?.payment_url) {
-        toast.error("Impossible de créer le lien de paiement. Réessayez.");
+        toast.error(payData?.details || "Impossible de créer le lien de paiement. Réessayez.");
         return;
       }
       window.location.href = payData.payment_url;

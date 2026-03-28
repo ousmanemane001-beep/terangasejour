@@ -32,10 +32,13 @@ Deno.serve(async (req) => {
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
     if (userError || !userData?.user) {
       console.error("Auth error:", userError?.message || "No user data");
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: corsHeaders,
-      });
+      return new Response(
+        JSON.stringify({ error: "Unauthorized", details: userError?.message ?? "Invalid access token" }),
+        {
+          status: 401,
+          headers: corsHeaders,
+        }
+      );
     }
     const userId = userData.user.id;
     console.log("Authenticated user:", userId);
