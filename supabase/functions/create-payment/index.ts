@@ -12,45 +12,48 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const respond = (status: number, payload: Record<string, unknown>) =>
+      new Response(JSON.stringify(payload), {
+        status,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+
     // Auth check
-    const authHeader = req.headers.get("Authorization");
+    const authHeader = req.headers.get("authorization") ?? req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       console.error("Missing or invalid Authorization header");
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: corsHeaders,
-      });
+      return respond(401, { error: "Unauthorized", details: "Missing Bearer token" });
     }
 
-    const token = authHeader.replace("Bearer ", "");
+    const token = authHeader.slice(7).trim();
+    if (!token) {
+      console.error("Empty bearer token");
+      return respond(401, { error: "Unauthorized", details: "Empty access token" });
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
+      { global: { headers: { Authorization: `Bearer ${token}` } } }
     );
 
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
     if (userError || !userData?.user) {
       console.error("Auth error:", userError?.message || "No user data");
-      return new Response(
-        JSON.stringify({ error: "Unauthorized", details: userError?.message ?? "Invalid access token" }),
-        {
-          status: 401,
-          headers: corsHeaders,
-        }
-      );
+      return respond(401, {
+        error: "Unauthorized",
+        details: userError?.message ?? "Invalid or expired session",
+      });
     }
+
     const userId = userData.user.id;
     console.log("Authenticated user:", userId);
 
-    const body = await req.json();
-    const { booking_id } = body;
+    const body = await req.json().catch(() => null);
+    const booking_id = body?.booking_id;
 
     if (!booking_id || typeof booking_id !== "string") {
-      return new Response(JSON.stringify({ error: "booking_id is required" }), {
-        status: 400,
-        headers: corsHeaders,
-      });
+      return respond(400, { error: "booking_id is required" });
     }
 
     // Fetch booking
