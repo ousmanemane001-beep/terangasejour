@@ -17,6 +17,7 @@ import ExploreSenegal from "./pages/ExploreSenegal";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Publish from "./pages/Publish";
 import Certification from "./pages/Certification";
 import PropertyDetail from "./pages/PropertyDetail";
