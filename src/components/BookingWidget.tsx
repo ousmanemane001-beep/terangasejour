@@ -154,15 +154,45 @@ const BookingWidget = ({
   };
 
 
+  const isRequestMode = bookingMode === "request";
+
   const handleReserve = () => {
     if (!checkIn || !checkOut || nights < 1) { toast.error(t("listing.selectDates")); return; }
     if (!user) {
-      // Save draft and show login dialog
       saveDraft({ listingId, checkIn: checkIn.toISOString(), checkOut: checkOut.toISOString(), guests, savedAt: Date.now() });
       setShowLoginDialog(true);
       return;
     }
-    setStep("confirm");
+    if (isRequestMode) {
+      handleSendRequest();
+    } else {
+      setStep("confirm");
+    }
+  };
+
+  const handleSendRequest = async () => {
+    if (!user || !checkIn || !checkOut) return;
+    try {
+      const { error } = await supabase.from("booking_requests").insert({
+        listing_id: listingId,
+        guest_id: user.id,
+        check_in: format(checkIn, "yyyy-MM-dd"),
+        check_out: format(checkOut, "yyyy-MM-dd"),
+        guests,
+        message: `Demande de réservation du ${format(checkIn, "d MMM", { locale: dateLocale })} au ${format(checkOut, "d MMM", { locale: dateLocale })} pour ${guests} voyageur(s).`,
+      });
+      if (error) throw error;
+      if (hostId) {
+        await createNotification.mutateAsync({
+          user_id: hostId, type: "booking_request", title: "Nouvelle demande de réservation",
+          message: `${format(checkIn, "d MMM", { locale: dateLocale })} → ${format(checkOut, "d MMM", { locale: dateLocale })} · ${guests} voyageur(s)`,
+          data: { listing_id: listingId },
+        });
+      }
+      clearDraft();
+      toast.success("Votre demande de réservation a été envoyée à l'hôte !");
+      setStep("request_sent" as BookingStep);
+    } catch (err: any) { toast.error(err.message || "Erreur lors de l'envoi de la demande"); }
   };
 
   const handleDialogLogin = async (e: React.FormEvent) => {
