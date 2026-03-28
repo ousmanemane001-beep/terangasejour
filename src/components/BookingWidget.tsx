@@ -17,7 +17,7 @@ import { useCreateBooking } from "@/hooks/useBookings";
 import { useBookedDates, getDisabledDates } from "@/hooks/useAvailability";
 import { useBlockedDates } from "@/hooks/useBlockedDates";
 import { useCreateNotification } from "@/hooks/useAdmin";
-import PaymentMethodSelector, { type PaymentMethod } from "@/components/PaymentMethodSelector";
+
 import CountdownTimer from "@/components/booking/CountdownTimer";
 import BookingStatusBadge from "@/components/booking/BookingStatusBadge";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
@@ -90,7 +90,7 @@ const BookingWidget = ({
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [guests, setGuests] = useState(2);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("wave");
+  const [paymentMethod] = useState("paydunya");
   const [step, setStep] = useState<BookingStep>("dates");
   const [bookingId, setBookingId] = useState<string>();
   const [expiresAt, setExpiresAt] = useState<string>();
@@ -406,7 +406,7 @@ const BookingWidget = ({
             </div>
           </div>
 
-          <PaymentMethodSelector selected={paymentMethod} onSelect={setPaymentMethod} />
+          
 
           <Button onClick={handleConfirmBooking} disabled={createBooking.isPending}
             className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base">
