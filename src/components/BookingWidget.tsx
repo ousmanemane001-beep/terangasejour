@@ -293,7 +293,6 @@ const BookingWidget = ({
       toast.error(err?.message || "Erreur de paiement");
     }
   };
-  };
 
   const handleExpire = useCallback(async () => {
     if (bookingId) {
@@ -301,6 +300,8 @@ const BookingWidget = ({
         status: "expired", updated_at: new Date().toISOString(),
       } as any).eq("id", bookingId);
     }
+    setStep("expired");
+  }, [bookingId]);
     setStep("expired");
   }, [bookingId]);
 
