@@ -348,24 +348,14 @@ const Publish = () => {
         );
       }
 
-      // Notify admins about new listing submission
+      // Notify admins about new listing submission (server-side to bypass RLS)
       if (insertedListing) {
         try {
-          const { data: admins } = await supabase
-            .from("user_roles")
-            .select("user_id")
-            .eq("role", "admin");
-          if (admins) {
-            for (const admin of admins) {
-              await supabase.rpc("create_notification", {
-                _user_id: admin.user_id,
-                _type: "new_listing",
-                _title: "Nouveau logement soumis",
-                _message: `${title.trim()} à ${location.trim()} est en attente d'approbation.`,
-                _data: { listing_id: insertedListing.id },
-              });
-            }
-          }
+          await supabase.rpc("notify_admins_new_listing" as any, {
+            _title: "Nouveau logement soumis",
+            _message: `${title.trim()} à ${location.trim()} est en attente d'approbation.`,
+            _data: { listing_id: insertedListing.id },
+          });
         } catch {}
       }
 
