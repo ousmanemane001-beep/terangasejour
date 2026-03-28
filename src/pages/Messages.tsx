@@ -159,6 +159,8 @@ const Messages = () => {
               profiles={profiles}
               listingsMap={listingsMap}
               bookingStatusMap={allBookingStatuses || {}}
+              lastMessagesMap={lastMessagesMap || {}}
+              currentUserId={user.id}
             />
             <ChatArea
               conversation={selectedConversation}
