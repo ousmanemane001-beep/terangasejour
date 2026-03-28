@@ -106,9 +106,8 @@ Deno.serve(async (req) => {
       },
     };
 
-    const paydunyaRes = await fetch(
-      "https://app.paydunya.com/sandbox-api/v1/checkout-invoice/create",
-      {
+    const requestInvoice = async (url: string) => {
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -117,10 +116,25 @@ Deno.serve(async (req) => {
           "PAYDUNYA-TOKEN": TOKEN,
         },
         body: JSON.stringify(invoicePayload),
-      }
+      });
+
+      return response.json();
+    };
+
+    // Essaye d'abord sandbox (comportement actuel), puis live si les clés semblent être non-test
+    let paydunyaData = await requestInvoice(
+      "https://app.paydunya.com/sandbox-api/v1/checkout-invoice/create"
     );
 
-    const paydunyaData = await paydunyaRes.json();
+    if (
+      paydunyaData?.response_code === "1001" &&
+      typeof paydunyaData?.response_text === "string" &&
+      paydunyaData.response_text.includes("TEST Private Key and Token combination is invalid")
+    ) {
+      paydunyaData = await requestInvoice(
+        "https://app.paydunya.com/api/v1/checkout-invoice/create"
+      );
+    }
 
     if (paydunyaData.response_code !== "00") {
       console.error("PayDunya error:", paydunyaData);
