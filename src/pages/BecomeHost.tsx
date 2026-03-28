@@ -132,7 +132,7 @@ const BecomeHost = () => {
               className="rounded-full bg-primary text-primary-foreground px-10 h-14 text-lg font-semibold"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : null}
-              {t("becomeHost.becomeHostBtn")}
+              Commencez ici
             </Button>
             <p className="text-sm text-muted-foreground mt-4">
               {t("becomeHost.freeNoCommitment")}
