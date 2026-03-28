@@ -488,9 +488,18 @@ const BookingWidget = ({
         {/* Reserve button */}
         <Button onClick={handleReserve} disabled={!nights}
           className="w-full rounded-xl h-12 bg-primary text-primary-foreground font-medium text-base hover:bg-primary/90 disabled:opacity-50">
-          <Zap className="w-4 h-4 mr-2" />
-          {nights > 0 ? `${t("listing.bookNow")}` : t("listing.selectDates")}
+          {isRequestMode ? (
+            <><Clock className="w-4 h-4 mr-2" /> {nights > 0 ? "Demander une réservation" : t("listing.selectDates")}</>
+          ) : (
+            <><Zap className="w-4 h-4 mr-2" /> {nights > 0 ? t("listing.bookNow") : t("listing.selectDates")}</>
+          )}
         </Button>
+
+        {isRequestMode && (
+          <p className="text-xs text-center text-muted-foreground">
+            L'hôte confirmera votre demande sous 24h
+          </p>
+        )}
 
         {/* Login Dialog */}
         <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
