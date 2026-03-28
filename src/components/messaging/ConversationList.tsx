@@ -38,11 +38,11 @@ export default function ConversationList({
   conversations, isLoading, selectedId, onSelect, userId, profiles, listingsMap, bookingStatusMap, lastMessagesMap, currentUserId,
 }: Props) {
   return (
-    <Card className="border-none shadow-[var(--shadow-card)] overflow-hidden">
-      <div className="p-4 border-b border-border">
+    <Card className="border-none shadow-[var(--shadow-card)] overflow-hidden flex flex-col h-full">
+      <div className="p-4 border-b border-border shrink-0">
         <h2 className="font-display font-semibold text-foreground text-sm">Conversations</h2>
       </div>
-      <div className="overflow-y-auto h-full">
+      <div className="overflow-y-auto flex-1 min-h-0">
         {isLoading ? (
           <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
         ) : conversations && conversations.length > 0 ? (
