@@ -156,42 +156,82 @@ const BookingWidget = ({
 
   const isRequestMode = bookingMode === "request";
 
+  const getAccessToken = async () => {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error("[payment] getSession error:", sessionError.message);
+    }
+
+    if (sessionData.session?.access_token) {
+      return sessionData.session.access_token;
+    }
+
+    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError) {
+      console.error("[payment] refreshSession error:", refreshError.message);
+    }
+
+    const refreshedToken = refreshData.session?.access_token;
+    if (!refreshedToken) {
+      throw new Error("Session invalide. Veuillez vous reconnecter puis réessayer.");
+    }
+
+    return refreshedToken;
+  };
+
   const callCreatePaymentFunction = async (bookingId: string) => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const accessToken = await getAccessToken();
 
-    const accessToken = session?.access_token;
-    if (!accessToken) {
-      throw new Error("Session expirée. Reconnectez-vous puis réessayez.");
-    }
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 20000);
 
-    const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payment`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({ booking_id: bookingId }),
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payment`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "",
+          },
+          body: JSON.stringify({ booking_id: bookingId }),
+          signal: controller.signal,
+        }
+      );
+
+      const rawPayload = await response.text();
+      const payload = rawPayload ? JSON.parse(rawPayload) : {};
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          throw new Error("Session expirée ou non autorisée. Reconnectez-vous puis réessayez.");
+        }
+
+        const message =
+          payload?.details || payload?.error || `Erreur paiement (${response.status})`;
+        throw new Error(message);
       }
-    );
 
-    const payload = await response.json().catch(() => ({} as any));
+      if (!payload?.payment_url || typeof payload.payment_url !== "string") {
+        throw new Error("Lien de paiement introuvable.");
+      }
 
-    if (!response.ok) {
-      const message =
-        payload?.details || payload?.error || `Erreur paiement (${response.status})`;
-      throw new Error(message);
+      return payload as { payment_url: string; token?: string };
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        throw new Error("Le service de paiement met trop de temps à répondre. Réessayez.");
+      }
+
+      if (err instanceof Error) {
+        throw err;
+      }
+
+      throw new Error("Erreur réseau lors de la création du paiement.");
+    } finally {
+      window.clearTimeout(timeoutId);
     }
-
-    if (!payload?.payment_url) {
-      throw new Error("Lien de paiement introuvable.");
-    }
-
-    return payload as { payment_url: string; token?: string };
   };
 
   const handleReserve = () => {
