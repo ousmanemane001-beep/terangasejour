@@ -17,7 +17,7 @@ import { useCreateBooking } from "@/hooks/useBookings";
 import { useBookedDates, getDisabledDates } from "@/hooks/useAvailability";
 import { useBlockedDates } from "@/hooks/useBlockedDates";
 import { useCreateNotification } from "@/hooks/useAdmin";
-import PaymentMethodSelector, { type PaymentMethod } from "@/components/PaymentMethodSelector";
+
 import CountdownTimer from "@/components/booking/CountdownTimer";
 import BookingStatusBadge from "@/components/booking/BookingStatusBadge";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
