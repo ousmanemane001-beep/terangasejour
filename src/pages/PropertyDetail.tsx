@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import BookingWidget from "@/components/BookingWidget";
+import BookingWidget, { type BookingStep } from "@/components/BookingWidget";
 import ReviewSection from "@/components/ReviewSection";
 import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import VerifiedBadge from "@/components/VerifiedBadge";
