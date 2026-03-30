@@ -21,7 +21,7 @@ import {
   Tv, Lock, Flower2, ShieldCheck, MessageCircle,
   Eye, Clock, ChevronRight,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import PropertyDetailSkeleton from "@/components/skeletons/PropertyDetailSkeleton";
 
