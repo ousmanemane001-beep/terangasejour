@@ -40,7 +40,7 @@ interface BookingWidgetProps {
 const SERVICE_FEE_RATE = 0.15;
 const HOLD_MINUTES = 30;
 
-type BookingStep = "dates" | "confirm" | "payment" | "confirmed" | "expired" | "request_sent";
+export type BookingStep = "dates" | "confirm" | "payment" | "confirmed" | "expired" | "request_sent";
 
 const STORAGE_KEY = "teranga_booking_draft";
 
