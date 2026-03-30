@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import BookingWidget from "@/components/BookingWidget";
+import BookingWidget, { type BookingStep } from "@/components/BookingWidget";
 import ReviewSection from "@/components/ReviewSection";
 import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -21,7 +21,7 @@ import {
   Tv, Lock, Flower2, ShieldCheck, MessageCircle,
   Eye, Clock, ChevronRight,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import PropertyDetailSkeleton from "@/components/skeletons/PropertyDetailSkeleton";
 
@@ -44,6 +44,8 @@ const PropertyDetail = () => {
   const staticProperty = !isUUID ? properties.find((p) => p.id === Number(id)) : null;
   const [selectedImage, setSelectedImage] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [bookingStep, setBookingStep] = useState<BookingStep>("dates");
+  const handleBookingStepChange = useCallback((step: BookingStep) => setBookingStep(step), []);
   const { user } = useAuth();
   const navigate = useNavigate();
   const startConversation = useStartConversation();
@@ -278,7 +280,7 @@ const PropertyDetail = () => {
 
             <div className="lg:col-span-1" data-booking-widget>
               {isUUID && id ? (
-                <BookingWidget listingId={id} pricePerNight={listing.price} maxGuests={listing.guests} bookingMode={dbListing?.booking_mode ?? "instant"} hostId={dbListing?.user_id} listingImage={listing.coverImage} listingTitle={listing.title} />
+                <BookingWidget listingId={id} pricePerNight={listing.price} maxGuests={listing.guests} bookingMode={dbListing?.booking_mode ?? "instant"} hostId={dbListing?.user_id} listingImage={listing.coverImage} listingTitle={listing.title} onStepChange={handleBookingStepChange} />
               ) : (
                 <div className="sticky top-24 bg-card rounded-2xl shadow-[var(--shadow-card)] border border-border p-6">
                   <div className="mb-4">
@@ -303,7 +305,7 @@ const PropertyDetail = () => {
         </div>
       </section>
 
-      {listing && (
+      {listing && bookingStep === "dates" && (
         <div className="fixed bottom-16 left-0 right-0 z-50 md:hidden bg-background border-t border-border px-4 py-3 flex items-center justify-between">
           <div>
             <span className="text-lg font-bold text-foreground">{listing.price.toLocaleString("fr-FR")} F</span>

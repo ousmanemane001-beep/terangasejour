@@ -34,12 +34,13 @@ interface BookingWidgetProps {
   cancellationPolicy?: string;
   listingImage?: string;
   listingTitle?: string;
+  onStepChange?: (step: BookingStep) => void;
 }
 
 const SERVICE_FEE_RATE = 0.15;
 const HOLD_MINUTES = 30;
 
-type BookingStep = "dates" | "confirm" | "payment" | "confirmed" | "expired" | "request_sent";
+export type BookingStep = "dates" | "confirm" | "payment" | "confirmed" | "expired" | "request_sent";
 
 const STORAGE_KEY = "teranga_booking_draft";
 
@@ -73,7 +74,7 @@ const clearDraft = () => {
 
 const BookingWidget = ({
   listingId, pricePerNight, maxGuests, bookingMode = "instant",
-  hostId, listingImage, listingTitle,
+  hostId, listingImage, listingTitle, onStepChange,
 }: BookingWidgetProps) => {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language === "fr" ? fr : enUS;
@@ -126,6 +127,11 @@ const BookingWidget = ({
       saveDraft({ listingId, checkIn: checkIn.toISOString(), checkOut: checkOut.toISOString(), guests, savedAt: Date.now() });
     }
   }, [checkIn, checkOut, guests, listingId]);
+
+  // Notify parent of step changes
+  useEffect(() => {
+    onStepChange?.(step);
+  }, [step, onStepChange]);
 
   const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
   const subtotal = nights * pricePerNight;
