@@ -164,7 +164,7 @@ const PaymentReturn = () => {
 
         {state === "timeout" && (
           <>
-            <Loader2 className="w-12 h-12 text-amber-500 mx-auto" />
+            <Loader2 className="w-12 h-12 text-accent-foreground mx-auto" />
             <h1 className="text-xl font-bold text-foreground">
               Vérification en cours...
             </h1>
