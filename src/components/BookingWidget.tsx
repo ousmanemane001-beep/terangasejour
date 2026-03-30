@@ -34,6 +34,7 @@ interface BookingWidgetProps {
   cancellationPolicy?: string;
   listingImage?: string;
   listingTitle?: string;
+  onStepChange?: (step: BookingStep) => void;
 }
 
 const SERVICE_FEE_RATE = 0.15;
