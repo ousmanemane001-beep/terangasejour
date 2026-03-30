@@ -33,6 +33,8 @@ import Messages from "./pages/Messages";
 import CGU from "./pages/CGU";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
+import PaymentReturn from "./pages/PaymentReturn";
+import PaymentFailure from "./pages/PaymentFailure";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
