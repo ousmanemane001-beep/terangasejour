@@ -321,7 +321,8 @@ const BookingWidget = ({
 
       toast.info("Redirection vers le paiement...");
       const payData = await callCreatePaymentFunction(result.id);
-      window.location.href = payData.payment_url;
+      const opened = window.open(payData.payment_url, "_blank");
+      if (!opened) window.location.href = payData.payment_url;
     } catch (err: any) {
       console.error("Payment creation error:", err);
       setStep("payment");
@@ -334,7 +335,8 @@ const BookingWidget = ({
     try {
       toast.info("Redirection vers le paiement...");
       const payData = await callCreatePaymentFunction(bookingId);
-      window.location.href = payData.payment_url;
+      const opened = window.open(payData.payment_url, "_blank");
+      if (!opened) window.location.href = payData.payment_url;
     } catch (err: any) {
       console.error("Payment retry error:", err);
       toast.error(err?.message || "Erreur de paiement");
