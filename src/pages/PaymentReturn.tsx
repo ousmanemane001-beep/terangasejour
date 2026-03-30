@@ -95,8 +95,8 @@ const PaymentReturn = () => {
 
         {state === "paid" && (
           <>
-            <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto">
-              <CheckCircle className="w-9 h-9 text-emerald-600" />
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <CheckCircle className="w-9 h-9 text-primary" />
             </div>
             <h1 className="text-xl font-bold text-foreground">Paiement confirmé ✅</h1>
             <p className="text-muted-foreground">
