@@ -40,7 +40,7 @@ export function useBookedDates(listingId: string | undefined) {
         check_out: b.check_out,
       })) as BookedRange[];
       if (error) throw error;
-      return (data ?? []) as BookedRange[];
+      return (validBookings) as BookedRange[];
     },
     enabled: !!listingId,
   });
