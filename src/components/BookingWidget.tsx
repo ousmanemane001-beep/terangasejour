@@ -74,7 +74,7 @@ const clearDraft = () => {
 
 const BookingWidget = ({
   listingId, pricePerNight, maxGuests, bookingMode = "instant",
-  hostId, listingImage, listingTitle,
+  hostId, listingImage, listingTitle, onStepChange,
 }: BookingWidgetProps) => {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language === "fr" ? fr : enUS;
