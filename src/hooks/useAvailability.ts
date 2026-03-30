@@ -39,8 +39,6 @@ export function useBookedDates(listingId: string | undefined) {
         check_in: b.check_in,
         check_out: b.check_out,
       })) as BookedRange[];
-      if (error) throw error;
-      return (validBookings) as BookedRange[];
     },
     enabled: !!listingId,
   });
