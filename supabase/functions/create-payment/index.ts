@@ -161,8 +161,8 @@ Deno.serve(async (req) => {
       },
       actions: {
         callback_url: callbackUrl,
-        return_url: "https://terangasejour.lovable.app/dashboard",
-        cancel_url: `https://terangasejour.lovable.app/property/${booking.listing_id}`,
+        return_url: `https://terangasejour.lovable.app/paiement-retour?booking_id=${booking_id}`,
+        cancel_url: `https://terangasejour.lovable.app/paiement-echec?booking_id=${booking_id}`,
       },
     };
 

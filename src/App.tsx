@@ -85,6 +85,8 @@ const App = () => (
                 <Route path="/cgu" element={<CGU />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/refund-policy" element={<RefundPolicy />} />
+                <Route path="/paiement-retour" element={<PaymentReturn />} />
+                <Route path="/paiement-echec" element={<PaymentFailure />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
