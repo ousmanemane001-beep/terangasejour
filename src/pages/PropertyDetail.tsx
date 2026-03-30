@@ -305,7 +305,7 @@ const PropertyDetail = () => {
         </div>
       </section>
 
-      {listing && (
+      {listing && bookingStep === "dates" && (
         <div className="fixed bottom-16 left-0 right-0 z-50 md:hidden bg-background border-t border-border px-4 py-3 flex items-center justify-between">
           <div>
             <span className="text-lg font-bold text-foreground">{listing.price.toLocaleString("fr-FR")} F</span>
