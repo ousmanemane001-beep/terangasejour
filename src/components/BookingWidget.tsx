@@ -128,6 +128,11 @@ const BookingWidget = ({
     }
   }, [checkIn, checkOut, guests, listingId]);
 
+  // Notify parent of step changes
+  useEffect(() => {
+    onStepChange?.(step);
+  }, [step, onStepChange]);
+
   const nights = checkIn && checkOut ? differenceInDays(checkOut, checkIn) : 0;
   const subtotal = nights * pricePerNight;
   const serviceFee = Math.round(subtotal * SERVICE_FEE_RATE);
